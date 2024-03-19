@@ -1,5 +1,5 @@
 ## Tools
-### Intellij
+### Visual Studio Code
 Tijdens deze lessen maken we gebruik van de Visual Studio Code (VS Code). VS Code kun je hier
 downloaden: https://code.visualstudio.com/Download
 
