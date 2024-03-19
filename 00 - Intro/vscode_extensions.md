@@ -29,6 +29,7 @@ Je hebt dus een aantal extensies nodig. Must Have: zijn de extensies waar je nie
 | GitLens | GitKraken |
 | Todo Tree | Gruntfuggly |
 | WSL | Microsoft |
+| Better Pest | Miguel Piedrafita |
 
 ### Laravel
 | Extensie | Auteur |
