@@ -21,12 +21,23 @@ Het volgende artikel legt uit hoe je Git kunt gebruiken in Vs Code:
 https://code.visualstudio.com/docs/sourcecontrol/intro-to-git
 
 ### XAMPP
+Om in PHP te programmeren heb je eigenlijk een webserver nodig. Nu kun je in theorie je laptop inrichten als server,
+maar het is makkelijker om daar een ontwikkel omgeving voor te installeren zoals XAMPP.
+
+XAMPP kun je hier vinden: https://www.apachefriends.org/
+
+### XDEBUG
+In vanilla PHP kun je niet debuggen. Om dit mogelijk te maken moet je XDebug installeren. Op de volgende pagina kun je aan de hand van een wizard het juiste bestand downloaden, installatie instructies staan daar ook bij.
+
+https://xdebug.org/wizard
+
+
 
 
 ### Composer
 
 
-### Je eerste PHP project
+## Je eerste PHP project
 
 
 ### Code draaien
