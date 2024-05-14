@@ -9,8 +9,6 @@ class PdoService
 {
     private $host = '127.0.0.1:3306';
     private $db   = 'mariadb';
-    private $user = 'mariadb';
-    private $pass = 'mariadb';
     private $charset = 'utf8mb4';
 
     private $pdo;
@@ -24,6 +22,8 @@ class PdoService
      */
     public function __construct()
     {
+        $env = parse_ini_file('.env');
+
         $dsn = "mysql:host=$this->host;dbname=$this->db;charset=$this->charset";
 
         $options = [
@@ -31,7 +31,7 @@ class PdoService
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
-        $this->pdo = new PDO($dsn, $this->user, $this->pass, $options);
+        $this->pdo = new PDO($dsn, $env['dbuser'], $env['dbpass'], $options);
     }
 
     /**

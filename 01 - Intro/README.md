@@ -31,18 +31,6 @@ In vanilla PHP kun je niet debuggen. Om dit mogelijk te maken moet je XDebug ins
 
 https://xdebug.org/wizard
 
-
-
-
-### Composer
-
-
-## Je eerste PHP project
-
-
-### Code draaien
-
-
 ## PHP Basics
 - [Verschillen Phyton & PHP](differences.md)
 - [Naamgeving](naming.md)
