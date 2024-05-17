@@ -193,8 +193,7 @@ function drawHangman()
  */
 function askForInput()
 {
-    echo "Guess a letter or a word: ";
-    $input = trim(fgets(STDIN));
+    $input = readline("Guess a letter or a word: ");
     if (strlen($input) == 1) {
         handleLetter($input);
     } else {
