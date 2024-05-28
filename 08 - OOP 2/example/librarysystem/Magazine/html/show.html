@@ -1,0 +1,29 @@
+<h1>
+    <?= $magazine->title ?>
+</h1>
+<p><strong>Editor:</strong>
+    <?= $magazine->editor ?>
+</p>
+<p><strong>ISBN: </strong>
+    <?= $magazine->isnn ?>
+</p>
+<p><strong>Genre: </strong>
+    <?= $magazine->genre ?>
+</p>
+<p><strong>Age Rating: </strong>
+    <?= $magazine->ageRating ?>
+</p>
+<p><strong>Pages: </strong>
+    <?= $magazine->pages ?>
+</p>
+<p><strong>Publisher: </strong>
+    <?= $magazine->publisher ?>
+</p>
+<p><strong>Appearance:</strong>
+    <?= $magazine->appearance->toString() ?>
+</p>
+<p>
+    <strong>Published:</strong>
+    <?= $magazine->periodPublished() ?>
+</p>
+<a href="/?type=magazine">Back</a>

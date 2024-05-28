@@ -1,21 +1,10 @@
 <?php
+require_once 'DBEntity.php';
 require_once 'Book/Book.php';
-require_once 'Main.php';
+require_once 'Magazine/Magazine.php';
 require_once 'Book/BookController.php';
+require_once 'Magazine/MagazineController.php';
 require_once 'HomeController.php';
-$main = new Main();
-
-// session_start();
-
-// if ($_POST) {
-//     $_SESSION['book'] = $main->createBook($_POST);
-//     header('location: index.php');
-// }
-// if (isset($_GET['action']) == 'replace' || !isset($_SESSION['book'])) {
-//     include_once 'html/form.html';
-// } else if (isset($_SESSION['book'])) {
-//     $main->showBook($_SESSION['book']);
-// }
 
 $routes = [
     'book' => [
@@ -25,18 +14,19 @@ $routes = [
         'index' => BookController::class . '::index',
         'default' => BookController::class . '::index',
     ],
+    'magazine' => [
+        'create' => MagazineController::class . '::create',
+        'store' => MagazineController::class . '::store',
+        'show' => MagazineController::class . '::show',
+        'index' => MagazineController::class . '::index',
+        'default' => MagazineController::class . '::index',
+    ],
     'home' => [
         'default' => HomeController::class . '::index',
     ],
 ];
 
-$type = "home";
-$action = "default";
-if (isset($_GET['type'])) {
-    $type = $_GET['type'];
-}
-if (isset($_GET['action'])) {
-    $action = $_GET['action'];
-}
+$type = isset($_GET['type']) ? $_GET['type'] : 'home';
+$action = isset($_GET['action']) ? $_GET['action'] : 'default';
 
 $routes[$type][$action]();

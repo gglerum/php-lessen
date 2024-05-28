@@ -1,5 +1,5 @@
 <?php
-require_once 'DBEntity.php';
+
 /**
  * Class that represents a book in the library system
  * the class has properties that are public and readonly, which means they can be accessed from outside the class

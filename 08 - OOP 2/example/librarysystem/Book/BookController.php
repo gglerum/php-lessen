@@ -1,18 +1,37 @@
 <?php
+
+/**
+ * This controller is responsible for handling all the user book actions
+ */
 class BookController
 {
-    public static function create()
+    /**
+     * Shows the form to create a book
+     *
+     * @return void
+     */
+    public static function create(): void
     {
         include_once 'html/form.html';
     }
 
-    public static function store()
+    /**
+     * Stores the submitted form data in the database
+     *
+     * @return void
+     */
+    public static function store(): void
     {
         $id = Book::insert($_POST);
         header('location: /?type=book&action=show&id=' . $id);
     }
 
-    public static function show()
+    /**
+     * Shows a single book
+     *
+     * @return void
+     */
+    public static function show(): void
     {
         if (!isset($_GET['id'])) {
             header('location: /');
@@ -21,6 +40,11 @@ class BookController
         require_once 'html/show.html';
     }
 
+    /**
+     * Shows a list of the available books
+     *
+     * @return void
+     */
     public static function index()
     {
         $books = Book::all();

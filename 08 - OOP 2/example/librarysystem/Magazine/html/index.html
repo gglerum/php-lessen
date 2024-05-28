@@ -1,0 +1,14 @@
+<?php if($magazines): ?>
+<ul>
+    <?php foreach($magazines as $magazine): ?>
+    <li>
+        <a href="/?type=magazine&action=show&id=<?= $magazine->id ?>">
+            <?= $magazine->title ?>
+        </a>
+    </li>
+    <?php endforeach; ?>
+</ul>
+<?php else: ?>
+<p>No magazines where found.</p>
+<?php endif; ?>
+<a href="/">Back to homepage</a> | <a href="/?type=magazine&action=create">Add a new magazine</a>
