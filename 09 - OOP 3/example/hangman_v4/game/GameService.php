@@ -1,8 +1,8 @@
 <?php
-require_once './game/Word.php';
-require_once './game/Game.php';
-require_once './game/GameStatus.php';
-require_once './game/DrawnHangman.php';
+
+namespace Hacklabfrl\Hangman;
+
+use Hacklabfrl\Hangman\Generator\RandomWordGenerator;
 
 /**
  * The GameService class handles the game logic and provides methods to interact with the game.
@@ -45,12 +45,10 @@ class GameService
     {
         $hasWordBeenGuessed = $this->word->guessWord($input);
         $result = $this->word->guessLetter($input) || $hasWordBeenGuessed;
-        //decrease attempts if the guess was false
         if ($result === false) {
             $this->game->decreaseAttempts();
             return false;
         }
-        // set the games status to won if the word was guessed
         if ($this->word->hasWordBeenGuessed() || $hasWordBeenGuessed) {
             $this->game->setStatus(GameStatus::WON);
         }

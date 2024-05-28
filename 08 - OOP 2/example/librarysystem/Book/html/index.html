@@ -1,0 +1,14 @@
+<?php if($books): ?>
+<ul>
+    <?php foreach($books as $book): ?>
+    <li>
+        <a href="/?type=book&action=show&id=<?= $book->id ?>">
+            <?= $book->title ?>
+        </a>
+    </li>
+    <?php endforeach; ?>
+</ul>
+<?php else: ?>
+<p>No books where found.</p>
+<?php endif; ?>
+<a href="/">Back to homepage</a> | <a href="/?type=book&action=create">Add a new book</a>

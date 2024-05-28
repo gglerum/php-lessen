@@ -1,0 +1,11 @@
+{
+    "name": "hacklabfrl/hangman",
+    "description": "A game of hangman",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Hacklabfrl\\Hangman\\": "game/"
+        }
+    },
+    "require": {}
+}

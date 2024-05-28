@@ -1,7 +1,9 @@
 <?php
 
+namespace Hacklabfrl\Hangman;
+
 /**
- * This class is used to mange the game status
+ * Represents a game of Hangman.
  */
 class Game
 {

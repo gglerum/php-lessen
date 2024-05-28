@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Hangman Game
  *
@@ -19,9 +20,6 @@
 // Array of words for the game
 $words = array("apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine", "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yellow", "zucchini");
 
-// The word to be guessed
-$word = "";
-
 // Array to store the guessed letters
 $guessedLetters = [];
 
@@ -39,9 +37,11 @@ echo "Welcome to hangman!\n";
 
 // Main game loop
 while (!$gameOver) {
-    // Display the current state of the word
+    /* Display the guessed letters */
     $display = "";
+    //loop for each letter in the word
     for ($i = 0; $i < strlen($word); $i++) {
+        //check if the letter has been guessed so we can display it, ele we display a _
         if (in_array($word[$i], $guessedLetters)) {
             $display .= $word[$i];
         } else {
