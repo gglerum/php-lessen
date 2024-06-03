@@ -1,5 +1,6 @@
 <?php
-require_once 'DBEntity.php';
+require_once 'Data/DBEntity.php';
+require_once 'Borrow/helpers/BorrowHelper.php';
 require_once 'Book/Book.php';
 require_once 'Magazine/Magazine.php';
 require_once 'Book/BookController.php';
@@ -13,6 +14,8 @@ $routes = [
         'show' => BookController::class . '::show',
         'index' => BookController::class . '::index',
         'default' => BookController::class . '::index',
+        'borrow' => BookController::class . '::borrow',
+        'return' => BookController::class . '::returnItem',
     ],
     'magazine' => [
         'create' => MagazineController::class . '::create',

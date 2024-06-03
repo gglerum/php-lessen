@@ -5,8 +5,6 @@ require_once 'DbManager.php';
  **/
 abstract class DBEntity
 {
-    private DbManager $dbManager;
-
     /**
      * The static string can be set in the child class to define the table name
      *
@@ -40,6 +38,11 @@ abstract class DBEntity
         }, $results);
     }
 
+    private static function getTableName(string $class, string $setTable): string
+    {
+        return $setTable ?: strtolower($class) . 's';
+    }
+
     /**
      * Loads an entity from the database
      *
@@ -48,7 +51,7 @@ abstract class DBEntity
      */
     public static function load(int $id): mixed
     {
-        $results = DBEntity::selectQuery(static::class, 'SELECT * FROM ' . static::$table . ' where id = ?', [$id]);
+        $results = DBEntity::selectQuery(static::class, 'SELECT * FROM ' . DBEntity::getTableName(static::class, static::$table) . ' where id = ?', [$id]);
         if ($results[0]) {
             return $results[0];
         }
@@ -62,7 +65,7 @@ abstract class DBEntity
      */
     public static function all(): array
     {
-        $result = DBEntity::selectQuery(static::class, 'SELECT * FROM ' . static::$table, []);
+        $result = DBEntity::selectQuery(static::class, 'SELECT * FROM ' . DBEntity::getTableName(static::class, static::$table), []);
         return $result ?: [];
     }
 
@@ -79,7 +82,7 @@ abstract class DBEntity
         $keysString = implode(', ', $keys);
         //we need to create a string for values with the same amount of ? as we have keys
         $values = implode(', ', str_split(str_repeat('?', count($keys))));
-        $dbManager->executeQuery('INSERT INTO ' . static::$table . ' ( ' . $keysString . ' ) VALUES ( ' . $values . ' )', array_values($_POST));
+        $dbManager->executeQuery('INSERT INTO ' . DBEntity::getTableName(static::class, static::$table) . ' ( ' . $keysString . ' ) VALUES ( ' . $values . ' )', array_values($_POST));
         return $dbManager->lastInsertId();
     }
 }

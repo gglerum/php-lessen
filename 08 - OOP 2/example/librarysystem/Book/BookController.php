@@ -45,9 +45,41 @@ class BookController
      *
      * @return void
      */
-    public static function index()
+    public static function index(): void
     {
         $books = Book::all();
         require_once 'html/index.html';
+    }
+
+    /**
+     * Handles borrowing of the book by a customer
+     *
+     * @return void
+     */
+    public static function borrow(): void
+    {
+        if (!isset($_GET['id'])) {
+            header('location: /');
+        }
+        $book = Book::load($_GET['id']);
+        if ($book->isAvailable()) {
+            $book->borrowItem();
+        }
+        header('location: /?type=book&action=show&id=' . $book->id);
+    }
+
+    /**
+     * Handles returning of the book by a customer
+     *
+     * @return void
+     */
+    public static function returnItem(): void
+    {
+        if (!isset($_GET['id'])) {
+            header('location: /');
+        }
+        $book = Book::load($_GET['id']);
+        $book->returnItem();
+        header('location: /?type=book&action=show&id=' . $book->id);
     }
 }

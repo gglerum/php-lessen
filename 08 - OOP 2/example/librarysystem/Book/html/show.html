@@ -22,4 +22,5 @@
 <p><strong>Year Published: </strong>
     <?= $book->getYearPublished() ?>
 </p>
+<?php BorrowHelper::showHtml($book); ?>
 <a href="/?type=book">Back</a>

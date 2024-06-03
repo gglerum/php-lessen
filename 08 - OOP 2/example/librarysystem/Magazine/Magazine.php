@@ -6,11 +6,6 @@ require_once 'Appearance.php';
 class Magazine extends DBEntity
 {
     /**
-     * The name of the database table for magazines.
-     */
-    protected static string $table = 'magazines';
-
-    /**
      * Creates a new instance of the Magazine class.
      *
      * @param int $id The ID of the magazine.

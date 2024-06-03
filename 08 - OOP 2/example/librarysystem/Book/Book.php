@@ -1,5 +1,6 @@
 <?php
-
+require_once 'Borrow/Borrow.php';
+require_once 'Borrow/Borrowable.php';
 /**
  * Class that represents a book in the library system
  * the class has properties that are public and readonly, which means they can be accessed from outside the class
@@ -7,9 +8,9 @@
  * 
  * Classes like these are ideal for transferring data between different parts of the system, like from the database to the view.
  */
-class Book extends DBEntity
+class Book extends DBEntity implements Borrowable
 {
-    protected static string $table = 'books';
+    use Borrow;
 
     /**
      * We use property promotion so we do not have to declare the properties and set them in the body
