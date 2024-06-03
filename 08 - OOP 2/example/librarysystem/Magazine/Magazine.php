@@ -3,8 +3,10 @@ require_once 'Appearance.php';
 /**
  * Represents a magazine in the library system.
  */
-class Magazine extends DBEntity
+class Magazine extends DBEntity implements Borrowable
 {
+    use Borrow;
+
     /**
      * Creates a new instance of the Magazine class.
      *

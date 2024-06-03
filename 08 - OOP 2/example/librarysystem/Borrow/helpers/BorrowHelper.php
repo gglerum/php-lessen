@@ -13,8 +13,13 @@ class BorrowHelper
         // variable $item is used in the templates
         require_once 'Borrow/html/borrow.html';
 
-        if (!$item->isAvailable()) {
+        if ($item->isBorrowedByCustomer()) {
             require_once 'Borrow/html/return.html';
         }
+    }
+
+    public static function canBorrow()
+    {
+        return isset($_SESSION['customer']);
     }
 }

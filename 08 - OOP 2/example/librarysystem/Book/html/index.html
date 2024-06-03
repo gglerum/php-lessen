@@ -11,4 +11,5 @@
 <?php else: ?>
 <p>No books where found.</p>
 <?php endif; ?>
-<a href="/">Back to homepage</a> | <a href="/?type=book&action=create">Add a new book</a>
+<a href="/">Back to homepage</a>
+<?php AdminHelper::showOptions($book) ?>

@@ -11,4 +11,5 @@
 <?php else: ?>
 <p>No magazines where found.</p>
 <?php endif; ?>
-<a href="/">Back to homepage</a> | <a href="/?type=magazine&action=create">Add a new magazine</a>
+<a href="/">Back to homepage</a>
+<?php AdminHelper::showOptions($magazine) ?>

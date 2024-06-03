@@ -9,4 +9,5 @@ interface Borrowable
     public function isAvailable(): bool;
     public function borrowItem(): void;
     public function returnitem(): void;
+    public function isBorrowedByCustomer(): bool;
 }

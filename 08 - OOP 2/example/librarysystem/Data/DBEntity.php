@@ -32,10 +32,42 @@ abstract class DBEntity
             $builder = call_user_func($class . '::builder');
             foreach ($result as $key => $value) {
                 //set the property through the builder
-                $builder->$key($value);
+                if (method_exists($builder, $key)) {
+                    $builder->$key($value);
+                }
             }
             return $builder->build();
         }, $results);
+    }
+
+    public static function query()
+    {
+        $table = self::getTableName(static::class, static::$table);
+        $class = static::class;
+        return new class($table, $class)
+        {
+            private array $where = [];
+            private array $params = [];
+
+            public function __construct(
+                private string $table,
+                private string $class
+            ) {
+            }
+
+            public function where($clause, $params)
+            {
+                $this->where[] = '(' . $clause . ')';
+                $this->params[] = $params;
+                return $this;
+            }
+
+            public function select(): mixed
+            {
+                $query = 'SELECT * FROM ' . $this->table . ' WHERE ' . implode(' AND ', $this->where);
+                return DBEntity::selectQuery($this->class, $query, array_merge(...$this->params));
+            }
+        };
     }
 
     private static function getTableName(string $class, string $setTable): string

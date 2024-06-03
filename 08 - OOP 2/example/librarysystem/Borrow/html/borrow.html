@@ -1,7 +1,10 @@
 <p>
     <strong>Copies available: </strong>
     <?php if($item->isAvailable()): ?>
-    <?= $item->copies() ?> <a href="/?type=<?= strtolower($item::class) ?>&action=borrow&id=<?= $item->id ?>">Borrow</a>
+    <?= $item->copies() ?>
+    <?php if(self::canBorrow()): ?>
+    <a href="/?type=<?= strtolower($item::class) ?>&action=borrow&id=<?= $item->id ?>">Borrow</a>
+    <?php endif; ?>
     <?php else: ?>
     All copies on loan
     <?php endif; ?>
