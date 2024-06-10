@@ -15,7 +15,7 @@
  * @version 1.0
  * @author GLenn Glerum
  */
-$words = array("apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine", "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yellow", "zucchini");
+$words = ["apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine", "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yellow", "zucchini"];
 $word = "";
 $guessedLetters = [];
 $attempts = 7;
@@ -60,6 +60,12 @@ function displayWord()
 function handleLetter($input)
 {
     global $word, $guessedLetters, $gameOver;
+
+    //if the input is empty or not a letter, throw an exception
+    if ($input == "" || !ctype_alpha($input)) {
+        throw new InvalidArgumentException("Invalid input. Please enter a valid letter.");
+    }
+
     $guessedLetters[] = $input;
     if (strpos($word, $input) === false) {
         echo "Nope! $input is not in the word.\n";
@@ -194,10 +200,17 @@ function drawHangman()
 function askForInput()
 {
     $input = readline("Guess a letter or a word: ");
-    if (strlen($input) == 1) {
-        handleLetter($input);
-    } else {
-        handleWord($input);
+    //we try the following code and catch any catch an InvalidArgumentException. Other exceptions will not be caught
+    try {
+        if (strlen($input) == 1) {
+            handleLetter($input);
+        } else {
+            handleWord($input);
+        }
+        //notice that we do not assign InvalidArgumentException to a variable. We just catch it and do nothing with it.
+        //normally we would do more than just display a message
+    } catch (InvalidArgumentException) {
+        echo "You input was incorrect. Please try again.\n";
     }
 }
 
@@ -230,7 +243,7 @@ function init()
     global $word, $gameOver;
     $word = getRandomWord();
 
-    echo "Welcome to hangman!\n";
+    echo "Welcome to hangman ♥!\n";
 
     while (!$gameOver) {
         echo displayWord() . "\n\n";

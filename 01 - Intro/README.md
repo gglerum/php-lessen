@@ -26,6 +26,8 @@ maar het is makkelijker om daar een ontwikkel omgeving voor te installeren zoals
 
 XAMPP kun je hier vinden: https://www.apachefriends.org/
 
+*op een later moment gaan we kijken naar docker, mits je laptop dit ondersteund.*
+
 ### XDEBUG
 In vanilla PHP kun je niet debuggen. Om dit mogelijk te maken moet je XDebug installeren. Op de volgende pagina kun je aan de hand van een wizard het juiste bestand downloaden, installatie instructies staan daar ook bij.
 
@@ -34,3 +36,9 @@ https://xdebug.org/wizard
 ## PHP Basics
 - [Verschillen Phyton & PHP](differences.md)
 - [Naamgeving](naming.md)
+
+## Console applicaties
+Hoewel PHP eigenlijk geen taal is om console applicaties in te schrijven, zal dit wel onze focus zijn voor de komende vier weken. Zo kunnen we eerst bekend raken met PHP voor we in http requests en andere web specifieke dingen duiken.
+
+Het is trouwens niet dat er nooit iets in PHP voor de console wordt gemaakt. Veel frameworks zoals laravel hebben hulpprogrammas
+die in PHP zijn geschreven.

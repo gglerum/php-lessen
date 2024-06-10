@@ -18,7 +18,7 @@
 // FILEPATH: /c:/Users/ggler/Documents/PHP/php-lessen/02 - Basics/example/hangman_v1.php
 
 // Array of words for the game
-$words = array("apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine", "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yellow", "zucchini");
+$words = ["apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine", "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yellow", "zucchini"];
 
 // Array to store the guessed letters
 $guessedLetters = [];
@@ -41,7 +41,7 @@ while (!$gameOver) {
     $display = "";
     //loop for each letter in the word
     for ($i = 0; $i < strlen($word); $i++) {
-        //check if the letter has been guessed so we can display it, ele we display a _
+        //check if the letter has been guessed so we can display it, else we display a _
         if (in_array($word[$i], $guessedLetters)) {
             $display .= $word[$i];
         } else {
@@ -93,7 +93,7 @@ while (!$gameOver) {
     if (!$gameOver) {
         // Display the hangman based on the number of attempts remaining
         switch ($attempts) {
-            case 6:
+            default:
                 echo "  +---+\n";
                 echo "  |   |\n";
                 echo "      |\n";
