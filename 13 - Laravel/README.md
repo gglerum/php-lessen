@@ -1,4 +1,7 @@
-# Wat je moet kunnen beheersen:
+# Laravel
+De komende 13 weken gaan we werken met Laravel. De documentatie kun je hier vinden: https://laravel.com/docs/11.x
+
+## Wat je moet kunnen beheersen:
 De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te zien waar je moet starten. Hieronder vind je een opdeling van de documentatie in hapklare brokken.
 
 **Letop: deze lijst dekt niet de volledige Larvel documentati. Het is aan jou om stapgewijs bekend te raken met de volledige documentatie van Laravel.**
@@ -8,7 +11,6 @@ De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te
 *Basis begrip hoe laravel kan worden geconfigureerd, waar welke map voor is en hoe requests (webpagina bezoeken) precies worden afgehandelt:*
 
 - **Getting Started**
-    - Configuration
     - Directory Structure
 - **Architecture Concepts**
     - Request Lifecycle
@@ -41,6 +43,10 @@ De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te
     - Authenticaion
     - Authorization
     - E-mail verification
+
+*Configureren van Laravel:*
+- **Getting Started**
+    - Configuration
 
 *Voor het werken met de database:*
 - **Database**
