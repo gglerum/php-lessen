@@ -42,3 +42,11 @@ Hoewel PHP eigenlijk geen taal is om console applicaties in te schrijven, zal di
 
 Het is trouwens niet dat er nooit iets in PHP voor de console wordt gemaakt. Veel frameworks zoals laravel hebben hulpprogrammas
 die in PHP zijn geschreven.
+
+## Opdracht
+Maak een klein programma dat uit een lijst van getallen telt hoeveel er even of oneven zijn.
+
+1. Maak een array met de volgende getallen: 42, 67, 35, 89, 24, 76, 58, 93, 7, 30, 83, 46, 13, 25, 98, 53, 17, 79, 57, 8.
+2. Gebruik een for-loop om door de array te itereren.
+3. Controleer voor elk getal of het even of oneven is met behulp van een if-else-statement.
+4. Tel daarbij zowel de even en oneven getallen en sla deze op in een associative array waarbij de key de string "even" of "oneven" is en de waarde de het toaal of "even" of "oneven" getallen.
