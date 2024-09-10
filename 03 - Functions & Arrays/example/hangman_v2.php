@@ -12,7 +12,7 @@
  *
  * @file FILEPATH: /c:/Users/Glenn/Documents/PHP/commandline/index.php
  * @package Hangman
- * @version 1.0
+ * @version 2.0
  * @author GLenn Glerum
  */
 $words = ["apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine", "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yellow", "zucchini"];

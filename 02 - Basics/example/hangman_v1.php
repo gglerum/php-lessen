@@ -15,8 +15,6 @@
  * @see https://github.com/example/hangman_v1.php
  */
 
-// FILEPATH: /c:/Users/ggler/Documents/PHP/php-lessen/02 - Basics/example/hangman_v1.php
-
 // Array of words for the game
 $words = ["apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine", "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yellow", "zucchini"];
 
