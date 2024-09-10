@@ -3,7 +3,7 @@ class Main
 {
     /**
      * Creates a new book (the hobbit by J.R.R. Tolkien)
-     * @param arary $data Data used to create the book
+     * @param array $data Data used to create the book
      * @return Book
      */
     public function createBook(array $data): Book
