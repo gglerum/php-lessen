@@ -7,6 +7,7 @@ Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed d
 - Access Modifiers
 - Encapsulation (https://www.geeksforgeeks.org/php-encapsulation/)
 - Constants
+- Exceptions
 
 ## Voorbeeld
 ### Hangman v3
