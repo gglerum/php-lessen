@@ -50,3 +50,15 @@ Maak een klein programma dat uit een lijst van getallen telt hoeveel er even of 
 2. Gebruik een for-loop om door de array te itereren.
 3. Controleer voor elk getal of het even of oneven is met behulp van een if-else-statement.
 4. Tel daarbij zowel de even en oneven getallen en sla deze op in een associative array waarbij de key de string "even" of "oneven" is en de waarde de het toaal of "even" of "oneven" getallen.
+
+### Checklist
+- Variabelen zijn in het engels geschreven.
+- Variabelen zijn in camelCase.
+- Naamgeving van de variabelen zijn duidelijk en beschrijvend.
+- Elk code block (begint met `{` en eindigt met `}`) wordt voorgegaan door een regel commentaar.
+- Comments zijn in het engels geschreven.
+- De code is geformateerd aan de hand van PSR-12.
+- Een loop bevat alleen code dat ook echt herhaalt hoort te worden. Berekeningen of andere zware
+  operaties die voor elke iteratie hetzelfde blijven, horen niet in een loop te staan.
+- Declareer variabelen zo dicht mogelijk waar het gebruikt word.
+- De code bevat geen/tot zeer weinig code duplicatie. (DRY: Don't Repeat Yourself)
