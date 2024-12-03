@@ -23,3 +23,15 @@ Maak een simpel console raadspel waarbij de speler een getal moet raden tussen 0
 Je kunt gebruik maken van [readline](https://www.php.net/manual/en/function.readline.php) om de gebruiker om input te vragen.
 
 Letop: vergeet geen commentaar te gebruiken om te omschrijven wat er in code blokken gebeurt. Code blokken starten met een `{` en eindigen met een `}`.
+
+### Checklist
+- Variabelen zijn in het engels geschreven.
+- Variabelen zijn in camelCase.
+- Naamgeving van de variabelen zijn duidelijk en beschrijvend.
+- Elk code block (begint met `{` en eindigt met `}`) wordt voorgegaan door een regel commentaar.
+- Comments zijn in het engels geschreven.
+- De code is geformateerd aan de hand van PSR-12.
+- Een loop bevat alleen code dat ook echt herhaalt hoort te worden. Berekeningen of andere zware
+  operaties die voor elke iteratie hetzelfde blijven, horen niet in een loop te staan.
+- Declareer variabelen zo dicht mogelijk waar het gebruikt word.
+- De code bevat geen/tot zeer weinig code duplicatie. (DRY: Don't Repeat Yourself)
