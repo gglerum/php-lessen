@@ -65,6 +65,22 @@ $books = [new Book(/**/), new Book(/**/), new Book(/**/), new Book(/**/)];
 $bookRepository->add(...$books);
 ```
 
+### Constructors & id property
+De property `id` is één waarde die je eigenlijk niet steeds met het handje wilt invullen. Inprincipe is dit een oplopende waarde die per object van een class anders is. Het makkelijkste is om de constructor van je class de waarde van `id` te laten bepalen.
+
+```PHP
+class Author {
+    private static int $count = 0;
+    private int $id;
+
+    public function __construct(/*Je constructor parameters*/){
+        $this->id = ++static::$count;
+    }
+}
+```
+
+Op deze manier krijgt elk nieuw object van `Author` het eerst volgende `id`.
+
 --------
 
 De overige functies van de classes zijn redelijk straight forward. 
