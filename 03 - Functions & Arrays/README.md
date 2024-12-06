@@ -20,6 +20,8 @@ programmeur. Een try and catch hoort dus eigenlijk niet gebruikt te worden als e
 Een voorbeeld van waar een Exception kan voorkomen is bijvoorbeeld wanneer er geen verbindingen kan worden gemaakt met de database. In zo'n situatie kan er een exception worden gegooid en kan er op een andere plaats in de code worden bepaald hoe dit verder moet worden afgehandeld zonder database.
 
 ## Huiswerk
+![Library methods](./library.png)
+
 We gaan een simpele applicatie maken om boeken te beheren. We maken hier gebruik van een "multi dimensionale array". Een array dat zelf meerdere arrays bevat. 
 
 Dit worden de `$books` arrays die je bovenaan in je php bestand zet. Daarnaast maken we gebruik van een simpele
@@ -89,7 +91,27 @@ Om even kort samen te vatten, deze opdracht kent drie "Use Cases":
 3a. De eindgebruiker selecteert een niet-bestaande auteur:
 - Het systeem toont een foutmelding en vraagt de eindgebruiker om opnieuw een auteur te selecteren.
 
-#### Use Case 2: Verwijder een boek
+#### Use Case 2: Toon alle boeken
+
+**Primary Actor:** Eindgebruiker
+
+**Preconditions:**
+- De eindgebruiker heeft toegang tot het systeem.
+- Er zijn al boeken beschikbaar in het systeem.
+
+**Postconditions:**
+- De lijst van alle boeken wordt getoond aan de eindgebruiker.
+
+**Main Success Scenario:**
+1. De eindgebruiker kiest de optie om alle boeken te tonen.
+2. Het systeem haalt de lijst van alle boeken op.
+3. Het systeem toont de lijst van alle boeken met hun details (titel, auteur, ISBN, etc.).
+
+**Extensions:**
+- 2a. Er zijn geen boeken beschikbaar in het systeem:
+  - 1. Het systeem gaat terug naar het hoofdmenu en toont een melding dat er geen boeken beschikbaar zijn.
+
+#### Use Case 3: Verwijder een boek
 
 **Primary Actor:** Eindgebruiker
 
@@ -115,26 +137,6 @@ Om even kort samen te vatten, deze opdracht kent drie "Use Cases":
 - 5a. De eindgebruiker annuleert de verwijdering:
   - 1. Het systeem annuleert de verwijdering en keert terug naar het hoofdmenu.
 
-#### Use Case 3: Toon alle boeken
-
-**Primary Actor:** Eindgebruiker
-
-**Preconditions:**
-- De eindgebruiker heeft toegang tot het systeem.
-- Er zijn al boeken beschikbaar in het systeem.
-
-**Postconditions:**
-- De lijst van alle boeken wordt getoond aan de eindgebruiker.
-
-**Main Success Scenario:**
-1. De eindgebruiker kiest de optie om alle boeken te tonen.
-2. Het systeem haalt de lijst van alle boeken op.
-3. Het systeem toont de lijst van alle boeken met hun details (titel, auteur, ISBN, etc.).
-
-**Extensions:**
-- 2a. Er zijn geen boeken beschikbaar in het systeem:
-  - 1. Het systeem gaat terug naar het hoofdmenu en toont een melding dat er geen boeken beschikbaar zijn.
-
 #### Use Case 4: Toon boeken voor een specifieke auteur
 **Primary Actor:** Eindgebruiker
 
@@ -157,6 +159,30 @@ Om even kort samen te vatten, deze opdracht kent drie "Use Cases":
  - Het systeem toont een foutmelding en vraagt de eindgebruiker om opnieuw een auteur te selecteren.
 - 4a. Er zijn geen boeken beschikbaar voor de geselecteerde auteur:
  - Het systeem gaat terug naar het hoofdmenu en toont een melding dat er geen boeken beschikbaar zijn voor de geselecteerde auteur.
+
+### Functies
+Zoals je in de diagram kunt zien heeft elke "Use Case" een eigen methode waarmee hij start,
+vervolgens worden de stappen van de "Use Case" in deze methode uitgevoerd. Sommige handelingen
+worden uitgevoerd door een andere methode, zoals het tonen van een lijst van boeken of auteurs.
+
+- `showMainMenu()` - Laat het hoofdmenu zien en roept aan de hand van de keuze één van de volgende
+  methodes aan: `handleAddBook()`, `showAllBooks()`, `handleRemoveBook()`
+- Use Case 1: Een boek toevoegen
+  - `handleAddBook()` - roept de methode `showBookForm()` aan en roept met de return waarde `addBook()` aan.
+    - `showBookForm()` - roept de methode `showAuthorsMenu()` aan, krijgt de auteur keuze terug en vraagt vervolgens
+          de gebruiker om de rest van de gegevens van een boek in te voeren. Returned een gevulde array.
+      - `showAuthorsMenu()` - Laat een lijst van auteurs zien en vraagt de gebruiker om een auteur te kiezen. Returned een string met de auteur naam.
+    - `addBook()` - Voegt een boek array toe aan de `books` array.
+- Use Case 2: Alle boeken tonen
+  - `showAllBooks()` - roept `showBookCatalog()` aan.
+    - `showBookCatalog()` - Laat een lijst van boeken zien.
+- Use Case 3: Een boek verwijderen
+  - `handleRemoveBook()` - roept `showRemoveBookForm()` en gebruikt de return waarde om `removeBook()` aan te roepen.
+    - `showRemoveBookForm()` - roept `showBookCatalog()` aan en vraagt vervolgens de gebruiker een boek te kiezen. Returned een index van de `books` array.
+    - `removeBook()` - Verwijderd een boek uit de `books` array.
+- Use Case 4: Toon boeken voor een specifieke auteur
+  - `handleShowAuthorBooks()` - roept de methode `showAuthorsMenu()` aan, krijgt de auteur keuze terug en roept daarmee `getBooksByAuthor()` aan. De boeken die worden teruggegeven worden doorgegeven aan `showBookCatalog()`
+    - `getBooksByAuthor()` - filtert de lijst van boeken op basis van de meegegeven auteur.
 
 ### Letop:
 - Elke "Use Case" krijgt zijn eigen functie.
