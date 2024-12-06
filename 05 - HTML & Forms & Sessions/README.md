@@ -14,7 +14,7 @@ Lees op https://www.w3schools.com/html/html_basic.asp de volgende onderwerpen go
 - HTML Semantics
 - HTML Style Guide
 
-## Forms & Sessions
+## PHP
 Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed door:
 - Form Handling
 - Form Valiation
@@ -22,3 +22,4 @@ Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed d
 - Form Complete
 - Sessions
 - Cookies
+https://developer.mozilla.org/en-US/docs/Glossary/MVC
