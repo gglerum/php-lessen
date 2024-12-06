@@ -42,6 +42,4 @@ Meer over testen kun je in de volgende artikelen lezen:
 - https://pguso.medium.com/a-beginners-guide-to-phpunit-writing-and-running-unit-tests-in-php-d0b23b96749f
 
 ## Huiswerk
-Kijk in het #backend-projecten kanaal of je daar een project tussen ziet staan die je interessant vindt. Dit wordt het project waar je de komende tijd aan wilt werken en dingen aan wilt toevoegen.
-
-Bouw deze door gebruikt te maken van verschillende classes die ieder hun eigen functies hebben.
+[Bibliotheek Systeem Deel 2](./librarysystem.md)
