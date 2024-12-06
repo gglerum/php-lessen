@@ -166,7 +166,7 @@ vervolgens worden de stappen van de "Use Case" in deze methode uitgevoerd. Sommi
 worden uitgevoerd door een andere methode, zoals het tonen van een lijst van boeken of auteurs.
 
 - `showMainMenu()` - Laat het hoofdmenu zien en roept aan de hand van de keuze één van de volgende
-  methodes aan: `handleAddBook()`, `showAllBooks()`, `handleRemoveBook()`
+  methodes aan: `handleAddBook()`, `showAllBooks()`, `handleRemoveBook()` en `handleShowAuthorBooks()`.
 - Use Case 1: Een boek toevoegen
   - `handleAddBook()` - roept de methode `showBookForm()` aan en roept met de return waarde `addBook()` aan.
     - `showBookForm()` - roept de methode `showAuthorsMenu()` aan, krijgt de auteur keuze terug en vraagt vervolgens
