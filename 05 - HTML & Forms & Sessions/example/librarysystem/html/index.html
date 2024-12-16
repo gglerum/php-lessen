@@ -1,0 +1,23 @@
+<html>
+
+<head>
+    <title>Library Home Page</title>
+</head>
+
+<body>
+    <h1>Library Home Page</h1>
+    <strong>List of Books</strong>
+    <ul>
+        <?php foreach($books as $id => $book): ?>
+        <li>
+            <a href="/book/<?= $id ?>">
+                <?= $book->title ?>
+            </a>
+        </li>
+        <?php endforeach; ?>
+    </ul>
+
+    <a href="/book">Add a Book</a>
+</body>
+
+</html>
