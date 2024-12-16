@@ -23,3 +23,6 @@ Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed d
 - Sessions
 - Cookies
 https://developer.mozilla.org/en-US/docs/Glossary/MVC
+
+## Huiswerk
+[Bibliotheek Systeem Deel 3](./librarysystem.md)
