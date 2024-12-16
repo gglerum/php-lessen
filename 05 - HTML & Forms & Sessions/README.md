@@ -23,6 +23,7 @@ Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed d
 - Sessions
 - Cookies
 https://developer.mozilla.org/en-US/docs/Glossary/MVC
+https://tech.jotform.com/what-is-router-and-how-to-create-your-own-router-with-php-fad811cf2873
 
 ## Huiswerk
 [Bibliotheek Systeem Deel 3](./librarysystem.md)
