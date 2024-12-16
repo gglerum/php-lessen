@@ -56,11 +56,6 @@ De `Router`-klasse illustreert hoe routing werkt in een webapplicatie. Hier zijn
 
 ---
 
-Deze structuur maakt het eenvoudig om nieuwe routes toe te voegen en houdt de verantwoordelijkheden van URL-matching en controllerdelegatie gescheiden. Wil je dat ik deze uitleg ergens in jouw document verwerk?
-
-
----
-
 ### 3. **Opsplitsing van Controllers**
 De verantwoordelijkheden van de oude `Main` klasse zijn opgesplitst in twee specifieke controllers:
 - **`BookController`**:
