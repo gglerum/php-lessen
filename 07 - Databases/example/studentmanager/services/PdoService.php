@@ -2,7 +2,6 @@
 
 /**
  * Class PdoService
- * 
  * This class provides a PDO service for interacting with a MySQL database.
  */
 class PdoService
@@ -17,7 +16,6 @@ class PdoService
 
     /**
      * PdoService constructor.
-     * 
      * Initializes a new instance of the PdoService class.
      */
     public function __construct()
@@ -36,7 +34,6 @@ class PdoService
 
     /**
      * Get the singleton instance of the PdoService class.
-     * 
      * @return PdoService The singleton instance of the PdoService class.
      */
     public static function getInstance()
@@ -49,7 +46,6 @@ class PdoService
 
     /**
      * Insert a new record into the database.
-     * 
      * @param string $sql The SQL query to execute.
      * @param array $values The values to bind to the query.
      * @return int The ID of the last inserted record.
@@ -63,27 +59,27 @@ class PdoService
 
     /**
      * Fetch a single record from the database.
-     * 
      * @param int $id The ID of the record to fetch.
      * @param string $table The name of the table to fetch from.
      * @return array The fetched record as an associative array.
      */
-    public function fetch(int $id, string $table): array
+    public function fetch(string $sql, array $where, string $className): array
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM $table WHERE id = ?");
-        $stmt->execute([$id]);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($where);
+        $stmt->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $className);
         return $stmt->fetch();
     }
 
     /**
-     * Fetch all records from a table in the database.
-     * 
-     * @param string $table The name of the table to fetch from.
-     * @return array An array of fetched records as associative arrays.
+     * Update a record in the database.
+     * @param string $sql
+     * @param array $values
+     * @return bool
      */
-    public function fetchAll(string $table): array
+    public function update(string $sql, array $values): bool
     {
-        $stmt = $this->pdo->query("SELECT * FROM $table");
-        return $stmt->fetchAll();
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($values);
     }
 }
