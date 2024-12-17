@@ -23,4 +23,15 @@ class Student extends Person
     {
         return $this->id;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->getName(),
+            'date_of_birth' => $this->getDateOfBirth(),
+            'phone_number' => $this->getPhoneNumber(),
+            'email' => $this->getEmail(),
+            'student_number' => $this->getStudentNumber()
+        ];
+    }
 }
