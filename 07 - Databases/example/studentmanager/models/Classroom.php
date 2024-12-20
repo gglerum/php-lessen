@@ -1,6 +1,4 @@
 <?php
-require_once 'Mentor.php';
-require_once 'Student.php';
 
 /**
  * Represents a classroom with students and a mentor.
@@ -20,8 +18,7 @@ class Classroom
         private string $name,
         private int $year,
         private Mentor $mentor
-    ) {
-    }
+    ) {}
 
     /**
      * Gets the students in the classroom.

@@ -36,7 +36,7 @@ class PdoService
      * Get the singleton instance of the PdoService class.
      * @return PdoService The singleton instance of the PdoService class.
      */
-    public static function getInstance()
+    public static function getInstance(): PdoService
     {
         if (!isset(self::$pdoService)) {
             self::$pdoService = new PdoService();

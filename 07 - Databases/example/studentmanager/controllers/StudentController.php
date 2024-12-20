@@ -7,6 +7,8 @@ require_once 'services/PdoService.php';
  */
 class StudentController
 {
+    private static StudentRepository $studentRepository = new StudentRepository();
+
     /**
      * Displays the form for creating a new student.
      */
@@ -20,16 +22,14 @@ class StudentController
      */
     public static function store(): void
     {
-        $lastId = PdoService::getInstance()->insert(
-            "INSERT INTO students(name, date_of_birth, email, phone_number, student_number) VALUES (?, ?, ?, ?, ?)",
-            [
-                $_POST['name'],
-                $_POST['dob'],
-                $_POST['email'],
-                $_POST['phone'],
-                random_int(1, 5000)
-            ]
-        );
+        $lastId = static::$studentRepository->add(new Student(
+            null,
+            $_POST['name'],
+            DateTime::createFromFormat('Y-m-d', $_POST['dob']),
+            $_POST['phone'],
+            $_POST['email'],
+            random_int(1, 5000)
+        ));
 
         header('Location: /?page=student&action=show&id=' . $lastId);
     }
@@ -39,7 +39,7 @@ class StudentController
      */
     public static function list(): void
     {
-        $results = PdoService::getInstance()->fetchAll('students');
+        $results = static::$studentRepository->getAll();
 
         $students = [];
         foreach ($results as $result) {
@@ -63,17 +63,8 @@ class StudentController
      */
     public static function show(int $id): void
     {
-        $pdo = PdoService::getInstance();
-        $result = $pdo->fetch($id, 'students');
-
-        $student = new Student(
-            $result['id'],
-            $result['name'],
-            DateTime::createFromFormat('Y-m-d', $result['date_of_birth']),
-            $result['phone_number'],
-            $result['email'],
-            $result['student_number']
-        );
+        // Object is used in the view to display the student's details.
+        $student = static::$studentRepository->get($id);
 
         include_once 'html/student/show.html';
     }

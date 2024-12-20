@@ -1,5 +1,4 @@
 <?php
-require_once 'Person.php';
 
 /**
  * Represents a Mentor, a type of Person.
