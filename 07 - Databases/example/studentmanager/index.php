@@ -1,6 +1,9 @@
 <?php
 require_once 'controllers/HomeController.php';
 require_once 'controllers/StudentController.php';
+require_once 'StudentRepository.php';
+require_once 'services/QueryBuilder.php';
+require_once 'models/Student.php';
 
 /*
 The index its only job is to be an entry point. It will receive the request in the form of a query parameter

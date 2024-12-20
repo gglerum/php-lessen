@@ -1,5 +1,8 @@
 # Bibliotheek Systeem Deel 4
-## 7. **Toevoeging van de Klassen `QueryBuilder` en `PDOSingleton`**
+
+![Library System Part 4 Diagram](./library3.png)
+
+## **Toevoeging van de Klassen `QueryBuilder` en `PDOSingleton`**
 
 In de nieuwe versie van het systeem zijn twee belangrijke klassen toegevoegd: `QueryBuilder` en `PDOSingleton`. Deze aanpassingen zijn gericht op het verbeteren van de database-interactie door middel van abstractie en het vermijden van directe database-toegang binnen de repositories.
 
@@ -53,7 +56,7 @@ Met deze toevoegingen is het systeem beter voorbereid op schaalbaarheid en compl
 
 ---
 
-## 8. **Uitbreiding van de `Book` Klasse met de Methode `toArray`**
+## **Uitbreiding van de `Book` Klasse met de Methode `toArray`**
 
 De `Book` klasse heeft een nieuwe methode genaamd `toArray` gekregen. Deze methode maakt het mogelijk om een `Book` object eenvoudig om te zetten naar een associatieve array, wat handig is bij het opslaan in een database.
 
