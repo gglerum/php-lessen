@@ -11,10 +11,9 @@ class MovieRepository
      * Adds movie to repository
      * @return int id of the movie that was added
      */
-    public function add(string $name, string $director, float $rating): int
+    public function add(Movie $movie): int
     {
-        $movie = new Movie($name, $director, $rating);
-        $this->movies[$movie->getId()] = $movie;
+        $this->movies[] = $movie;
 
         return $movie->getId();
     }
@@ -26,19 +25,21 @@ class MovieRepository
      */
     public function remove(int $id): void
     {
-        $movie = $this->getById($id);
-        unset($this->movies[$movie->getId()]);
+        for ($i = 0; $i < count($this->movies); $i++) {
+            if ($this->movies[$i]->getId() === $id) {
+                unset($this->movies[$i]);
+                return;
+            }
+        }
     }
+
     /**
-     * Update the movie
-     * @param array $data contains new movie data
-     * @param int $id of the movie
-     * @return void
+     * Retrieve all movies
+     * @return array of all movies
      */
-    public function update(array $data, int $id): void
+    public function getAll(): array
     {
-        $movie = $this->getById($id);
-        $movie->update($data);
+        return $this->movies;
     }
 
     /**

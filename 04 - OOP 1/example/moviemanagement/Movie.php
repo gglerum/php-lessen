@@ -5,6 +5,7 @@
  */
 class Movie
 {
+    private static int $idIncrement = 0;
     private int $id;
 
     public function __construct(
@@ -12,7 +13,7 @@ class Movie
         private string $director,
         private float $rating
     ) {
-        $this->id = random_int(1, 100);
+        $this->id = ++static::$idIncrement;
     }
 
     /**
@@ -33,14 +34,11 @@ class Movie
     }
 
     /**
-     * Update the movie with data
-     * @param array $data associative array with new movie data ['name', 'director', 'rating']
-     * @return void
+     * Get the director of the movie
+     * @return string
      */
-    public function update(array $data): void
+    public function getOverviewText(): string
     {
-        $this->name = $data['name'];
-        $this->director = $data['director'];
-        $this->rating = $data['rating'];
+        return $this->name . ' - ' . $this->director . ' - ' . $this->rating;
     }
 }
