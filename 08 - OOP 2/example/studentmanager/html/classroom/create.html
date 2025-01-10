@@ -1,0 +1,27 @@
+<html>
+
+<body>
+    <form method="post" action="/?page=classroom&action=store">
+        <div>
+            <label for="name">Naam</label>
+            <input type="text" name="name" id="name">
+        </div>
+        <div>
+            <label for="year">Jaargang</label>
+            <input type="int" name="year" id="year">
+        </div>
+        <div>
+            <label for="mentor">Mentor</label>
+            <select name="mentor" id="mentor">
+                <?php foreach ($mentors as $mentor) : ?>
+                <option value="<?= $mentor->getId() ?>">
+                    <?= $mentor->getName() ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <button type="submit">Opslaan</button>
+    </form>
+</body>
+
+</html>

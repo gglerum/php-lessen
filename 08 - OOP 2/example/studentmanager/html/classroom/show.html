@@ -1,0 +1,33 @@
+<html>
+
+<body>
+    <p>
+        Naam:
+        <?php echo $classroom->getName() ?>
+    </p>
+    <p>
+        Jaargang:
+        <?php echo $classroom->getYear() ?>
+    </p>
+    <p>
+        Mentor:
+        <?php echo $classroom->getMentor()->getName() ?>
+    </p>
+    <p>
+        Studenten:
+    <ul>
+        <?php foreach ($classroom->getStudents() as $student) : ?>
+        <li>
+            <a href=<?php echo '/?page=student&action=show&id=' . $student->getId() ?>>
+                <?php echo $student->getName() ?>
+            </a>
+        </li>
+        <?php endforeach; ?>
+    </ul>
+    </p>
+    <p>
+        <a href="/?page=classroom">Terug</a>
+    </p>
+</body>
+
+</html>

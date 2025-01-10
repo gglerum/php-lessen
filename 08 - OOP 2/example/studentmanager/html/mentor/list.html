@@ -1,0 +1,26 @@
+<html>
+
+<body>
+    <?php if(empty($mentors)): ?>
+    <p>Er zijn geen mentoren gevonden.</p>
+    <?php else: ?>
+    <ul>
+        <?php foreach($mentors as $mentor): ?>
+        <li>
+            <p>
+                Naam:
+                <?php echo $mentor->getName() ?>
+            </p>
+            <p>
+                <a href=<?php echo '/?page=mentor&action=show&id=' . $mentor->getId() ?>>Bekijken</a>
+            </p>
+        </li>
+        <?php endforeach; ?>
+    </ul>
+    <?php endif; ?>
+    <p>
+        <a href="/?page=mentor&action=create">Mentor toevoegen</a> of <a href="/?page=home">Terug naar homepage</a>
+    </p>
+</body>
+
+</html>

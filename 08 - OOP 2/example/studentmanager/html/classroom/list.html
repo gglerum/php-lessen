@@ -1,0 +1,26 @@
+<html>
+
+<body>
+    <?php if(empty($classrooms)): ?>
+    <p>Er zijn geen klassen gevonden.</p>
+    <?php else: ?>
+    <ul>
+        <?php foreach($classrooms as $classroom): ?>
+        <li>
+            <p>
+                Naam:
+                <?php echo $classroom->getName() ?>
+            </p>
+            <p>
+                <a href=<?php echo '/?page=classroom&action=show&id=' . $classroom->getId() ?>>Bekijken</a>
+            </p>
+        </li>
+        <?php endforeach; ?>
+    </ul>
+    <?php endif; ?>
+    <p>
+        <a href="/?page=classroom&action=create">Klas toevoegen</a> of <a href="/?page=home">Terug naar homepage</a>
+    </p>
+</body>
+
+</html>

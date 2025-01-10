@@ -1,0 +1,26 @@
+<html>
+
+<body>
+    <?php if(empty($students)): ?>
+    <p>Er zijn geen studenten gevonden.</p>
+    <?php else: ?>
+    <ul>
+        <?php foreach($students as $student): ?>
+        <li>
+            <p>
+                Naam:
+                <?php echo $student->getName() ?>
+            </p>
+            <p>
+                <a href=<?php echo '/?page=student&action=show&id=' . $student->getId() ?>>Bekijken</a>
+            </p>
+        </li>
+        <?php endforeach; ?>
+    </ul>
+    <?php endif; ?>
+    <p>
+        <a href="/?page=student&action=create">Student toevoegen</a> of <a href="/?page=home">Terug naar homepage</a>
+    </p>
+</body>
+
+</html>
