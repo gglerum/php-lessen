@@ -1,5 +1,7 @@
 <?php
 
+namespace Hacklabfrl\Moviemanagement;
+
 /**
  * Is a movie entity
  */

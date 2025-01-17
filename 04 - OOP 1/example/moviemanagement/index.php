@@ -1,6 +1,4 @@
 <?php
-include('./MovieRepository.php');
-include('./Movie.php');
-include('./Main.php');
+require_once __DIR__ . '/vendor/autoload.php';
 
 (new Main())->showMainMenu();

@@ -1,5 +1,7 @@
 <?php
 
+namespace Hacklabfrl\Moviemanagement;
+
 /**
  * This class is responsible for managing the movies in the system.
  */
@@ -55,5 +57,12 @@ class MovieRepository
             }
         }
         return null;
+    }
+
+    public function getByTitle(string $title): Movie|null
+    {
+        return array_filter($this->movies, function ($movie) use ($title) {
+            return $movie->getTitle() === $title;
+        })[0];
     }
 }

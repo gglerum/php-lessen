@@ -1,0 +1,20 @@
+{
+    "name": "hacklabfrl/moviemanagement",
+    "description": "Example project to show how to work with the repository pattern",
+    "type": "project",
+    "license": "mit",
+    "autoload": {
+        "psr-4": {
+            "Hacklabfrl\\Moviemanagement\\": "./"
+        }
+    },
+    "authors": [
+        {
+            "name": "gglerum",
+            "email": "gglerum@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    }
+}
