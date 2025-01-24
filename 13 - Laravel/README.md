@@ -4,7 +4,7 @@ De komende 13 weken gaan we werken met Laravel. De documentatie kun je hier vind
 ## Wat je moet kunnen beheersen:
 De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te zien waar je moet starten. Hieronder vind je een opdeling van de documentatie in hapklare brokken.
 
-**Letop: deze lijst dekt niet de volledige Larvel documentati. Het is aan jou om stapgewijs bekend te raken met de volledige documentatie van Laravel.**
+**Letop: deze lijst dekt niet de volledige Larvel documentatie. Het is aan jou om stapgewijs bekend te raken met de volledige documentatie van Laravel.**
 
 -----
 
@@ -81,3 +81,7 @@ De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te
     - Service Container
     - Service Providers
     - Facades
+
+## Larvel Certificatie
+De volgende onderwerpen worden gevraagd voor het Laravel examen:
+https://www.certificationforlaravel.com/topics
