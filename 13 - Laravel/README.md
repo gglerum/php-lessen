@@ -82,6 +82,10 @@ De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te
     - Service Providers
     - Facades
 
+## Best practices
+https://phptherightway.com/
+https://github.com/alexeymezenin/laravel-best-practices
+
 ## Larvel Certificatie
 De volgende onderwerpen worden gevraagd voor het Laravel examen:
 https://www.certificationforlaravel.com/topics
