@@ -72,7 +72,7 @@ class QueryBuilder
         if ($this->where) {
             $sql .= ' WHERE ' . implode(' AND ', array_map(fn($key) => "$key = :$key", array_keys($this->where)));
         }
-        return $this->pdoService->fetch($sql, array_values($this->where), $this->className);
+        return array_map(fn($item) => $this->className::fromArray($item), $this->pdoService->fetch($sql, array_values($this->where), $this->className));
     }
 
     /**

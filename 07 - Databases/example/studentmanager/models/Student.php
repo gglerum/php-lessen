@@ -23,6 +23,18 @@ class Student extends Person
         return $this->id;
     }
 
+    public static function fromArray($data): Student
+    {
+        return new Student(
+            $data['id'],
+            $data['name'],
+            DateTime::createFromFormat('Y-m-d', $data['date_of_birth']),
+            $data['phone_number'],
+            $data['email'],
+            $data['student_number']
+        );
+    }
+
     public function toArray(): array
     {
         return [

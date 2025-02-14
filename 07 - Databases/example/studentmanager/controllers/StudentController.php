@@ -1,18 +1,21 @@
 <?php
-require_once 'models/Student.php';
-require_once 'services/PdoService.php';
 
 /**
  * The StudentController class handles the logic for managing students.
  */
 class StudentController
 {
-    private static StudentRepository $studentRepository = new StudentRepository();
+    private StudentRepository $studentRepository;
+
+    public function __construct()
+    {
+        $this->studentRepository  = new StudentRepository();
+    }
 
     /**
      * Displays the form for creating a new student.
      */
-    public static function create(): void
+    public function create(): void
     {
         include_once 'html/student/create.html';
     }
@@ -20,9 +23,9 @@ class StudentController
     /**
      * Stores a new student in the database.
      */
-    public static function store(): void
+    public function store(): void
     {
-        $lastId = static::$studentRepository->add(new Student(
+        $lastId = $this->studentRepository->add(new Student(
             null,
             $_POST['name'],
             DateTime::createFromFormat('Y-m-d', $_POST['dob']),
@@ -37,21 +40,9 @@ class StudentController
     /**
      * Displays a list of all students.
      */
-    public static function list(): void
+    public function list(): void
     {
-        $results = static::$studentRepository->getAll();
-
-        $students = [];
-        foreach ($results as $result) {
-            $students[] = new Student(
-                $result['id'],
-                $result['name'],
-                DateTime::createFromFormat('Y-m-d', $result['date_of_birth']),
-                $result['phone_number'],
-                $result['email'],
-                $result['student_number']
-            );
-        }
+        $students = $this->studentRepository->getAll();
 
         include_once 'html/student/list.html';
     }
@@ -61,10 +52,10 @@ class StudentController
      *
      * @param int $id The ID of the student to show.
      */
-    public static function show(int $id): void
+    public function show(int $id): void
     {
         // Object is used in the view to display the student's details.
-        $student = static::$studentRepository->get($id);
+        $student = $this->studentRepository->get($id);
 
         include_once 'html/student/show.html';
     }

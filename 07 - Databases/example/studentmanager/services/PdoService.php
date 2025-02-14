@@ -67,7 +67,6 @@ class PdoService
     {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($where);
-        $stmt->setFetchMode(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $className);
         return $stmt->fetchAll();
     }
 
