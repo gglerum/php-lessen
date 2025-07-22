@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreFileRequest;
 use App\Services\AnswerService;
 use App\Models\User;
+use App\Models\Question;
+use App\ValueObjects\FileSize;
 use Illuminate\Container\Attributes\CurrentUser;
 
 class FileController extends Controller
@@ -21,11 +23,11 @@ class FileController extends Controller
     {
         $validatedData = $request->validated();
 
-        $answerService->answerQuestionWithFiles(
-            $validatedData['questionId'],
+        $answerService->answerQuestion(
+            Question::find($validatedData['questionId']),
             $request->file('files')
         );
 
-        $user->updateUploadSizeTotal($validatedData['total_file_size']);
+        $user->updateUploadSizeTotal(FileSize::fromBytes($validatedData['total_file_size']));
     }
 }
