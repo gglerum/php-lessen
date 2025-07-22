@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\UploadLimit;
+use App\ValueObjects\FileSize;
 
 class StoreFileRequest extends FormRequest
 {
@@ -21,7 +22,7 @@ class StoreFileRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'total_file_size' => array_reduce($this->file('files'), fn(int $carry, $file) => $carry + $file->getSize(), 0),
+            'total_file_size' => FileSize::fromFiles($this->file('files'))->toBytes()
         ]);
     }
 
