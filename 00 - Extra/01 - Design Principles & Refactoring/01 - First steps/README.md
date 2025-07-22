@@ -1,25 +1,10 @@
-# Keep it simple stupid (KISS) 
-
-The principle states that designs and/or systems should be as simple as possible. Wherever possible, complexity should be avoided in a system—as simplicity guarantees the greatest levels of user acceptance and interaction . 
-
-**How:** 
-- Break down complex problems into smaller tasks — every function should have one job. 
-- The variable name should describe what it holds. 
-- The function name should describe what it does. 
-- Avoid unnecessary abstraction — if your classes or functions serve you in a specific task, don’t abstract them, and don’t add generics where they are not needed. 
-
-**Why:** 
-- One major challenge Developers face is working on an existing code base. But when the KISS principle is applied it tackles that issue. 
-- The KISS principle fa**cilitates continuity when needed and gives room for other people to understand the process. 
-- Simpler processes allow for greater efficiency in automated testing. It is easier to test a simple system than a complex one. 
-
 ## Example
 On a questionaire website users must upload filled in templates. These uploaded files will be stored on the server and will be
 related to the question the files belong to. For some reason a filled in questionaire was called an "application", don't ask me why, but this ambigious name should give you a hint of the overall quality of the code.
 
-This has been implemented in a bad way [Bad example](example\bad\app). All the mistakes where made in `FileController.php`. But to understand the context and optimizations made later on, the used `Model` and `FormRequest` are supplied.
+This has been implemented in a bad way [Bad example](example/bad/app). All the mistakes where made in `FileController.php`. But to understand the context and optimizations made later on, the used `Model` and `FormRequest` are supplied.
 
-I have refactored the `FileController` which was a major violation of "Break down complex problems into smaller tasks — every function should have one job." and the Single Responsibility Principle. The new code can be found here: [Better example](example\better\app)
+I have refactored the `FileController` which was a major violation of "Break down complex problems into smaller tasks — every function should have one job." and the Single Responsibility Principle. The new code can be found here: [Better example](example/better/app)
 
 ### Improvements
 #### Dependency injection
