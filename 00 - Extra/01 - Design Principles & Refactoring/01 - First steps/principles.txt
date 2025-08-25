@@ -1,0 +1,60 @@
+
+General 
+- Keep it simple stupid (KISS); 
+- Don't repeat yourself (DRY) vs write everything twice (WET); 
+- Separation of concerns; 
+- You are not going to need it later! (YAGNI); 
+- Law of Demeter; 
+- Principle of least astonishment; 
+- Tell don't ask; 
+- Avoid optimization untill it's needed; 
+
+
+Clean Code 
+- General rules 
+- Design rules 
+- Understandability tips 
+- Names rules 
+- Functions rules 
+- Comments rules 
+- Source code structure 
+- Object and data structures 
+- Tests 
+- Code smells 
+
+ 
+
+General Responsibility Assignment Software Patterns (GRASP) 
+- Information Expert 
+- Creator 
+- Controller 
+- Indirection 
+- Low Coupling 
+- High Cohesion 
+- Polymorphisme 
+- Protected Variations 
+- Pure Fabrication 
+
+ 
+
+SOLID 
+- Single Responsibility 
+- Open/Close 
+- Liskov Substitution Principle 
+- Interface Segregation Principle 
+- Dependency Inversion Principle 
+
+Test Driven Design (TDD) 
+
+Design patterns 
+- Composition over Inheritance 
+- Repository 
+- Model/View/Controller (MVC) 
+- Singleton 
+- Helpers 
+- Services 
+
+ 
+
+ 
+
