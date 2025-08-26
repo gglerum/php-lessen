@@ -78,7 +78,7 @@ Form Requests are able to sanitize, or prepare in other ways, the data before th
 protected function prepareForValidation(): void
 {
     $this->merge([
-        'total_file_size' => array_reduce($this->file('files'), fn(int $carry, $file) => $carry + $file->getSize(), 0),
+        'total_file_size' => FileSize::fromFiles($this->file('files'))->toBytes()
     ]);
 }
 ```
@@ -96,7 +96,7 @@ which is separate class that handles that logic. Because we have added the `tota
 public function validate(string $attribute, int $value, Closure $fail): void
 {
     //check if uploadlimit has been exceeded
-    if (request()->user()->getUploadLimit() < $value + request()->user()->getTotalUploadSize()) {
+    if (!request()->user()->canUpload($value)) {
         $fail('Attachments total size exceeds upload limit.');
     }
 }
@@ -121,13 +121,83 @@ public function rules(): array
 }
 ```
 
-#### Moving business logic to a service class
-Most of the code in the `FileController` `store` method is concerned with answering a question with the uploaded files. Based on my
-knowledge of the rest of the system, I have made a `AnswerService` class that will be responsible for the logic of answering normal
-questions and questions with file uploads.
+#### Value Object Introduction
+One of the biggest improvements is the introduction of a `FileSize` value object. Instead of passing around raw integers for file sizes everywhere, we now have a proper object that knows how to handle file size operations.
 
-I've split the logic up in three logical methods, one that's publically accessible `answerQuestionWithFiles` and the private methods
-`answerQuestion` and `storeFiles`.
+This gives us several benefits:
+- No more confusion about whether a number represents bytes, kilobytes, or something else
+- File size calculations are centralized in one place
+- We get methods like `exceedsLimit()` and `add()` that make the code much more readable
+- Type safety - you can't accidentally pass a file size where you meant to pass something else
+
+```PHP
+// Much clearer what's happening here
+$user->updateUploadSizeTotal(FileSize::fromBytes($validatedData['total_file_size']));
+
+// vs the old way with raw numbers
+$user->updateUploadSizeTotal($totalUploadedSize);
+```
+
+#### Polymorphic Action Architecture
+Instead of just moving business logic to a simple service class, I've implemented a more sophisticated system that can handle different types of questions.
+
+Here's how it works:
+- `AnswerAction` interface defines what every question handler must do
+- Abstract `AnswerAction` class provides shared functionality
+- `UploadAction` handles file upload questions specifically  
+- New question types can be added without touching existing code
+- Everything is configured in `config/answer.php` so it's easy to extend
+
+This might seem like overkill for just file uploads, but it makes the system much more flexible for the future.
+
+#### Service Container Enhancements
+**Advanced Service Binding**
+
+The `AppServiceProvider` does more than just the simple `Application` binding. It also sets up the `AnswerService` with some pretty neat service container magic:
+
+```PHP
+$this->app->singleton(AnswerService::class, function ($app) {
+    return new AnswerService(
+        collect(
+            array_map(fn($handler) => $app->make($handler), config('answer.handlers', []))
+        )
+    );
+});
+```
+
+What this does:
+- Creates one `AnswerService` instance for the entire request (singleton)
+- Loads the list of handlers from the config file
+- Uses the service container to build each handler with all its dependencies
+- Gives the service a collection of ready-to-use handlers
+
+This way, if you want to add a new question type, you just create the handler class and add it to the config. No need to touch the service itself.
+
+#### Model Method Changes
+The `User` model methods have been completely rewritten to work with the new `FileSize` value object:
+
+```PHP
+// Old way - raw integers everywhere
+public function getTotalUploadSize(): int
+public function updateUploadSizeTotal(int $totalUploadedSize): void
+public function getUploadLimit(): int
+
+// New way - proper FileSize objects
+public function getTotalUploadSize(): FileSize
+public function updateUploadSizeTotal(FileSize $totalUploadedSize): void
+public function getUploadLimit(): FileSize
+public function canUpload(int $fileSize): bool  // This one's new
+```
+
+The new `canUpload()` method is particularly nice because it encapsulates all the upload limit checking logic that used to be scattered around the controller.
+
+#### Moving business logic to a service class
+
+The original `FileController` was doing way too much - handling files, validating uploads, managing database records, you name it. I've moved all that business logic into a proper service layer.
+
+But instead of just creating one big service class, I've set up a system where different types of questions can be handled by different action classes. The `AnswerService` acts as a coordinator that finds the right handler for each question type.
+
+Right now we only have `UploadAction` for file uploads, but if we needed to handle text questions, multiple choice, or whatever else, we'd just add new action classes without touching any existing code.
 
 #### Small Model optimizations
 I have made a couple of small corrections to the `User` model.
@@ -153,12 +223,12 @@ class FileController extends Controller
     {
         $validatedData = $request->validated();
 
-        $answerService->answerQuestionWithFiles(
-            $validatedData['questionId'],
+        $answerService->answerQuestion(
+            Question::find($validatedData['questionId']),
             $request->file('files')
         );
 
-        $user->updateUploadSizeTotal($validatedData['total_file_size']);
+        $user->updateUploadSizeTotal(FileSize::fromBytes($validatedData['total_file_size']));
     }
 }
 ```

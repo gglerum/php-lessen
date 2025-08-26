@@ -1,51 +1,53 @@
 # GRASP Principles Demonstration
 
-The questionnaire website example shows a clear violation and proper application of GRASP (General Responsibility Assignment Software Patterns) principles. Users upload filled-in templates that are stored on the server and related to specific questions. The original implementation in [Bad example](../example/bad/app) violates multiple GRASP principles, while the refactored version in [Better example](../example/better/app) demonstrates proper application.
+The questionnaire website example shows a clear violation and proper application of GRASP (General Responsibility Assignment Software Patterns) principles. Users upload filled-in templates that are stored on the server and related to specific questions. The original implementation in [Bad example](../example/bad/app) violates multiple GRASP principles, while the refactored version in [Better example](../example/better/app) shows how to do it right.
 
 ## What is GRASP?
 
-GRASP consists of nine fundamental principles that guide object-oriented design decisions. These patterns help determine **where to assign responsibilities** in a system, leading to more maintainable, flexible, and understandable code.
+GRASP is basically nine rules of thumb that help you decide where to put your code. Instead of randomly shoving methods into classes, these patterns give you a framework for making smart decisions about **who should be responsible for what** in your system.
 
-Think of GRASP as a set of questions to ask yourself when designing code:
-- "Which class should be responsible for this task?"
-- "How can I minimize dependencies between classes?"
-- "How can I make my code easier to change and extend?"
+Think of GRASP as your design decision checklist:
+- "Which class should handle this task?"
+- "How can I keep my classes from being too tangled up with each other?"
+- "How can I make this easier to change later?"
 
 ## Learning Path for Juniors
 
-**Start here (Core principles):**
-1. **Information Expert** - Who has the data needed for this task?
-2. **High Cohesion** - Does this class have a single, focused purpose?
-3. **Low Coupling** - Are my classes too dependent on each other?
+**Start here (The essentials):**
+1. **Information Expert** - Who already has the data needed for this job?
+2. **High Cohesion** - Does this class have one clear job, or is it trying to do everything?
+3. **Low Coupling** - Are my classes way too dependent on each other?
 
-**Build on these (Design patterns):**
-4. **Controller** - How should I handle user interactions?
-5. **Creator** - Who should create new objects?
+**Build on these (Common patterns):**
 
-**Master these (Advanced concepts):**
-6. **Pure Fabrication** - Sometimes I need classes that don't represent real things
-7. **Indirection** - Using middleman objects to reduce dependencies
+4. **Controller** - How should I handle user requests without making a mess?
+5. **Creator** - Who should be creating new objects?
+
+**Master these (Advanced stuff):**
+
+6. **Pure Fabrication** - Sometimes you need helper classes that don't represent real things
+7. **Indirection** - Using middleman objects to keep things flexible
 8. **Polymorphism** - Different objects, same interface
-9. **Protected Variations** - Preparing for future changes
+9. **Protected Variations** - Future-proofing your code
 
 ## GRASP Principles Analysis
 
 ### 1. Information Expert
-**Principle**: Assign responsibility to the class that has the information needed to fulfill it.
+**The idea**: Give the job to whoever already has the data needed to do it.
 
 **Real-world analogy**: If you want to know how much flour is left in the pantry, you ask the kitchen manager, not the waiter. The kitchen manager has the inventory information, so they're the "expert" for that question.
 
-**What it means**: When you need to assign a responsibility to an object, look for the class that has the most information required to fulfill that responsibility. This class becomes the "expert" for that particular operation. The Information Expert pattern helps maintain encapsulation and ensures that data and the operations on that data stay together.
+**What it means in code**: When you need to assign a responsibility to a class, look for the one that already has the information needed to do the job. This keeps related data and behavior together, which makes your code much easier to understand and maintain.
 
-**Why it matters**: 
-- Reduces coupling by keeping related data and behavior together
-- Improves maintainability by making it clear where certain logic belongs
-- Enhances encapsulation by preventing external classes from accessing internal data directly
+**Why you should care**: 
+- Your classes become more self-contained and logical
+- It's obvious where to look when something breaks
+- You don't have classes reaching into other classes to grab data
 
-**Quick question to ask**: "Which class already has the data needed to do this job?"
+**Quick sanity check**: "Which class already has the data needed to do this job?"
 
-**Violation in Bad Example**
-The [`FileController`](../example/bad/app/Http/Controllers/FileController.php) calculates file sizes and validates upload limits, even though it doesn't contain the relevant information:
+**How the bad example screws this up**
+The [`FileController`](../example/bad/app/Http/Controllers/FileController.php) is calculating file sizes and checking upload limits, even though it doesn't have any of the relevant information:
 
 ```php
 // MISTAKE 4: Upload limit validation in controller instead of with the expert (User model)
@@ -58,12 +60,10 @@ if ($user->getUploadLimit() < $totalUploadedSize + $user->getTotalUploadSize()) 
 }
 ```
 
-The controller is doing calculations and validations that should belong to the [`User`](../example/better/app/Models/User.php) model (which has the upload limit information) or a dedicated validation class.
-
-**Proper Application in Better Example**
-- The [`User`](../example/better/app/Models/User.php) model handles upload limit logic since it contains the upload information
-- The [`FileSize`](../example/better/app/ValueObjects/FileSize.php) value object encapsulates file size calculations
-- The [`UploadLimit`](../example/better/app/Rules/UploadLimit.php) rule validates upload constraints using the information it has access to
+**How we fix this in the better example**
+- The [`User`](../example/better/app/Models/User.php) model handles upload limit logic since it actually has the upload information
+- The [`FileSize`](../example/better/app/ValueObjects/FileSize.php) value object takes care of file size calculations
+- The [`UploadLimit`](../example/better/app/Rules/UploadLimit.php) rule validates upload constraints using the data it can access
 
 ```php
 /**
@@ -71,33 +71,34 @@ The controller is doing calculations and validations that should belong to the [
  */
 public function validate(string $attribute, int $value, Closure $fail): void
 {
-    if (request()->user()->getUploadLimit() < $value + request()->user()->getTotalUploadSize()) {
+    //check if uploadlimit has been exceeded
+    if (!request()->user()->canUpload($value)) {
         $fail('Attachments total size exceeds upload limit.');
     }
 }
 ```
 
 ### 2. Creator
-**Principle**: Assign class B the responsibility to create an instance of class A if B aggregates, contains, records, or closely uses A.
+**The idea**: The class that contains, uses, or records other objects should be the one creating them.
 
 **Real-world analogy**: A kitchen creates its own dishes because it has the ingredients, knows the recipes, and manages what meals it serves. You wouldn't ask the dining room staff to create a meal - they don't have the right relationship with the cooking process.
 
-**What it means**: Determine which class should be responsible for creating instances of other classes. A class should create objects of another class if it has one or more of these relationships:
-- Contains or compositely aggregates the other class
-- Records instances of the other class  
+**What it means in code**: When you need to create objects, ask yourself which class has the strongest relationship with those objects. The creator should be the class that:
+- Contains or is made up of the other class
+- Records or keeps track of instances
 - Closely uses the other class
-- Has the initializing data that will be passed to the other class
+- Has the data needed to initialize the object
 
-**Why it matters**:
-- Reduces coupling by avoiding scattered object creation throughout the system
-- Makes object creation predictable and centralized
-- Ensures that classes that need certain objects are responsible for creating them
-- Facilitates dependency injection and testing
+**Why you should care**:
+- Object creation isn't scattered randomly throughout your code
+- It's predictable where objects get created
+- Classes that need objects are responsible for making them
+- Makes dependency injection and testing much easier
 
-**Quick question to ask**: "Which class naturally contains, uses, or records this object?"
+**Quick sanity check**: "Which class naturally contains, uses, or keeps track of this object?"
 
-**Violation in Bad Example**
-The controller creates and manages all objects directly, even though it doesn't have the proper relationship with them:
+**How the bad example messes this up**
+The controller is creating and managing all sorts of objects, even though it doesn't really have a proper relationship with them:
 
 ```php
 // MISTAKE 6: Controller creating GivenAnswer for each file unnecessarily
@@ -121,10 +122,10 @@ $given_answer->files()->updateOrCreate([
 ]);
 ```
 
-The controller is creating `GivenAnswer` and `File` objects, but it doesn't have the proper aggregation or composition relationship with these entities.
+The controller is creating `GivenAnswer` and `File` objects, but it doesn't really have a meaningful relationship with these entities - it's just doing it because the code has to live somewhere.
 
-**Proper Application in Better Example**
-The [`AnswerService`](../example/better/app/Services/AnswerService.php) creates and manages related objects since it orchestrates the answer process:
+**How the better example fixes this**
+The [`AnswerService`](../example/better/app/Services/AnswerService.php) creates and manages related objects since it actually orchestrates the answer process:
 
 ```php
 public function answerQuestion(Question $question, array $data): void
@@ -135,27 +136,27 @@ public function answerQuestion(Question $question, array $data): void
 ```
 
 ### 3. Controller
-**Principle**: Assign responsibility for handling system events to a controller class, but don't make it do everything.
+**The idea**: Handle system events by coordinating, not by doing all the work yourself.
 
 **Real-world analogy**: A head waiter coordinates orders and tells the kitchen what to cook, but doesn't actually prepare the food, wash dishes, or handle payments. They just direct the flow and let others do the specialized work.
 
-**What it means**: A controller is responsible for receiving or handling system events and coordinating the response. However, the controller should delegate the actual work to other objects rather than doing everything itself.
+**What it means in code**: Controllers should receive requests and coordinate the response by delegating to other objects. They shouldn't contain business logic, validation, or data manipulation - that's what other classes are for.
 
-**Common mistakes**:
-- "Bloated controllers" that contain business logic
-- Controllers that directly manipulate data
-- Controllers that handle validation, authorization, and business rules all in one place
+**Common ways to mess this up**:
+- Controllers that are 200+ lines long and do everything
+- Putting business logic directly in controller methods
+- Handling validation, authorization, and database operations all in the controller
 
-**Why it matters**:
-- Separates concerns between system interface and business logic
-- Makes controllers thin and focused on coordination
-- Improves testability by isolating system event handling
-- Enables reuse of business logic in different contexts
+**Why you should care**:
+- Your controllers become simple and easy to understand
+- Business logic can be reused in different places (APIs, commands, etc.)
+- Testing becomes much easier when logic is separated
+- Changes to business rules don't require touching the controller
 
-**Quick question to ask**: "Is my controller just coordinating, or is it doing the actual work?"
+**Quick sanity check**: "Is my controller just coordinating, or is it doing the actual work?"
 
-**Violation in Bad Example**
-The [`FileController`](../example/bad/app/Http/Controllers/FileController.php) handles system events but also performs business logic, validation, and data manipulation - violating the Single Responsibility Principle with 80+ lines of mixed concerns:
+**How the bad example violates this**
+The [`FileController`](../example/bad/app/Http/Controllers/FileController.php) handles the web request but also does business logic, validation, and data manipulation - basically everything. It's 80+ lines of mixed concerns:
 
 ```php
 public function store(StoreFileRequest $request)
@@ -188,49 +189,49 @@ public function store(StoreFileRequest $request)
 }
 ```
 
-The controller is doing everything: authentication, validation, business logic, file handling, and database operations.
+The controller is doing everything: authentication, validation, business logic, file handling, and database operations. That's way too much for one class.
 
-**Proper Application in Better Example**
+**How the better example fixes this**
 The [`FileController`](../example/better/app/Http/Controllers/FileController.php) only coordinates between components:
 
 ```php
 public function store(StoreFileRequest $request, #[CurrentUser] User $user, AnswerService $answerService)
 {
     $validatedData = $request->validated();
-    
-    $answerService->answerQuestionWithFiles(
-        $validatedData['questionId'],
+
+    $answerService->answerQuestion(
+        Question::find($validatedData['questionId']),
         $request->file('files')
     );
-    
-    $user->updateUploadSizeTotal($validatedData['total_file_size']);
+
+    $user->updateUploadSizeTotal(FileSize::fromBytes($validatedData['total_file_size']));
 }
 ```
 
 ### 4. Low Coupling
-**Principle**: Keep dependencies between classes minimal and well-defined.
+**The idea**: Keep your classes from being too tangled up with each other.
 
 **Real-world analogy**: The kitchen stations (prep, grill, salad, dessert) work independently - the grill station doesn't need to know how the salad station works. They only communicate through simple handoffs (finished dishes), not internal details.
 
-**What it means**: Coupling refers to how strongly one class depends on another. Low coupling means that classes have minimal dependencies on each other and communicate through well-defined interfaces. When classes are loosely coupled, changes in one class are less likely to force changes in other classes.
+**What it means in code**: Coupling is how much your classes depend on each other. Low coupling means classes have minimal dependencies and communicate through clean interfaces. When classes aren't tightly coupled, you can change one without breaking a bunch of others.
 
-**Types of coupling** (from worst to best):
-- **Content coupling**: One class modifies internal data of another
-- **Common coupling**: Classes share global data
-- **Control coupling**: One class controls the flow of another
-- **Data coupling**: Classes share only necessary data through parameters
-- **No coupling**: Classes are completely independent
+**Different levels of coupling** (from terrible to great):
+- **Content coupling**: One class directly messes with another's internal data (very bad)
+- **Common coupling**: Classes share global variables (bad)
+- **Control coupling**: One class controls how another works (not great)
+- **Data coupling**: Classes only share necessary data through parameters (good)
+- **No coupling**: Classes are completely independent (ideal)
 
-**Benefits of low coupling**:
-- Easier to understand, modify, and extend individual classes
-- Better testability through dependency injection
-- Improved reusability of components
-- Reduced ripple effects when making changes
+**Why you should care**:
+- Individual classes are easier to understand and change
+- Testing becomes much simpler with dependency injection
+- You can reuse components in different places
+- Changes don't cascade through your entire codebase
 
-**Quick question to ask**: "If I change this class, how many other classes will break?"
+**Quick sanity check**: "If I change this class, how many other classes will break?"
 
-**Violation in Bad Example**
-High coupling with the controller directly manipulating multiple models, handling validation, and managing file operations:
+**How the bad example creates tight coupling**
+The controller is directly tied to multiple models, validation systems, and file operations:
 
 ```php
 // MISTAKE 1: Tightly coupled to application retrieval logic
@@ -261,39 +262,39 @@ foreach ($request->file('files') as $file) {
 }
 ```
 
-Changes in validation rules, file storage, authorization, or database schema would require modifications throughout the controller.
+Changes in validation rules, file storage, authorization, or database schema would require modifications throughout the controller - everything is tangled together.
 
-**Proper Application in Better Example**
+**How the better example fixes this**
 - The [`FileController`](../example/better/app/Http/Controllers/FileController.php) only depends on the request, user, and service
 - Dependencies are injected through the service container
 - Each class has minimal, well-defined dependencies
 
 ### 5. High Cohesion
-**Principle**: Keep related responsibilities together within a class.
+**The idea**: Each class should have one clear job and stick to it.
 
 **Real-world analogy**: A good chef focuses on cooking, not managing reservations or handling payments. Each person in the restaurant should have a focused, related set of responsibilities.
 
-**What it means**: Cohesion measures how closely related the responsibilities of a class are. High cohesion means that a class has a focused purpose and all its methods work together toward that single purpose. Each class should have one reason to change (Single Responsibility Principle).
+**What it means in code**: Cohesion measures how closely related the responsibilities within a class are. High cohesion means your class has a single, focused purpose and all its methods work together toward that goal. If you can't explain what your class does in one sentence, it probably has low cohesion.
 
-**Types of cohesion** (from worst to best):
-- **Coincidental**: Unrelated functionality grouped together
-- **Logical**: Related functionality but different operations (e.g., all validation in one class)
-- **Temporal**: Operations performed at the same time
+**Different levels of cohesion** (from worst to best):
+- **Coincidental**: Random unrelated stuff thrown together
+- **Logical**: Related functionality but different operations (like putting all validation in one massive class)
+- **Temporal**: Operations that just happen to run at the same time
 - **Procedural**: Operations that follow a sequence
 - **Communicational**: Operations that work on the same data
-- **Sequential**: Operations where output of one is input to another
-- **Functional**: All operations contribute to a single task
+- **Sequential**: Operations where the output of one feeds into another
+- **Functional**: All operations contribute to a single, well-defined task (this is what you want)
 
-**Benefits of high cohesion**:
-- Classes are easier to understand and maintain
-- Better code organization and readability
-- Increased reusability of focused components
-- Simplified testing of well-defined functionality
+**Why you should care**:
+- Classes become much easier to understand and work with
+- Your code organization actually makes sense
+- Focused components can be reused more easily
+- Testing is simpler when each class has a clear purpose
 
-**Quick question to ask**: "If I had to explain what this class does in one sentence, would it be clear and simple?"
+**Quick sanity check**: "If I had to explain what this class does in one sentence, would it be clear and simple?"
 
-**Violation in Bad Example**
-Low cohesion with the controller mixing HTTP handling, validation logic, business rules, and data persistence in a single method:
+**How the bad example has terrible cohesion**
+The controller is mixing HTTP handling, validation logic, business rules, and data persistence all in one method:
 
 ```php
 public function store(StoreFileRequest $request)
@@ -393,7 +394,21 @@ The [`AnswerAction`](../example/better/app/Contracts/AnswerAction.php) interface
 ```php
 interface AnswerAction
 {
+    /**
+     * Determine if the handler can process the given question.
+     *
+     * @param Question $question The question to check
+     * @return bool True if the handler can process the question, false otherwise
+     */
     public function canHandle(Question $question): bool;
+    /**
+     * Handle the answering of a question with the provided data.
+     *
+     * @param Question $question The question being answered
+     * @param array $data The data containing the answer and any files
+     * @param User $user The user who is answering the question
+     * @return void
+     */
     public function handle(Question $question, array $data): void;
 }
 ```
