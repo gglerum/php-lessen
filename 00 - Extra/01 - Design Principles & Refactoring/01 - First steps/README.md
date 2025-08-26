@@ -25,10 +25,12 @@ $this->app->bind(Application::class, function () {
 Now the model will be automatically injected when we type hint `Application` in a controller method or one of our `Service` classes.
 
 **Authenticated User**
+
 Since Laravel 11 we can make use of ["contextual attributes"](https://laravel.com/docs/12.x/container#contextual-attributes) that are automatically resolved by the `Service Container`. One of these attributes is the `Authenticated User`. For a `Controller class`, `Controller method` or other class bound by the `Service Container` we don't have to use the `Auth` facade or `auth()` helper to get
 the authenticated user. Which gives a clearer view of which dependencies we are actually using.
 
 **Service classes**
+
 We can inject our own `Service` classes as well. And if we don't need any additional logic, we don't have to add a custom binding. 
 If we type hint our `Service` class, which I named [`AnswerService`](../../example/better/app/Services/AnswerService.php) in the `Controller` method the `Service Container` will automatically resolve the constructor parameters by injection dependencies.
 
