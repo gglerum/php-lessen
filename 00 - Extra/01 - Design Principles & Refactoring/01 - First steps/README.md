@@ -2,9 +2,9 @@
 On a questionaire website users must upload filled in templates. These uploaded files will be stored on the server and will be
 related to the question the files belong to. For some reason a filled in questionaire was called an "application", don't ask me why, but this ambigious name should give you a hint of the overall quality of the code.
 
-This has been implemented in a bad way [Bad example](example/bad/app). All the mistakes where made in `FileController.php`. But to understand the context and optimizations made later on, the used `Model` and `FormRequest` are supplied.
+This has been implemented in a bad way [Bad example](../../example/bad/app). All the mistakes where made in [`FileController.php`](../../example/bad/app/Http/Controllers/FileController.php). But to understand the context and optimizations made later on, the used [`Model`](../../example/bad/app/Models/User.php) and [`FormRequest`](../../example/bad/app/Http/Requests/StoreRequest.php) are supplied.
 
-I have refactored the `FileController` which was a major violation of "Break down complex problems into smaller tasks — every function should have one job." and the Single Responsibility Principle. The new code can be found here: [Better example](example/better/app)
+I have refactored the `FileController` which was a major violation of "Break down complex problems into smaller tasks — every function should have one job." and the Single Responsibility Principle. The new code can be found here: [Better example](../../example/better/app)
 
 ### Improvements
 #### Dependency injection
@@ -14,7 +14,7 @@ The `Application` is one of the most frequent used models in our *cough* applica
 the model in the Service container when either the `{application}` route parameter is present, or `applicationId` is specified
 in the request.
 
-To make this happen the following binding was added in the `AppServiceProvider` class:
+To make this happen the following binding was added in the [`AppServiceProvider`](../../example/better/app/Providers/AppServiceProvider.php) class:
 ```PHP
 $this->app->bind(Application::class, function () {
     $applicationId = request('applicationId') ?: request()->route('application');
@@ -30,7 +30,7 @@ the authenticated user. Which gives a clearer view of which dependencies we are 
 
 **Service classes**
 We can inject our own `Service` classes as well. And if we don't need any additional logic, we don't have to add a custom binding. 
-If we type hint our `Service` class, which I named `AnswerService` in the `Controller` method the `Service Container` will automatically resolve the constructor parameters by injection dependencies.
+If we type hint our `Service` class, which I named [`AnswerService`](../../example/better/app/Services/AnswerService.php) in the `Controller` method the `Service Container` will automatically resolve the constructor parameters by injection dependencies.
 
 
 **Code**
@@ -49,10 +49,11 @@ class FileController extends Controller
     {
         //...
 ```
+*[View full FileController](../../example/better/app/Http/Controllers/FileController.php)*
 
 #### Making use of Form Request's
 ##### Authorization logic
-As said before authorization logic can be moved to a Form Request when already used, like in our case the `StoreFileRequest`.
+As said before authorization logic can be moved to a Form Request when already used, like in our case the [`StoreFileRequest`](../../example/better/app/Http/Requests/StoreFileRequest.php).
 
 ```PHP
  /**
@@ -86,7 +87,7 @@ This makes it possible to validate this new `total_file_size` attribute instead 
 
 ##### Validation logic
 As it happens the rules that where validated within the `FileController` where almost a duplication of the rules that were already
-declared in the `StoreFileRequest`. The only new validation logic introduced in the `StoreFileRequest` is the new rule `UploadLimit`
+declared in the `StoreFileRequest`. The only new validation logic introduced in the `StoreFileRequest` is the new rule [`UploadLimit`](../../example/better/app/Rules/UploadLimit.php)
 which is separate class that handles that logic. Because we have added the `total_file_size` to our request in the `prepareForValidation` method, we now have an elegant rule:
 
 ```PHP
@@ -122,7 +123,7 @@ public function rules(): array
 ```
 
 #### Value Object Introduction
-One of the biggest improvements is the introduction of a `FileSize` value object. Instead of passing around raw integers for file sizes everywhere, we now have a proper object that knows how to handle file size operations.
+One of the biggest improvements is the introduction of a [`FileSize`](../../example/better/app/ValueObjects/FileSize.php) value object. Instead of passing around raw integers for file sizes everywhere, we now have a proper object that knows how to handle file size operations.
 
 This gives us several benefits:
 - No more confusion about whether a number represents bytes, kilobytes, or something else
@@ -142,18 +143,18 @@ $user->updateUploadSizeTotal($totalUploadedSize);
 Instead of just moving business logic to a simple service class, I've implemented a more sophisticated system that can handle different types of questions.
 
 Here's how it works:
-- `AnswerAction` interface defines what every question handler must do
-- Abstract `AnswerAction` class provides shared functionality
-- `UploadAction` handles file upload questions specifically  
+- [`AnswerAction`](../../example/better/app/Contracts/AnswerAction.php) interface defines what every question handler must do
+- Abstract [`AnswerAction`](../../example/better/app/Actions/Answer/AnswerAction.php) class provides shared functionality
+- [`UploadAction`](../../example/better/app/Actions/Answer/UploadAction.php) handles file upload questions specifically  
 - New question types can be added without touching existing code
-- Everything is configured in `config/answer.php` so it's easy to extend
+- Everything is configured in [`config/answer.php`](../../example/better/config/answer.php) so it's easy to extend
 
 This might seem like overkill for just file uploads, but it makes the system much more flexible for the future.
 
 #### Service Container Enhancements
 **Advanced Service Binding**
 
-The `AppServiceProvider` does more than just the simple `Application` binding. It also sets up the `AnswerService` with some pretty neat service container magic:
+The [`AppServiceProvider`](../../example/better/app/Providers/AppServiceProvider.php) does more than just the simple `Application` binding. It also sets up the `AnswerService` with some pretty neat service container magic:
 
 ```PHP
 $this->app->singleton(AnswerService::class, function ($app) {
@@ -174,7 +175,7 @@ What this does:
 This way, if you want to add a new question type, you just create the handler class and add it to the config. No need to touch the service itself.
 
 #### Model Method Changes
-The `User` model methods have been completely rewritten to work with the new `FileSize` value object:
+The [`User`](../../example/better/app/Models/User.php) model methods have been completely rewritten to work with the new `FileSize` value object:
 
 ```PHP
 // Old way - raw integers everywhere
@@ -195,12 +196,12 @@ The new `canUpload()` method is particularly nice because it encapsulates all th
 
 The original `FileController` was doing way too much - handling files, validating uploads, managing database records, you name it. I've moved all that business logic into a proper service layer.
 
-But instead of just creating one big service class, I've set up a system where different types of questions can be handled by different action classes. The `AnswerService` acts as a coordinator that finds the right handler for each question type.
+But instead of just creating one big service class, I've set up a system where different types of questions can be handled by different action classes. The [`AnswerService`](../../example/better/app/Services/AnswerService.php) acts as a coordinator that finds the right handler for each question type.
 
-Right now we only have `UploadAction` for file uploads, but if we needed to handle text questions, multiple choice, or whatever else, we'd just add new action classes without touching any existing code.
+Right now we only have [`UploadAction`](../../example/better/app/Actions/Answer/UploadAction.php) for file uploads, but if we needed to handle text questions, multiple choice, or whatever else, we'd just add new action classes without touching any existing code.
 
 #### Small Model optimizations
-I have made a couple of small corrections to the `User` model.
+I have made a couple of small corrections to the [`User`](../../example/better/app/Models/User.php) model.
 
 The property `$fillable` was used to define a lot of properties, if this list expands faster than the properties that are not `fillable`, it makes sense to use the `$guarded` property for the exceptions instead.
 
@@ -235,6 +236,6 @@ class FileController extends Controller
 
 All the improvements resulted into a controller class that is small enough to show here. All the logic has been delegated to the 
 correct classes:
-- Authorization and Validation logic to the `StoreFileRequest` and `UploadLimit` rule.
-- Business logic to the `AnswerService`
-- Resolving of the `Application` model to the `AppServiceProvider`
+- Authorization and Validation logic to the [`StoreFileRequest`](../../example/better/app/Http/Requests/StoreFileRequest.php) and [`UploadLimit`](../../example/better/app/Rules/UploadLimit.php) rule.
+- Business logic to the [`AnswerService`](../../example/better/app/Services/AnswerService.php)
+- Resolving of the `Application` model to the [`AppServiceProvider`](../../example/better/app/Providers/AppServiceProvider.php)
