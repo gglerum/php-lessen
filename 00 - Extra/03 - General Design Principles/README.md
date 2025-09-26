@@ -51,6 +51,8 @@ Before diving into the principles, let's clarify some terms you'll see throughou
 
 **Real-world analogy**: Building a house with the right tool for each job. You could technically drive nails with a wrench, but a hammer is simpler, more effective, and less likely to break your wrist or the nail.
 
+**What it means in code**: Choose straightforward solutions over clever ones. If you have a choice between a 5-line method and a 20-line method that does the same thing, choose the 5-line method. Break complex problems into smaller, easier-to-understand pieces.
+
 **Why you should care**: 
 - Simple code has fewer bugs
 - Simple code is easier to change
@@ -106,7 +108,7 @@ public function store(StoreFileRequest $request)
 }
 ```
 
-**How the better example gets it right**
+**How we fix this in the better example**
 The [`FileController`](../example/better/app/Http/Controllers/FileController.php) does exactly one thing: coordinate the request handling. Each piece of logic lives in its own simple, focused place.
 
 ```php
@@ -188,7 +190,7 @@ public function store(StoreFileRequest $request)
 }
 ``` 
 
-**How the better example gets it right (DRY implementation)**
+**How we fix this in the better example (DRY implementation)**
 - File size logic lives in the [`FileSize`](../example/better/app/ValueObjects/FileSize.php) value object
 - Validation rules are centralized in [`StoreFileRequest`](../example/better/app/Http/Requests/StoreFileRequest.php)
 - Business logic is handled by [`AnswerService`](../example/better/app/Services/AnswerService.php)
@@ -291,7 +293,7 @@ public function store(StoreFileRequest $request)
 }
 ```
 
-**How the better example gets it right**
+**How we fix this in the better example**
 Each concern gets its own home:
 - **HTTP concerns**: [`FileController`](../example/better/app/Http/Controllers/FileController.php) - just coordinates
 - **Authorization**: [`StoreFileRequest`](../example/better/app/Http/Requests/StoreFileRequest.php) - handles permissions
@@ -337,6 +339,8 @@ public function answerQuestion(Question $question, array $data): void
 
 **Real-world analogy**: Don't build a foundation that can support a 50-story skyscraper when you're only building a 2-story house. Build what you need now, and if you actually need to expand later, you can reinforce or rebuild the foundation then.
 
+**What it means in code**: Only implement features you actually need right now. Don't build hooks for future extensibility, don't add configuration options "just in case," and don't create abstractions until you have at least two concrete examples.
+
 **Why you should care**:
 - Less code means fewer bugs
 - Simpler codebase is easier to maintain
@@ -372,7 +376,7 @@ class UniversalFileProcessor
 }
 ```
 
-**How the better example gets it right**
+**How we fix this in the better example**
 The polymorphic action system (`AnswerAction`, `UploadAction`) might look like over-engineering, but it's actually solving a real, current need - the system already has different types of questions that need different handling. The architecture supports exactly what's needed:
 - File upload questions (implemented with [`UploadAction`](../example/better/app/Actions/Answer/UploadAction.php))
 - Room for other question types that already exist in the system
@@ -459,7 +463,7 @@ If any object in that chain changes its structure, your code breaks. Plus, you'r
 **How the bad example screws this up**
 Lots of reaching through object relationships and accessing properties directly instead of asking objects to do things for themselves.
 
-**How the better example gets it right**
+**How we fix this in the better example**
 - The controller asks the `AnswerService` to handle the business logic, rather than reaching into file objects
 - The `FileSize` value object encapsulates file size operations instead of exposing raw calculations
 - The `User` model provides a `canUpload()` method instead of exposing upload limit calculations
@@ -519,7 +523,7 @@ class FileController
 }
 ```
 
-**How the better example gets it right**
+**How we fix this in the better example**
 - `store()` method stores files - no surprises
 - `answerQuestion()` answers a question - obvious
 - `canUpload()` checks if upload is allowed - clear
@@ -579,7 +583,7 @@ class User
 **How the bad example screws this up**
 The controller asks the user for their upload limit, asks files for their sizes, then makes decisions about whether the upload should be allowed.
 
-**How the better example gets it right**
+**How we fix this in the better example**
 ```php
 // Instead of asking and deciding:
 if ($user->getUploadLimit() < $user->getCurrentUpload() + $fileSize) {
@@ -610,7 +614,7 @@ The `User` model knows its own upload rules. The `FileSize` object knows how to 
 **How the bad example screws this up**
 It's not optimized at all - but that's not the problem. The problem is that it's unmaintainable.
 
-**How the better example gets it right**
+**How we fix this in the better example**
 The refactored code prioritizes clarity and maintainability over micro-optimizations:
 - Uses value objects like `FileSize` even though they add slight overhead
 - Implements polymorphic actions even though a simple service would be "faster"
@@ -633,20 +637,65 @@ This is good optimization because:
 2. It doesn't sacrifice code clarity
 3. It's easy to remove if requirements change
 
+## Key Improvements Through General Design Principles
+
+### Simplified Controller Architecture
+The [`FileController`](../example/better/app/Http/Controllers/FileController.php) transformation demonstrates KISS in action - from 80+ lines of mixed responsibilities to a focused 8-line coordination method:
+
+```php
+public function store(StoreFileRequest $request, #[CurrentUser] User $user, AnswerService $answerService)
+{
+    $validatedData = $request->validated();
+    
+    $answerService->answerQuestion(
+        Question::find($validatedData['questionId']),
+        $request->file('files')
+    );
+    
+    $user->updateUploadSizeTotal(FileSize::fromBytes($validatedData['total_file_size']));
+}
+```
+
+### Value Object Introduction
+DRY principle led to creating the [`FileSize`](../example/better/app/ValueObjects/FileSize.php) value object, eliminating repeated file size calculations and providing a single source of truth:
+
+```php
+class FileSize
+{
+    public static function fromBytes(int $bytes): self
+    {
+        return new self($bytes);
+    }
+    
+    public function inMegabytes(): float
+    {
+        return round($this->bytes / 1024 / 1024, 2);
+    }
+}
+```
+
+### Separation of Concerns Implementation
+Each responsibility is now handled by the appropriate class:
+- **Request handling**: [`FileController`](../example/better/app/Http/Controllers/FileController.php)
+- **Validation & authorization**: [`StoreFileRequest`](../example/better/app/Http/Requests/StoreFileRequest.php)
+- **Business logic**: [`AnswerService`](../example/better/app/Services/AnswerService.php)
+- **File operations**: [`UploadAction`](../example/better/app/Actions/Answer/UploadAction.php)
+- **Data representation**: [`FileSize`](../example/better/app/ValueObjects/FileSize.php)
+
 ## Result
 
-Following these general design principles transforms the messy 80+ line controller method into a clean, maintainable system where:
+Following these general design principles transforms the chaotic 80+ line controller method into a clean, professional system where:
 
-- **KISS**: Each class has one simple job
-- **DRY**: Logic exists in exactly one place
-- **Separation of Concerns**: Different types of problems are handled separately
-- **YAGNI**: Only builds what's actually needed right now
-- **Law of Demeter**: Objects ask their direct collaborators to do work
-- **Least Astonishment**: Methods do exactly what their names suggest
-- **Tell Don't Ask**: Objects encapsulate their own behavior
-- **Avoid Premature Optimization**: Prioritizes maintainability with smart performance choices
+- **KISS**: Each class has one simple job and does it well
+- **DRY**: Logic exists in exactly one place, eliminating duplication
+- **Separation of Concerns**: Different types of problems are handled by appropriate specialists
+- **YAGNI**: Only builds what's actually needed right now, avoiding over-engineering
+- **Law of Demeter**: Objects ask their direct collaborators to do work, reducing coupling
+- **Least Astonishment**: Methods do exactly what their names suggest, making code predictable
+- **Tell Don't Ask**: Objects encapsulate their own behavior instead of exposing data
+- **Avoid Premature Optimization**: Prioritizes maintainability with smart performance choices where needed
 
-The result is code that's not just working, but professional - easy to understand, easy to change, and easy to extend.
+The result is code that's not just working, but truly professional - maintainable, extensible, and reliable. This is the difference between code that "happens to work" and code that can evolve with changing requirements.
 
 ## Quick Reference for Junior Developers
 
@@ -677,11 +726,45 @@ The result is code that's not just working, but professional - easy to understan
 4. **Mixing different types of logic in one place** - Separation of concerns violation
 5. **Optimizing before measuring** - Premature optimization trap
 
+### 💡 **Simple Design Principles Refactoring Steps for Beginners:**
+
+**Week 1**: Start with KISS
+- Look for methods longer than 20 lines and break them down
+- Extract complex logic into smaller, well-named methods
+- Focus on making your code readable first
+
+**Week 2**: Apply DRY/WET wisely
+- Find duplicated code and extract it to shared methods
+- Be careful not to DRY too early - sometimes duplication is better than the wrong abstraction
+- Practice identifying when code is "coincidentally similar" vs "fundamentally the same"
+
+**Week 3**: Separate concerns
+- Identify classes that do multiple things
+- Extract one responsibility at a time (start with the easiest)
+- Move related methods and data together
+
+**Week 4**: Practice YAGNI
+- Remove unused code and "future-proofing" features
+- When adding new features, ask "Do I need this right now?"
+- Learn to resist building extensibility you don't currently need
+
+**Week 5**: Apply Law of Demeter and Tell Don't Ask
+- Look for long method chains and refactor them
+- Move logic closer to the data it operates on
+- Practice asking objects to do work instead of asking for data
+
+**Week 6**: Focus on clarity (Least Astonishment)
+- Review your method names - do they match what the methods actually do?
+- Simplify confusing logic and add explanatory comments
+- Make your code's intention obvious
+
+Remember: These principles work together, but you don't need to master them all at once. Start with KISS and DRY, then gradually incorporate the others as you become more comfortable.
+
 ## How to Spot These Problems in Your Own Code
 
 As a junior developer, here are practical warning signs to watch for:
 
-### Red Flags When Reviewing Your Code:
+### 🚨 **Design Principles Violation Warning Signs:**
 
 **Your method is getting long** (20+ lines)
 - Probably violates KISS and Separation of Concerns
