@@ -1,0 +1,50 @@
+{
+    "servers": {
+        "laravel-boost": {
+            "command": "php",
+            "args": [
+                "artisan",
+                "boost:mcp"
+            ]
+        },
+        "github": {
+            "type": "http",
+            "url": "https://api.githubcopilot.com/mcp/",
+            "gallery": true
+        },
+        "playwright": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "@playwright/mcp@latest"
+            ],
+            "gallery": true
+        },
+        "context7": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp@latest"
+            ],
+            "gallery": true
+        },
+        "memory": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory@latest"
+            ],
+            "env": {
+                "MEMORY_FILE_PATH": "${input:memory_file_path}"
+            },
+            "gallery": true
+        },
+        "asana": {
+            "type": "http",
+            "url": "https://mcp.asana.com/sse",
+            "gallery": true
+        }
+    }
+}
