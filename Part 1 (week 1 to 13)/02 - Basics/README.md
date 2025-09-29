@@ -145,4 +145,6 @@ You don't need to be perfect! You're ready for the next module when you can:
 
 After mastering these fundamentals, you'll advance to [03 - Functions & Arrays](../03%20-%20Functions%20&%20Arrays/) where you'll learn to organize your code into reusable components and work with complex data structures.
 
+The next module will start by teaching you the essential skills you need (like string processing and input validation) right when you need them, then guide you through functions and arrays.
+
 **Remember**: Strong fundamentals enable everything else. Take time to truly master these concepts—every advanced PHP technique builds on this foundation.
