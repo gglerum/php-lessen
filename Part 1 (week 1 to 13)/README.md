@@ -20,91 +20,98 @@ This part provides the solid foundation needed for advanced architectural concep
 ### Foundation Concepts
 
 1. 📁 **[01 - Intro](01%20-%20Intro/)**
-   - Getting started with PHP development
-   - Setting up your development environment
-   - Understanding the PHP ecosystem
-   - Basic syntax and programming concepts
+   - Development tools setup (VS Code, Git, XAMPP)
+   - Essential VS Code extensions for PHP
+   - Version control with Git and GitHub
+   - PHP vs other languages comparison and naming conventions
 
 2. 📁 **[02 - Basics](02%20-%20Basics/)**
-   - Variables, data types, and operators
-   - Control structures (if/else, loops)
-   - Basic input/output operations
-   - Practical exercises and examples
+   - PHP syntax, variables, and data types
+   - Control structures (if/else, loops, switch)
+   - Operators and basic math operations
+   - Console-based hangman game example
 
 3. 📁 **[03 - Functions & Arrays](03%20-%20Functions%20&%20Arrays/)**
-   - Creating and using functions
-   - Understanding scope and parameters
-   - Array manipulation and built-in functions
-   - Practical programming patterns
+   - Function creation and parameter handling
+   - Multi-dimensional arrays and global variables
+   - Callback functions and superglobals
+   - Library management system with functions (hangman v2)
 
 ### Object-Oriented Programming
 
 4. 📁 **[04 - OOP 1](04%20-%20OOP%201/)**
-   - Introduction to Object-Oriented Programming
-   - Classes, objects, and properties
-   - Methods and constructors
-   - Basic encapsulation concepts
+   - Classes, objects, constructors, and access modifiers
+   - Encapsulation and static properties
+   - Dependency injection and design patterns
+   - Repository pattern and automated testing with PHPUnit
 
 5. 📁 **[08 - OOP 2](08%20-%20OOP%202/)**
-   - Inheritance and polymorphism
-   - Abstract classes and interfaces
-   - Static methods and properties
-   - Advanced OOP concepts
+   - Inheritance and abstract classes
+   - Polymorphism with multiple item types
+   - Service layer pattern with ItemService
+   - Managing Books, Magazines, and Boardgames
 
 6. 📁 **[09 - OOP 3](09%20-%20OOP%203/)**
-   - Design patterns introduction
-   - Error handling and exceptions
-   - Namespaces and autoloading
-   - Professional OOP practices
+   - Interfaces, traits, and enums
+   - Namespaces and Composer autoloading
+   - Exception handling and constants
+   - Complete borrowing/return system implementation
 
 ### Web Development
 
 7. 📁 **[05 - HTML & Forms & Sessions](05%20-%20HTML%20&%20Forms%20&%20Sessions/)**
-   - Creating dynamic HTML with PHP
-   - Processing form data
-   - Session management
-   - User state and authentication basics
+   - HTML fundamentals and semantic elements
+   - PHP form handling and validation
+   - MVC architecture with Router and Controllers
+   - Session management and template systems
 
 8. 📁 **[07 - Databases](07%20-%20Databases/)**
-   - Database fundamentals
-   - SQL basics and PHP integration
-   - PDO and prepared statements
-   - Data modeling and relationships
+   - SQL fundamentals and database design
+   - PDO and prepared statements for security
+   - Singleton pattern with PDOSingleton class
+   - Query Builder pattern for database abstraction
 
 ## 🚀 Learning Path
 
-### Weeks 1-3: **Foundation** 🌱
-- **Week 1**: Introduction and basic syntax
-- **Week 2**: Core programming concepts
-- **Week 3**: Functions and data manipulation
+### Weeks 1-2: **Foundation** 🌱
+- **Week 1**: 01 - Intro - Introduction and PHP development setup
+- **Week 2**: 02 - Basics - Core programming concepts and syntax
 
-### Weeks 4-7: **Object-Oriented Programming** 🌿
-- **Week 4**: OOP basics and classes
-- **Week 5**: Web forms and user interaction
-- **Week 6**: Database integration
-- **Week 7**: Advanced OOP concepts
+### Weeks 3-4: **Functions & Arrays** 🌿
+- **Week 3**: 03 - Functions & Arrays (Part 1) - Creating and using functions
+- **Week 4**: 03 - Functions & Arrays (Part 2) - Advanced arrays and practical patterns
 
-### Weeks 8-11: **Advanced Concepts** 🌳
-- **Week 8**: Inheritance and polymorphism
-- **Week 9**: Advanced OOP and design patterns
-- **Week 10-11**: Integration and practical projects
+### Weeks 5-7: **Object-Oriented Programming Foundations** 🌳
+- **Week 5**: 04 - OOP 1 (Part 1) - Classes, objects, and basic concepts
+- **Week 6**: 04 - OOP 1 (Part 2) - Advanced OOP concepts, testing, and dependency injection
+- **Week 7**: 05 - HTML & Forms & Sessions - Web development and user interaction
 
-### Weeks 12-13: **Mastery & Integration** 🚀
-- **Week 12**: Complete project development
-- **Week 13**: Best practices and code review
+### Weeks 8-10: **Database Integration** 🗄️
+- **Week 8**: 07 - Databases (Part 1) - SQL fundamentals and database design
+- **Week 9**: 07 - Databases (Part 2) - PHP database integration and PDO
+- **Week 10**: 07 - Databases (Part 3) - Advanced queries and data relationships
+
+### Weeks 11-13: **Advanced OOP & Design Patterns** 🚀
+- **Week 11**: 08 - OOP 2 - Inheritance, abstract classes, and polymorphism
+- **Week 12**: 09 - OOP 3 (Part 1) - Interfaces, traits, and namespaces  
+- **Week 13**: 09 - OOP 3 (Part 2) - Advanced patterns, exceptions, and project integration
 
 ## 💡 Practical Project
 
 Throughout Part 1, you'll work on a single, comprehensive project that evolves with your skills:
 
 ### **Library Management System** 📚
-A progressive project that grows in complexity as you master new concepts:
+A comprehensive project that evolves throughout the entire course, with each assignment building substantial new functionality:
 
-- **Weeks 1-3**: Basic structure and procedural programming
-- **Weeks 4-6**: Convert to object-oriented design with classes
-- **Weeks 7-9**: Add web interface with HTML forms and sessions  
-- **Weeks 10-11**: Integrate database functionality and CRUD operations
-- **Weeks 12-13**: Implement advanced features and polish the complete system
+- **Weeks 1-2**: Basic PHP foundations and simple console applications
+- **Weeks 3-4**: Multi-dimensional arrays and function-based library system with multiple management features
+- **Weeks 5-6**: Complete OOP conversion with classes, repositories, design patterns, and automated testing
+- **Week 7**: Web interface implementation with MVC architecture and routing system
+- **Weeks 8-10**: Full database integration with PDO, Query Builder pattern, and advanced SQL operations
+- **Week 11**: Inheritance and polymorphism with multiple item types (Books, Magazines, Boardgames)
+- **Weeks 12-13**: Advanced OOP features including traits, interfaces, enums, and complete borrowing/return system
+
+Each assignment represents a significant development milestone, requiring students to master new concepts while building upon their existing codebase. This approach mirrors real-world software development practices.
 
 This single project approach allows you to:
 - See how each new concept builds on previous learning

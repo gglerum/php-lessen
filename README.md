@@ -15,18 +15,22 @@ This course transforms students from zero programming experience to professional
 ### 📁 **[Part 1: PHP Fundamentals & Web Development (Weeks 1-13)](Part%201%20(week%201%20to%2013)/)**
 
 **Foundation Building Phase**
-- Core PHP syntax, functions, and arrays
-- Object-Oriented Programming (Classes, Inheritance, Polymorphism)
-- Web development with HTML forms and sessions
-- Database integration with PDO
-- Progressive example projects: Hangman, MovieManagement, StudentManager, 
-- Practical Homework project: Library system
+- Development environment setup (VS Code, Git, XAMPP)
+- Core PHP syntax, functions, and multi-dimensional arrays
+- Object-Oriented Programming (Classes, Inheritance, Polymorphism, Abstract Classes)
+- Design patterns (Repository, Singleton, Service Layer)
+- Web development with HTML forms, sessions, and MVC architecture
+- Database integration with PDO, prepared statements, and Query Builder pattern
+- Automated testing with PHPUnit
+- Advanced OOP features: Interfaces, Traits, Enums, Namespaces
+- **Single Progressive Project**: Library Management System that evolves from procedural to sophisticated OOP application
 
 **Learning Outcomes:**
-- Write afunctional PHP applications
-- Understand OOP principles and the basics of design patterns
-- Build dynamic web applications with database integration
-- Debug and troubleshoot PHP code effectively
+- Write clean, functional PHP applications using modern practices
+- Master OOP principles and essential design patterns
+- Build dynamic web applications with secure database integration
+- Implement automated testing and professional development workflows
+- Create sophisticated systems with borrowing/return functionality
 
 ---
 
@@ -72,9 +76,10 @@ This course transforms students from zero programming experience to professional
 Complete Beginner
         ↓
 🌱 Part 1: Foundation (13 weeks)
-   │  ├─ Basic PHP & OOP
-   │  ├─ Web Development
-   │  └─ Database Integration
+   │  ├─ Basic PHP & Development Setup
+   │  ├─ OOP & Design Patterns
+   │  ├─ Web Development & MVC
+   │  └─ Database Integration & Testing
         ↓
 🌿 Part 2: Professional Development (13 weeks)
    │  ├─ Laravel Framework

@@ -1,64 +1,125 @@
-## Tools
+# Introduction to PHP Development
+
+Welcome to professional PHP development! This introduction establishes the foundation for everything you'll learn in this course. We'll set up a professional development environment and introduce you to the tools and concepts that will make you productive from day one.
+
+## 🎯 Your Learning Path
+
+**Follow this sequence for the best learning experience:**
+
+### Step 1: Understanding PHP
+**For Python Developers**: [📚 PHP vs Python: Understanding the Differences](differences.md)  
+*Skip this if you're new to programming—jump straight to Step 2.*
+
+### Step 2: Set Up Your Tools  
+**Essential Extensions**: [🚀 VS Code Extensions Guide](vscode_extensions.md)  
+*Install the right tools before you start coding.*
+
+### Step 3: Master Your Editor
+**Productivity Skills**: [⚡ VS Code Fundamentals](vscode.md)  
+*Learn the workflows that make you 10x faster.*
+
+### Step 4: Complete Environment Setup
+**Development Stack**: Continue with XAMPP, Git, and XDebug setup below.
+
+### Step 5: Professional Standards
+**Code Quality**: [📝 Professional Naming Conventions](naming.md)  
+*Write code that other developers can easily understand.*
+
+### Step 6: First Program
+**Practical Exercise**: Build the even/odd counter below and start your PHP journey!
+
+---
+
+## 🎯 What You'll Accomplish
+
+**By the end of this introduction**, you'll have:
+
+- **Professional development environment** configured and ready
+- **Industry-standard tools** installed and mastered
+- **Strong foundation** in PHP development practices  
+- **First working PHP program** demonstrating core concepts
+
+This isn't just about installation—you're building the habits and skills that define professional developers.
+
+## 🛠️ Development Environment Setup
+
+> **📍 Learning Path**: You are now on **Step 4 of 6** → [Step 5: Professional Standards](naming.md)
+
+Complete these installations to finish your development environment setup:
+
 ### Visual Studio Code
-Tijdens deze lessen maken we gebruik van de Visual Studio Code (VS Code). VS Code kun je hier
-downloaden: https://code.visualstudio.com/Download
+Your primary development environment. VS Code provides the perfect balance of power and simplicity for PHP development.
 
-Essentiele know hows van VS Code vind je hier: [VS Code - Deel 1](vscode.md)
+**Download**: https://code.visualstudio.com/Download
 
-#### Extensies
-VS Code op zich zelf bied weinig ondersteuning voor PHP. Om het meeste uit VS Code te halen heb je een aantal extensies nodig. De lijst vind je hier: [VS Code - Extensies](vscode_extensions.md)
+**Next Step**: After installing VS Code, continue with the VS Code Extensions guide in your learning path above.
 
-### Git
-De huiswerkopdrachten of eigen projecten die je in PHP schrijft bewaar je ook via Git. Git is een versiebeheersysteem waar je je code kunt bergen en delen met anderen. Één van de belangrijskte features van Git, is dat je altijd terug kan naar een vorig versie. Met de integratie van Git in Vs Code kun je dus ook vrij
-makkelijk een bestand terug halen die perongeluk is verwijderd, of een stuk code die je perongeluk hebt
-veranderd.
+### Git - Version Control System
+Version control is not optional in professional development. Git protects your code, tracks your progress, and enables collaboration.
 
-Mocht je nog geen Github account hebben en Git nog niet geinstalleerd, dan kun je dat nu doen.
-- https://github.com/
-- https://git-scm.com/download/win
+**Why Git matters**: You'll always be able to recover deleted files, undo problematic changes, and track your learning progress. With VS Code integration, Git becomes seamless to use.
 
-Het volgende artikel legt uit hoe je Git kunt gebruiken in Vs Code:
-https://code.visualstudio.com/docs/sourcecontrol/intro-to-git
+**Setup Requirements**:
+- **GitHub Account**: https://github.com/
+- **Git Installation**: https://git-scm.com/download/win
+- **VS Code Integration**: https://code.visualstudio.com/docs/sourcecontrol/intro-to-git
 
-### XAMPP
-Om in PHP te programmeren heb je eigenlijk een webserver nodig. Nu kun je in theorie je laptop inrichten als server,
-maar het is makkelijker om daar een ontwikkel omgeving voor te installeren zoals XAMPP.
+### XAMPP - Local Development Server
+PHP requires a web server to run. XAMPP provides a complete local development environment without the complexity of manual server configuration.
 
-XAMPP kun je hier vinden: https://www.apachefriends.org/
+**Download**: https://www.apachefriends.org/
 
-*op een later moment gaan we kijken naar docker, mits je laptop dit ondersteund.*
+*Note: We'll explore Docker later in the course if your system supports it.*
 
-### XDEBUG
-In vanilla PHP kun je niet debuggen. Om dit mogelijk te maken moet je XDebug installeren. Op de volgende pagina kun je aan de hand van een wizard het juiste bestand downloaden, installatie instructies staan daar ook bij.
+### XDebug - Professional Debugging
+Professional developers don't use `echo` statements to debug—they use proper debugging tools. XDebug enables step-through debugging, breakpoints, and variable inspection.
 
-https://xdebug.org/wizard
+**Installation Wizard**: https://xdebug.org/wizard
+*Follow the wizard to get the correct version for your system.*
 
-## PHP Basics
-- [Verschillen Phyton & PHP](differences.md)
-- [Naamgeving](naming.md)
+## 📚 Why Start with Console Applications?
 
-## Console applicaties
-Hoewel PHP eigenlijk geen taal is om console applicaties in te schrijven, zal dit wel onze focus zijn voor de komende vier weken. Zo kunnen we eerst bekend raken met PHP voor we in http requests en andere web specifieke dingen duiken.
+While PHP shines in web development, we'll start with console applications. This approach lets you focus on PHP syntax and logic without the complexity of HTTP requests and web-specific concepts.
 
-Het is trouwens niet dat er nooit iets in PHP voor de console wordt gemaakt. Veel frameworks zoals laravel hebben hulpprogrammas
-die in PHP zijn geschreven.
+**Professional Context**: Even web-focused frameworks like Laravel include console applications for administrative tasks, background processing, and system maintenance.
 
-## Opdracht
-Maak een klein programma dat uit een lijst van getallen telt hoeveel er even of oneven zijn.
+## 💡 Practical Exercise
 
-1. Maak een array met de volgende getallen: 42, 67, 35, 89, 24, 76, 58, 93, 7, 30, 83, 46, 13, 25, 98, 53, 17, 79, 57, 8.
-2. Gebruik een for-loop om door de array te itereren.
-3. Controleer voor elk getal of het even of oneven is met behulp van een if-else-statement.
-4. Tel daarbij zowel de even en oneven getallen en sla deze op in een associative array waarbij de key de string "even" of "oneven" is en de waarde de het toaal of "even" of "oneven" getallen.
+> **📍 Learning Path**: **Step 6 of 6** - Your First PHP Program! 🎉
 
-### Checklist
-- Variabelen zijn in het engels geschreven.
-- Variabelen zijn in camelCase.
-- Naamgeving van de variabelen zijn duidelijk en beschrijvend.
-- Elk code block (begint met `{` en eindigt met `}`) wordt voorgegaan door een regel commentaar.
-- Comments zijn in het engels geschreven.
-- De code is geformateerd aan de hand van PSR-12.
-- Een loop bevat alleen code dat ook echt herhaalt hoort te worden. Berekeningen of andere zware
-  operaties die voor elke iteratie hetzelfde blijven, horen niet in een loop te staan.
-- Declareer variabelen zo dicht mogelijk waar het gebruikt word.
-- De code bevat geen/tot zeer weinig code duplicatie. (DRY: Don't Repeat Yourself)
+### Even/Odd Number Counter
+Build your first PHP application using professional development practices.
+
+**Requirements**:
+1. Create an array with these numbers: `42, 67, 35, 89, 24, 76, 58, 93, 7, 30, 83, 46, 13, 25, 98, 53, 17, 79, 57, 8`
+2. Use a for-loop to iterate through the array
+3. Determine if each number is even or odd using conditional statements
+4. Store the counts in an associative array with keys `"even"` and `"odd"`
+
+**Professional Standards Checklist**:
+- [ ] Variables written in English
+- [ ] Variables use camelCase naming convention
+- [ ] Variable names are descriptive and clear
+- [ ] Each code block preceded by explanatory comment
+- [ ] Comments written in English
+- [ ] Code formatted according to PSR-12 standards
+- [ ] Loops contain only code that needs repetition
+- [ ] Variables declared close to where they're used
+- [ ] No code duplication (follow DRY principle)
+
+## 🚀 Success Indicators
+
+You're ready for the next module when you can:
+
+- [ ] Navigate VS Code efficiently with PHP extensions
+- [ ] Commit and push code changes to GitHub
+- [ ] Run PHP scripts through XAMPP
+- [ ] Debug PHP code using XDebug
+- [ ] Write clean, well-commented PHP following PSR-12
+- [ ] Understand why professional tools matter for long-term success
+
+## ➡️ What's Next?
+
+After mastering this development setup, you'll move to [02 - Basics](../02%20-%20Basics/) where you'll dive deeper into PHP syntax and build your first substantial console application.
+
+**Remember**: The habits you form now will carry you through the entire course. Take time to master these fundamentals—your future self will thank you when you're building complex applications later.
