@@ -93,14 +93,24 @@ This part provides the solid foundation needed for advanced architectural concep
 - **Week 12**: Complete project development
 - **Week 13**: Best practices and code review
 
-## 💡 Practical Projects
+## 💡 Practical Project
 
-Throughout Part 1, you'll build increasingly complex projects:
+Throughout Part 1, you'll work on a single, comprehensive project that evolves with your skills:
 
-- **Hangman Game**: Evolving from basic procedural code to full OOP
-- **Library Management System**: Understanding data relationships and user interfaces
-- **Student Manager**: Database integration and CRUD operations
-- **Movie Management**: Advanced OOP patterns and system architecture
+### **Library Management System** 📚
+A progressive project that grows in complexity as you master new concepts:
+
+- **Weeks 1-3**: Basic structure and procedural programming
+- **Weeks 4-6**: Convert to object-oriented design with classes
+- **Weeks 7-9**: Add web interface with HTML forms and sessions  
+- **Weeks 10-11**: Integrate database functionality and CRUD operations
+- **Weeks 12-13**: Implement advanced features and polish the complete system
+
+This single project approach allows you to:
+- See how each new concept builds on previous learning
+- Experience realistic software development evolution
+- Build a substantial portfolio piece by the end of Part 1
+- Understand how all PHP concepts work together in a real application
 
 ## 🎓 Success Indicators
 

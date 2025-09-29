@@ -19,11 +19,12 @@ This course transforms students from zero programming experience to professional
 - Object-Oriented Programming (Classes, Inheritance, Polymorphism)
 - Web development with HTML forms and sessions
 - Database integration with PDO
-- Practical projects: Hangman game, Library system, Student manager
+- Progressive example projects: Hangman, MovieManagement, StudentManager, 
+- Practical Homework project: Library system
 
 **Learning Outcomes:**
-- Write functional PHP applications
-- Understand OOP principles and design patterns
+- Write afunctional PHP applications
+- Understand OOP principles and the basics of design patterns
 - Build dynamic web applications with database integration
 - Debug and troubleshoot PHP code effectively
 
@@ -123,7 +124,6 @@ Students work on increasingly sophisticated projects that mirror actual developm
 - [ ] Design scalable software architectures
 - [ ] Refactor legacy code systematically
 - [ ] Make informed technical decisions
-- [ ] Lead development teams effectively
 
 ## 🛠️ Prerequisites
 
@@ -136,7 +136,6 @@ Students work on increasingly sophisticated projects that mirror actual developm
 - **Code Examples**: Each part includes extensive working examples
 - **Project Files**: Complete project implementations for reference
 - **Documentation**: Comprehensive guides and reference materials
-- **Community**: Peer learning and discussion opportunities
 
 ## 🌟 Course Philosophy
 
