@@ -1,116 +1,142 @@
-# Bibliotheek Systeem - Deel 3
+# 🌐 Library System - Web Application Evolution
 
 ![Library System Diagram](./library2.png)
 
-## Wijzigingen in de Structuur van de Library System Applicatie
+## 🎯 Assignment Overview
 
-### 1. **Verwijdering van de `Main` Klasse**
-In de oude structuur fungeerde de `Main` klasse als centrale toegangspunt voor de applicatie. Deze klasse bevatte methoden zoals `showMainMenu()`, `showAuthorsMenu()`, en `showBookCatalog()`, die verantwoordelijk waren voor het beheren van de gebruikersinteractie en het initiëren van acties.
+**What You're Building**: Transform your console-based library system from Module 04 into a modern web application using HTML forms, session management, and the MVC (Model-View-Controller) architectural pattern.
 
-In de nieuwe structuur is de `Main` klasse volledig verwijderd. Deze verantwoordelijkheden zijn nu verdeeld over twee nieuwe onderdelen:
-- **`BookController`**: Beheert alle boekgerelateerde functies.
-- **`MainController`**: Beheert het navigeren naar het hoofdmenu.
+**Why This Matters**: This evolution demonstrates how Object-Oriented Programming principles adapt to web development, teaching you the foundation patterns used in every modern PHP framework including Laravel.
 
-Deze wijziging zorgt voor een betere scheiding van verantwoordelijkheden en maakt het systeem beter schaalbaar en onderhoudbaar.
+## 🏗️ Architectural Evolution: From Console to Web
 
----
+### 1. 🗂️ **Removal of the `Main` Class**
+In the old structure, the `Main` class served as the central entry point for the application. This class contained methods such as `showMainMenu()`, `showAuthorsMenu()`, and `showBookCatalog()`, which were responsible for managing user interaction and initiating actions.
 
-### 2. **Toevoeging van de `Router`**
-In de nieuwe structuur speelt de `Router` een centrale rol in het verwerken van gebruikersverzoeken en het delegeren naar de juiste controller. De `Router` bevat:
-- Een array van beschikbare routes.
-- De methode `processRoute`, die verantwoordelijk is voor het koppelen van een route aan de bijbehorende controlleractie.
+**Professional Evolution**: In the new structure, the `Main` class has been completely removed. These responsibilities are now divided across two new components:
+- **`BookController`**: Manages all book-related functions and business logic
+- **`MainController`**: Manages navigation to the main menu and application flow
 
-Dit vervangt de directe afhankelijkheid van de `Main` klasse in het oude systeem en zorgt voor een modulaire en uitbreidbare architectuur.
-
-Hier is een korte uitleg van de gegeven Router-code:
+**Why This Change Matters**: This separation follows the **Single Responsibility Principle** from professional software development, making the system more scalable and maintainable.
 
 ---
 
-#### Uitleg van de Router-code
+### 2. 🚦 **Addition of the `Router`**
+In the new structure, the `Router` plays a central role in processing user requests and delegating to the appropriate controller. The `Router` contains:
+- An array of available routes
+- The `processRoute` method, which is responsible for linking a route to the corresponding controller action
+
+**Professional Pattern**: This replaces the direct dependency on the `Main` class in the old system and provides a modular and extensible architecture. The Router pattern is fundamental to all modern web frameworks.
+
+**Learning Objective**: Understanding routing is essential for web development—it's how applications determine what code to run based on the URL a user visits.
+
+Here is a brief explanation of the given Router code:
+
+---
+
+#### 🔍 Explanation of the Router Code
 
 [Router](./example/librarysystem/Router.php)
 
-De `Router`-klasse illustreert hoe routing werkt in een webapplicatie. Hier zijn de belangrijkste aspecten:
+**Professional Implementation**: The `Router` class illustrates how routing works in a web application. This is the same pattern used by Laravel, Symfony, and other professional frameworks. Here are the key aspects:
 
-1. **Routes Configuratie**:
-   - De array `$routes` definieert de beschikbare routes in de applicatie.
-   - Elke route bevat drie elementen:
-     - Het HTTP-method (`get` of `post`).
-     - Het pad (bijv. `book/:id` voor een specifiek boek-ID).
-     - De actie (de controllerklasse en methode die de route behandelt).
+1. **Routes Configuration**:
+   - The array `$routes` defines the available routes in the application.
+   - Each route contains three elements:
+     - The HTTP method (`get` or `post`).
+     - The path (e.g., `book/:id` for a specific book ID).
+     - The action (the controller class and method that handles the route).
 
 2. **Constructor**:
-   - De constructor haalt het pad op van de servervariabele `PATH_INFO` en splitst deze in delen (`$pathParts`).
-   - Dit wordt gebruikt om het verzoek te matchen met een gedefinieerde route.
+   - The constructor retrieves the path from the server variable `PATH_INFO` and splits it into parts (`$pathParts`).
+   - This is used to match the request with a defined route.
 
-3. **`processRoute` Methode**:
-   - Deze methode bepaalt welke controlleractie moet worden aangeroepen.
-   - De router doorloopt alle gedefinieerde routes en vergelijkt het HTTP-method en het pad met de huidige aanvraag.
-   - Bij een match wordt de corresponderende controlleractie aangeroepen, met een optionele parameter (bijvoorbeeld het boek-ID).
-   - Als er geen match is, retourneert de methode een `404 Not Found`.
+3. **`processRoute` Method**:
+   - This method determines which controller action should be called.
+   - The router loops through all defined routes and compares the HTTP method and path with the current request.
+   - On a match, the corresponding controller action is called, with an optional parameter (e.g., the book ID).
+   - If there is no match, the method returns a `404 Not Found`.
 
-4. **`matchRoute` Methode**:
-   - Vergelijkt het huidige pad met een routepad.
-   - Controleert of de structuur (aantal segmenten) overeenkomt.
-   - Herkent routeparameters (aangegeven met `:`) en beschouwt deze als flexibel.
+4. **`matchRoute` Method**:
+   - Compares the current path with a route path.
+   - Checks if the structure (number of segments) matches.
+   - Recognizes route parameters (indicated with `:`) and considers them as flexible.
 
 ---
 
-### 3. **Opsplitsing van Controllers**
-De verantwoordelijkheden van de oude `Main` klasse zijn opgesplitst in twee specifieke controllers:
-- **`BookController`**:
-  - Methoden:
+### 3. 🎮 **Separation of Controllers**
+**MVC Architecture**: The responsibilities of the old `Main` class have been split into two specific controllers, following the **Controller** part of the Model-View-Controller pattern:
+
+- **`BookController`** (Business Logic Controller):
+  - Methods:
     - `showBookForm()`
     - `handleAddBook()`
     - `showAllBooks()`
     - `handleRemoveBook(int id)`
     - `showBookDetails(int id)`
-  - Beheert alle interacties met betrekking tot boeken en hun auteurs.
-- **`MainController`**:
-  - Methode:
+  - **Purpose**: Manages all interactions related to books and their authors
+
+- **`MainController`** (Navigation Controller):
+  - Method:
     - `showMainMenu()`
-  - Beheert het navigeren naar het hoofdmenu van de applicatie.
+  - **Purpose**: Manages navigation to the main menu of the application
 
-Deze scheiding zorgt voor een duidelijke afbakening van verantwoordelijkheden en maakt het systeem eenvoudiger te begrijpen.
-
----
-
-### 4. **Gebruik van HTML-Templates**
-In de nieuwe structuur zijn HTML-templates geïntroduceerd voor de gebruikersinterface. Deze vervangen de console-gebaseerde menu's en invoer van de oude structuur. Voorbeelden van templates zijn:
-- `book-form.html`: Voor het toevoegen of bewerken van boeken.
-- `book-list.html`: Voor het weergeven van een lijst met boeken.
-- `author-list.html`: Voor het weergeven van een lijst met auteurs.
-- `remove-dialogue.html`: Voor bevestigingsdialogen bij het verwijderen van boeken.
-
-Door gebruik te maken van HTML-templates wordt de applicatie beter geschikt voor een webomgeving.
+**Professional Benefit**: This separation provides a clear delineation of responsibilities and makes the system easier to understand, test, and maintain.
 
 ---
 
-### 5. **Veranderingen in de Workflow**
-De workflow in het nieuwe systeem verschilt aanzienlijk van de oude console-applicatie:
-- **Oude Workflow**:
-  - De `Main` klasse beheerde een continue hoofdloop die gebruikersinput verwerkte.
-  - Acties werden direct uitgevoerd op basis van de console-invoer.
-- **Nieuwe Workflow**:
-  - Gebruikers maken verzoeken via formulieren en webpagina's.
-  - De `Router` bepaalt de juiste controller en actie.
-  - Controllers verwerken de logica en geven gegevens door aan de juiste HTML-template.
+### 4. 🎨 **Use of HTML Templates**
+**From Console to Web Interface**: In the new structure, HTML templates have been introduced for the user interface. These replace the console-based menus and input from the old structure, representing the **View** part of the MVC pattern.
 
-Deze nieuwe aanpak sluit beter aan bij moderne webtoepassingen en zorgt voor een meer gebruiksvriendelijke ervaring.
+**Template Examples**:
+- `book-form.html`: For adding or editing books
+- `book-list.html`: For displaying a list of books
+- `author-list.html`: For displaying a list of authors
+- `remove-dialogue.html`: For confirmation dialogs when removing books
 
-## Checklist
-- Variabelen zijn in het engels geschreven.
-- Variabelen zijn in camelCase.
-- Naamgeving van de variabelen zijn duidelijk en beschrijvend.
-- Elk code block (begint met `{` en eindigt met `}`) wordt voorgegaan door een regel commentaar.
-- Comments zijn in het engels geschreven.
-- De code is geformateerd aan de hand van de Google Java Style Guide.
-- Een loop bevat alleen code dat ook echt herhaalt hoort te worden. Berekeningen of andere zware
-  operaties die voor elke iteratie hetzelfde blijven, horen niet in een loop te staan.
-- Declareer variabelen zo dicht mogelijk waar het gebruikt word.
-- De code bevat geen/tot zeer weinig code duplicatie. (DRY: Don't Repeat Yourself)
-- Methodes doen maar 1 ding. Als je merkt dat je methode meerdere dingen doet, splits deze dan op in meerdere methodes.
-- Een methode heeft een zelf documenterende naam. Aan de naam van de methode is het direct duidelijk wat het doet.
-- Een methode heeft een Javadoc commentaar boven de methode. Hierin staat wat de methode doet, en wat de parameters zijn.
-- Een class heeft een Javadoc commentaar boven de class. Hierin staat waar de class voor verantwoordelijk is.
-  Zodat het duidelijk is welke code in de class hoort.
+**Professional Advantage**: By using HTML templates, the application becomes better suited for a web environment and provides a proper separation between presentation (HTML) and logic (PHP).
+
+---
+
+### 5. 🔄 **Changes in the Workflow**
+**Request-Response Cycle**: The workflow in the new system differs significantly from the old console application, implementing the standard web application request-response cycle:
+
+- **Old Console Workflow**:
+  - The `Main` class managed a continuous main loop that processed user input
+  - Actions were executed directly based on console input
+  - Synchronous, single-user experience
+
+- **New Web Workflow**:
+  - Users make requests via forms and web pages
+  - The `Router` determines the appropriate controller and action
+  - Controllers process the logic and pass data to the appropriate HTML template
+  - Stateless, multi-user capable
+
+**Professional Context**: This new approach aligns with modern web applications and provides a more user-friendly experience. It's the same pattern used by all professional web frameworks.
+
+## ✅ Professional Quality Checklist
+
+**Code Organization & Naming**:
+- [ ] Variables are written in English
+- [ ] Variables are in camelCase
+- [ ] Variable naming is clear and descriptive
+- [ ] Each code block (starts with `{` and ends with `}`) is preceded by a line of comment
+- [ ] Comments are written in English
+- [ ] The code is formatted according to professional standards
+
+**Performance & Best Practices**:
+- [ ] A loop contains only code that actually needs to be repeated. Calculations or other heavy operations that remain the same for each iteration should not be in a loop
+- [ ] Declare variables as close as possible to where they are used
+- [ ] The code contains no/very little code duplication (DRY: Don't Repeat Yourself)
+
+**Object-Oriented Design**:
+- [ ] Methods do only 1 thing. If you notice that your method does multiple things, split it into multiple methods
+- [ ] A method has a self-documenting name. From the method name it is immediately clear what it does
+- [ ] A method has a PHPDoc comment above the method. This states what the method does, and what the parameters are
+- [ ] A class has a PHPDoc comment above the class. This states what the class is responsible for, so that it is clear which code belongs in the class
+
+**Web Development Standards**:
+- [ ] Proper separation of concerns (MVC pattern)
+- [ ] HTML templates separated from PHP logic
+- [ ] Router handles all URL routing properly
+- [ ] Controllers manage business logic without direct HTML output

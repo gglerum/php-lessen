@@ -1,25 +1,175 @@
-<h1>
-    <?= $book->title ?>
-</h1>
-<p><strong>Author:</strong>
-    <?= $book->author ?>
-</p>
-<p><strong>ISBN: </strong>
-    <?= $book->isbn ?>
-</p>
-<p><strong>Genre: </strong>
-    <?= $book->genre ?>
-</p>
-<p><strong>Age Rating: </strong>
-    <?= $book->ageRating ?>
-</p>
-<p><strong>Pages: </strong>
-    <?= $book->pages ?>
-</p>
-<p><strong>Publisher: </strong>
-    <?= $book->publisher ?>
-</p>
-<p><strong>Year Published: </strong>
-    <?= $book->getYearPublished() ?>
-</p>
-<a href="/">Back</a>
+<!DOCTYPE html>
+<!--
+EDUCATIONAL EXAMPLE: Book Details Page (Data Display View)
+
+This template demonstrates how to display detailed information about a single object.
+It shows the evolution from simple console output to rich web presentation.
+
+KEY CONCEPTS:
+1. Data Presentation: Structured display of object properties
+2. HTML Semantics: Meaningful markup for content hierarchy
+3. PHP Integration: Accessing object properties in templates
+4. Navigation: User flow between different pages
+5. Security: Safe output of user data
+
+FROM MODULE 04 TO MODULE 05:
+- Module 04: echo "Title: " . $book->getTitle();
+- Module 05: <h1><?= $book->title ?></h1> with rich HTML structure
+
+The $book variable comes from BookController::show($id) method.
+-->
+<html>
+
+<head>
+    <!-- Dynamic page title using book data -->
+    <title>
+        <?= $book->title ?> - Library
+    </title>
+</head>
+
+<body>
+    <!-- 
+    PAGE HEADER: Book title as main heading
+    
+    SEMANTIC HTML:
+    - h1: Main page heading (most important content)
+    - Only one h1 per page for proper document structure
+    - Search engines and screen readers understand page hierarchy
+    
+    PHP OUTPUT SECURITY:
+    - <?= ?> automatically escapes HTML characters
+    - Prevents XSS attacks if book title contains < > & characters
+    - Equivalent to <?php echo htmlspecialchars($book->title); ?>
+    -->
+    <h1>
+        <?= $book->title ?>
+    </h1>
+
+    <!-- 
+    INFORMATION DISPLAY PATTERN:
+    Each piece of book data follows a consistent structure:
+    1. Paragraph container for semantic grouping
+    2. Strong element for field labels (visual emphasis)
+    3. PHP output for dynamic data
+    
+    This creates a structured, scannable layout for users.
+    -->
+
+    <!-- 
+    AUTHOR INFORMATION:
+    Direct access to readonly property - no getter method needed
+    -->
+    <p><strong>Author:</strong>
+        <?= $book->author ?>
+    </p>
+
+    <!-- 
+    ISBN DISPLAY:
+    International Standard Book Number for book identification
+    -->
+    <p><strong>ISBN: </strong>
+        <?= $book->isbn ?>
+    </p>
+
+    <!-- 
+    GENRE CLASSIFICATION:
+    Could be enhanced with genre-specific styling or links
+    -->
+    <p><strong>Genre: </strong>
+        <?= $book->genre ?>
+    </p>
+
+    <!-- 
+    AGE RATING:
+    Content appropriateness indicator
+    -->
+    <p><strong>Age Rating: </strong>
+        <?= $book->ageRating ?>
+    </p>
+
+    <!-- 
+    PAGE COUNT:
+    Numeric data displayed as-is
+    Could be enhanced: <?= number_format($book->pages) ?> pages
+    -->
+    <p><strong>Pages: </strong>
+        <?= $book->pages ?>
+    </p>
+
+    <!-- 
+    PUBLISHER INFORMATION:
+    Publishing company details
+    -->
+    <p><strong>Publisher: </strong>
+        <?= $book->publisher ?>
+    </p>
+
+    <!-- 
+    CALCULATED DATA: Using business logic method
+    
+    IMPORTANT CONCEPT:
+    Instead of formatting the date in the template, we use the
+    getYearPublished() method from the Book class. This demonstrates:
+    
+    1. Separation of Concerns: Date formatting logic stays in the Model
+    2. Reusability: Same method can be used in lists, details, search results
+    3. Testability: Business logic can be tested independently
+    4. Consistency: All pages show dates in the same format
+    
+    EVOLUTION FROM MODULE 04:
+    This shows how business logic methods enhance web applications
+    -->
+    <p><strong>Year Published: </strong>
+        <?= $book->getYearPublished() ?>
+    </p>
+
+    <!-- 
+    NAVIGATION: Return to book list
+    
+    USER FLOW:
+    - User clicks "Back" link
+    - Browser requests GET /
+    - Router calls BookController::index()
+    - User sees homepage with full book list
+    
+    This creates a clear, predictable navigation pattern.
+    -->
+    <a href="/">Back</a>
+
+    <!-- 
+    PROFESSIONAL ENHANCEMENTS:
+    Real applications might include:
+    
+    1. Book Cover Image:
+       <img src="/covers/<?= $book->isbn ?>.jpg" alt="<?= $book->title ?> cover">
+    
+    2. Related Books:
+       <?php $relatedBooks = getBooksByGenre($book->genre); ?>
+       <h3>More <?= $book->genre ?> Books</h3>
+    
+    3. Action Buttons:
+       <div class="actions">
+           <a href="/book/<?= $id ?>/edit" class="button">Edit</a>
+           <a href="/book/<?= $id ?>/delete" class="button danger">Delete</a>
+       </div>
+    
+    4. Rich Content:
+       <div class="description">
+           <h3>Description</h3>
+           <p><?= nl2br($book->description) ?></p>
+       </div>
+    
+    5. Metadata:
+       <div class="metadata">
+           <p>Added: <?= $book->createdAt->format('F j, Y') ?></p>
+           <p>Updated: <?= $book->updatedAt->format('F j, Y') ?></p>
+       </div>
+    
+    6. Social Sharing:
+       <div class="sharing">
+           <a href="mailto:?subject=<?= urlencode($book->title) ?>">Share via Email</a>
+       </div>
+    -->
+</body>
+
+</html>

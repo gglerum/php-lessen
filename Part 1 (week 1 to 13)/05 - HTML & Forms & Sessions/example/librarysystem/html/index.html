@@ -1,15 +1,71 @@
+<!DOCTYPE html>
+<!--
+EDUCATIONAL EXAMPLE: Homepage Template (View Layer)
+
+This is the "View" in the MVC pattern - responsible for presenting data to users.
+Unlike console applications that use echo statements, web applications use HTML
+templates to create rich, interactive user interfaces.
+
+KEY WEB CONCEPTS DEMONSTRATED:
+1. HTML Document Structure: Proper HTML5 semantics
+2. PHP-HTML Integration: Mixing server-side logic with client-side markup
+3. Dynamic Content: Lists generated from PHP data
+4. Navigation: Links that map to controller routes
+5. User Interface: Visual presentation instead of text menus
+
+FROM MODULE 04 TO MODULE 05:
+- Module 04: echo "1. Add Book\n2. Show Books\n";
+- Module 05: <a href="/book">Add a Book</a> + dynamic book list
+
+The $books variable comes from BookController::index() method.
+-->
 <html>
 
 <head>
+    <!-- Page title appears in browser tab -->
     <title>Library Home Page</title>
 </head>
 
 <body>
+    <!-- 
+    SEMANTIC HTML: Using proper heading hierarchy
+    h1 is the main page title, visible to users and search engines
+    -->
     <h1>Library Home Page</h1>
+
+    <!-- 
+    CONTENT ORGANIZATION: Clear section for book listing
+    <strong> provides semantic emphasis (better than <b>)
+    -->
     <strong>List of Books</strong>
+
+    <!-- 
+    DYNAMIC LIST GENERATION: PHP loop creates HTML list items
+    This replaces the console-based book listing from Module 04
+    -->
     <ul>
         <?php foreach($books as $id => $book): ?>
+        <!-- 
+        IMPORTANT PHP-HTML CONCEPTS:
+        
+        1. Alternative PHP Syntax: foreach(): ... endforeach;
+           - Cleaner than { } in HTML templates
+           - Better readability when mixing PHP and HTML
+        
+        2. Variable Access: $book->title
+           - Direct access to readonly properties
+           - No need for getter methods
+        
+        3. URL Generation: /book/<?= $id ?>
+           - Creates links like /book/1, /book/2, etc.
+           - Router will map these to BookController::show($id)
+        
+        4. Data Security: Using <?= ?> for safe output
+           - Equivalent to <?php echo htmlspecialchars(...) ?>
+           - Prevents XSS attacks by escaping HTML characters
+        -->
         <li>
+            <!-- Each book becomes a clickable link to its detail page -->
             <a href="/book/<?= $id ?>">
                 <?= $book->title ?>
             </a>
@@ -17,7 +73,40 @@
         <?php endforeach; ?>
     </ul>
 
+    <!-- 
+    NAVIGATION LINK: Connects to the add book form
+    This URL maps to BookController::createBook() via the router
+    
+    URL ROUTING EXPLAINED:
+    - User clicks this link
+    - Browser requests GET /book
+    - Router calls BookController::createBook()
+    - Controller includes form.html template
+    - User sees the add book form
+    -->
     <a href="/book">Add a Book</a>
+
+    <!-- 
+    ENHANCEMENT OPPORTUNITIES:
+    In a professional application, you might add:
+    
+    1. Search functionality:
+       <form method="get" action="/search">
+           <input name="query" placeholder="Search books...">
+           <button type="submit">Search</button>
+       </form>
+    
+    2. Empty state handling:
+       <?php if (empty($books)): ?>
+           <p>No books available yet. <a href="/book">Add the first book!</a></p>
+       <?php endif; ?>
+    
+    3. CSS styling:
+       <link rel="stylesheet" href="/styles.css">
+    
+    4. Book count:
+       <p>Total books: <?= count($books) ?></p>
+    -->
 </body>
 
 </html>

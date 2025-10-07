@@ -1,72 +1,251 @@
+<!DOCTYPE html>
+<!--
+EDUCATIONAL EXAMPLE: Book Creation Form (Interactive View)
+
+This template demonstrates professional form design and user interaction.
+Forms are the primary way users input data in web applications.
+
+KEY FORM CONCEPTS:
+1. HTML5 Form Elements: Modern input types and validation
+2. Form Processing: POST method for data submission
+3. CSS Styling: Visual organization and user experience
+4. Accessibility: Proper labels and semantic structure
+5. User Flow: Clear submission and navigation paths
+
+FROM MODULE 04 TO MODULE 05:
+- Module 04: readline("Enter book title: ")
+- Module 05: <input name="title" /> with visual labels and validation
+
+This form POSTs to BookController::store() for processing.
+-->
 <html>
 
 <head>
     <title>Fill out Book Form</title>
+
+    <!-- 
+    EMBEDDED CSS: Basic styling for form usability
+    In professional applications, this would be in a separate CSS file
+    -->
     <style>
+        /* 
+        FORM STYLING PRINCIPLES:
+        
+        1. Consistent Layout: All labels have the same width
+        2. Visual Hierarchy: Margins create clear sections
+        3. Usability: Clear visual separation between fields
+        */
+
         label {
+            /* Make all labels the same width for alignment */
             display: inline-block;
             width: 100px;
         }
 
         div {
+            /* Add space between form fields */
             margin: 0 0 5px;
         }
+
+        /* 
+        ENHANCEMENT OPPORTUNITIES:
+        Professional forms might include:
+        
+        input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        
+        input:focus {
+            border-color: #007cba;
+            outline: none;
+        }
+        
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        */
     </style>
 </head>
 
 <body>
+    <!-- 
+    FORM ELEMENT: The foundation of user input
+    
+    FORM ATTRIBUTES EXPLAINED:
+    - method="post": Send data securely (not visible in URL)
+    - action="/book": Submit to this URL (handled by BookController::store())
+    
+    FORM PROCESSING FLOW:
+    1. User fills out form and clicks submit
+    2. Browser sends POST request to /book with form data
+    3. Router calls BookController::store()
+    4. Controller processes $_POST data
+    5. Controller creates Book object and stores in session
+    6. Controller redirects to book details page
+    -->
     <form method="post" action="/book">
+
+        <!-- 
+        FORM FIELD PATTERN:
+        Each field follows the same structure for consistency:
+        1. Container div for spacing
+        2. Label with descriptive text
+        3. Input with appropriate type and name
+        
+        ACCESSIBILITY: Labels are connected to inputs for screen readers
+        -->
+
         <div>
+            <!-- 
+            LABEL ELEMENT: Describes the input field
+            - for="title": Connects to input with name="title"
+            - Clicking label focuses the input (better UX)
+            -->
             <label for="title">
                 Title:
             </label>
+            <!-- 
+            TEXT INPUT: Basic string input
+            - name="title": Becomes $_POST['title'] in PHP
+            - No type specified = defaults to text
+            -->
             <input name="title" />
         </div>
+
         <div>
             <label for="author">
                 Author:
             </label>
             <input name="author" />
         </div>
+
         <div>
             <label for="isbn">
                 Isbn:
             </label>
+            <!-- 
+            ISBN FIELD: Could be enhanced with pattern validation
+            Professional version might include:
+            <input name="isbn" pattern="[0-9-]{10,17}" title="ISBN format: 978-0123456789">
+            -->
             <input name="isbn" />
         </div>
+
         <div>
             <label for="genre">
                 Genre:
             </label>
+            <!-- 
+            GENRE FIELD: Could be a dropdown for consistency
+            Professional version might use:
+            <select name="genre">
+                <option value="fiction">Fiction</option>
+                <option value="non-fiction">Non-Fiction</option>
+                <option value="science">Science</option>
+            </select>
+            -->
             <input name="genre" />
         </div>
+
         <div>
             <label for="ageRating">
                 Age Rating:
             </label>
             <input name="ageRating" />
         </div>
+
         <div>
             <label for="pages">
                 Pages:
             </label>
+            <!-- 
+            HTML5 NUMBER INPUT: Automatic validation and UI
+            - type="number": Browser shows number input with up/down arrows
+            - Prevents non-numeric input
+            - Mobile browsers show numeric keypad
+            
+            ENHANCEMENT OPPORTUNITIES:
+            <input name="pages" type="number" min="1" max="10000" required>
+            -->
             <input name="pages" type="number" />
         </div>
+
         <div>
             <label for="publisher">
                 Publisher:
             </label>
             <input name="publisher" />
         </div>
+
         <div>
             <label for="publishedAt">
                 Published At:
             </label>
+            <!-- 
+            HTML5 DATE INPUT: Modern date selection
+            - type="date": Browser shows date picker widget
+            - Automatic date format validation
+            - Consistent date format across browsers
+            - Becomes DateTime object in PHP via createFromFormat()
+            
+            DATE PROCESSING FLOW:
+            1. User selects date in browser widget
+            2. Browser sends YYYY-MM-DD format to server
+            3. PHP converts to DateTime object
+            4. Book object stores as DateTime for calculations
+            -->
             <input name="publishedAt" type="date" />
         </div>
+
+        <!-- 
+        SUBMIT BUTTON: Triggers form submission
+        - type="submit": Special button that submits the form
+        - value="Submit": Text displayed on the button
+        
+        FORM SUBMISSION PROCESS:
+        1. User clicks this button
+        2. Browser validates required fields (if specified)
+        3. Browser sends POST request with all form data
+        4. Server processes the request
+        -->
         <input type="submit" value="Submit" />
     </form>
+
+    <!-- 
+    NAVIGATION: Easy way to cancel and return
+    - href="/": Returns to homepage (BookController::index())
+    - Provides clear user escape route
+    -->
     <a href="/">Back</a>
+
+    <!-- 
+    PROFESSIONAL ENHANCEMENTS:
+    Real applications would include:
+    
+    1. Form Validation:
+       <script>
+           // Client-side validation for immediate feedback
+       </script>
+    
+    2. Error Display:
+       <?php if (isset($errors)): ?>
+           <div class="errors">
+               <?php foreach ($errors as $error): ?>
+                   <p class="error"><?= $error ?></p>
+               <?php endforeach; ?>
+           </div>
+       <?php endif; ?>
+    
+    3. CSRF Protection:
+       <input type="hidden" name="_token" value="<?= generateCsrfToken() ?>">
+    
+    4. Progressive Enhancement:
+       - Works without JavaScript
+       - Enhanced with JavaScript for better UX
+    -->
 </body>
 
 </html>
