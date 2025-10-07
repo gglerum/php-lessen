@@ -1,179 +1,311 @@
-# Bibliotheek Systeem - Deel 2
+# 🏛️ Library Management System - Object-Oriented Programming
 
-Onderstaand is een klassendiagram:
+## 🎯 Assignment Overview
 
-![Book & Author classes](./library1.png)
+In this assignment, you'll build a **professional library management system** using Object-Oriented Programming (OOP). This project demonstrates how OOP transforms the procedural library system from Module 03 into a scalable, maintainable application that follows industry best practices.
 
-Het bovenste gedeelte van een klasseblok zijn de properties en het onderste gedeelte zijn de methods/functies. Letop het `-` en `+` teken; `-` is voor "private" properties en functies, `+` voor public.
+**What You're Building**: A console-based library system where librarians can manage books using proper OOP design patterns and professional code organization.
 
-Het pijltje tussen de twee klasseblokken geeft de relatie aan. `*` houdt in dat die kant van de relatie vaker voor komt. De `1` betekent dat die kant van de relatie maar één keer voorkomt. Kortom: een auteur kan meerdere boeken hebben, maar een boek heeft maar één auteur. *In de praktijk kan het natuurlijk voorkomen dat een boek meerdere auteurs heeft, maar voor nu houden we het simpel*.
+## 📊 System Architecture
 
-Letop: er zijn geen "setter" methodes, dus de properties mogen "readonly" zijn.
+Your library system consists of these essential classes:
 
+![Library System Architecture](library1.png)
 
-## Classes
+### Understanding Class Diagrams
 
-Zoals je aan de klassendiagram kunt zien werken we voor `Book` niet meer met een array maar met een class. We hebben nog wel een array nodig om de `Book` objecten in te stoppen.
+**Class Diagram Reading Guide**:
+- **Top Section**: Properties (data the class stores)
+- **Bottom Section**: Methods (actions the class can perform)
+- **Symbols**: `-` = private (internal use only), `+` = public (accessible from outside)
+- **Relationships**: Arrow shows connection between classes
+- **Multiplicity**: `1` = one instance, `*` = multiple instances
 
-Naast de classes voor boek en auteur zijn er ook twee andere classes.
+**Relationship Explanation**: One author can write multiple books (`*`), but each book has only one author (`1`). *Note: Real books can have multiple authors, but we're keeping this simple for learning purposes.*
 
-### Main
-We maken zo min mogelijk gebruik van de "index.php", die gaan we alleen nog maar gebruiken om onze applicatie te "bootstrappen". We kunnen alle imports van de classes met `require_once` in de "index.php" zetten.
+**Important Design Decision**: Notice there are no "setter" methods in the diagram. This means properties should be **readonly** after creation—a professional practice that prevents accidental data corruption.
 
-Het enige wat "index.php" daarnaast nog doet is een object aanmaken van de `Main` class.
+### Core Classes Overview
 
-Alle methodes die we eerder hadden in de "index.php" zijn dus verplaatst naar de `Main` class.
+#### 1. 📖 Book Class (Entity)
+Represents a single book in the library with all its essential information.
 
-### BookRepository
-In dit project gaan we gebruik maken van meerdere "Design Patterns". Dit zijn oplossingen voor het samenwerken van klassen en objecten die zichzelf al meerdere keren bewezen hebben.
+**Properties (Private - Encapsulation)**:
+- `id` (int): Unique identifier for database-style management
+- `title` (string): Book title
+- `author` (string): Author name
+- `isbn` (string): International Standard Book Number
+- `publisher` (string): Publishing company
+- `publication_date` (string): Publication date
+- `pages` (int): Number of pages
 
-De "Repository Pattern" is zo'n Design Pattern. Met het gebruik van deze pattern besteden we het beheren van onze data uit aan een aparte class, zodat als we iets moeten veranderen aan de logica voor het opslaan van onze objecten, dat alleen in de Repository class hoeft te gebeuren.
+**Methods (Public Interface)**:
+- `__construct()`: Creates a new Book object with all required data
+- **Getters**: `getId()`, `getTitle()`, `getAuthor()`, `getIsbn()`, `getPublisher()`, `getPublicationDate()`, `getPages()`
 
-Voor nu beheren we alleen boeken, dus is de `BookRepository` voldoende. Deze class heeft dus alle functies voor het beheren van de `books` array.
+#### 2. 👤 Author Class (Entity)
+Represents an author with their information.
 
-Samengevat: de `Main` class raakt niet zelf de `books` array aan, dit gebeurt via de `BookRepository` class.
+**Properties (Private)**:
+- `id` (int): Unique author identifier
+- `name` (string): Author's full name
 
-#### add(Book ...$books)
-Ik wil wanneer dat kan zo min mogelijk functies toevoegen. Het liefst hergebruik ik een functie als dat kan.
+**Methods (Public)**:
+- `__construct()`: Creates a new Author object
+- `getId()`, `getName()`: Getter methods
 
-Ik wil bij het toevoegen van een boek de mogelijkheid hebben om meerdere boeken in één keer toe te voegen. Dit kan met iets wat we `varargs` noemen.
+#### 3. 🏗️ Main Class (Application Controller)
+Orchestrates the entire application and handles user interaction.
 
-```PHP
+**Purpose**: Manages the application flow without directly touching data arrays. All data operations go through the Repository.
+
+**Key Principle**: The Main class doesn't manipulate the `books` array directly—it delegates all data operations to the `BookRepository` class. This is **Separation of Concerns** in action.
+
+#### 4. 🗃️ BookRepository Class (Data Management)
+Manages the collection of books and provides all data operations using the **Repository Pattern**.
+
+**Properties**:
+- `books` (array): Collection of Book objects
+- Static ID counter for auto-incrementing book IDs
+
+**Methods**:
+- `__construct()`: Initializes empty repository
+- `add(Book ...$books)`: Adds one or more books to the collection
+- `getAll()`: Returns all books in the library
+- `get(int $id)`: Finds a specific book by its ID
+- `remove(int $id)`: Removes a book from the collection
+
+## 🏗️ Understanding the Repository Pattern
+
+The **Repository Pattern** is a professional design pattern that separates **data storage logic** from **business logic**. This is a crucial concept in enterprise application development.
+
+### Why Use Repository Pattern?
+
+**In Your Library System**:
+- **Book Class**: Focuses solely on representing book data (Single Responsibility Principle)
+- **BookRepository Class**: Handles all storage, retrieval, and management operations
+- **Main Class**: Orchestrates user interactions without knowing how data is stored
+- **Separation of Concerns**: Each class has a single, clear responsibility
+
+### Professional Benefits:
+- **📚 Maintainability**: Changes to data storage don't affect Book objects or Main class
+- **🔄 Reusability**: Repository can be used by multiple controllers or services
+- **🧪 Testability**: Easy to create mock repositories for testing
+- **📈 Scalability**: Can easily switch from arrays to databases later
+
+**Real-World Example**: In a professional application, you might switch from storing books in arrays to storing them in a MySQL database. With the Repository Pattern, you only change the BookRepository class—the Book class and your application logic remain unchanged.
+
+## 🔧 Advanced PHP Concepts
+
+### Variable Arguments (Varargs)
+PHP supports **variable arguments**, allowing functions to accept unlimited parameters. This is useful for flexible methods that can handle multiple items at once.
+
+```php
+// Repository method using varargs
 public function add(Book ...$books): void
 {
+    // The ...$books converts all passed Book objects into an array
     $this->books = array_merge($this->books, $books);
 }
 ```
 
-De `...` in de bovenstaande methode zetten alle meegegeven parameters om naar één array. Wat het mogelijk maakt om de `add` functie aan te roepen met meerdere boeken.
+**Usage Examples**:
 
-```PHP
-$bookRepository = new BookRepository();
-$bookRepository->add(new Book(/**/), new Book(/**/), new Book(/**/));
+```php
+$repository = new BookRepository();
+
+// Add multiple books at once
+$repository->add(new Book(/**/), new Book(/**/), new Book(/**/));
+
+// Add a single book
+$repository->add(new Book(/**/));
+
+// Add from an array using spread operator
+$bookArray = [new Book(/**/), new Book(/**/), new Book(/**/)];
+$repository->add(...$bookArray); // Spreads array into individual arguments
 ```
 
-of met maar één boek.
+**Key Concept**: The `...` operator works both ways:
+- **In method parameters**: Collects multiple arguments into an array (varargs)
+- **When calling methods**: Spreads an array into individual arguments (spread operator)
 
-```PHP
-$bookRepository->add(new Book(/**/));
-```
+## 🆔 Auto-Incrementing ID Patterns
 
-of met een array als we de "spread operator" gebruiken; dat is wanneer we de `...` gebruiken wanneer we een array aan een parameter meegeven. De spread operator splits een array op in individuele variabelen. Iets wat de `varargs` parameter dus nodig heeft.
+For professional data management, you need unique IDs for each book. Here's the recommended pattern using **static properties**:
 
-```PHP
-$books = [new Book(/**/), new Book(/**/), new Book(/**/), new Book(/**/)];
-$bookRepository->add(...$books);
-```
-
-### Constructors & id property
-De property `id` is één waarde die je eigenlijk niet steeds met het handje wilt invullen. Inprincipe is dit een oplopende waarde die per object van een class anders is. Het makkelijkste is om de constructor van je class de waarde van `id` te laten bepalen.
-
-```PHP
+```php
 class Author {
-    private static int $count = 0;
-    private int $id;
+    private static int $count = 0;  // Shared across ALL Author objects
+    private int $id;                // Unique to each Author instance
 
-    public function __construct(/*Je constructor parameters*/){
-        $this->id = ++static::$count;
+    public function __construct(string $name) {
+        $this->id = ++static::$count;  // Each new Author gets the next ID
+        $this->name = $name;
     }
 }
 ```
 
-Op deze manier krijgt elk nieuw object van `Author` het eerst volgende `id`.
+**How This Works**:
+- **Static Property**: `$count` is shared by all Author objects (not per instance)
+- **Automatic Increment**: Each new Author automatically gets the next available ID
+- **No Duplicates**: Guaranteed unique IDs without manual management
 
---------
+**Professional Advantage**: This pattern ensures data integrity and follows the "Don't Repeat Yourself" (DRY) principle.
 
-De overige functies van de classes zijn redelijk straight forward. 
+## 🚀 Implementation Strategy
 
-Maak de `Main` class aan en verhuis alle methodes uit de "index.php" daar naar toe en geef ze de juiste `access-modifiers`. Zorg ook dat ze de nieuwe `Book` en `Author` objecten kunnen gebruiken.
+### Step 1: Migrate from index.php to Main Class
+**Professional Practice**: Keep your entry point (`index.php`) minimal. It should only:
+1. Load required classes with `require_once` statements
+2. Create a Main object and start the application
 
-Verwijder de functies die uitbesteed zijn aan de `BookRepository` en wijzig de overige functies zo dat ze met de `BookRepository` samen kunnen werken.
+**All your previous functions** from the procedural version should move to the `Main` class with proper access modifiers.
 
-## Use Cases
-We breiden "Use Case 2" uit en voegen "Use Case 5" toe.
+### Step 2: Implement Repository Pattern
+**Data Responsibility Transfer**: 
+- Remove direct array manipulation from Main class
+- All data operations go through BookRepository
+- Main class focuses on user interaction and application flow
 
-### Use Case 2: Toon alle boeken
+### Step 3: Convert Data Structures
+**From Arrays to Objects**: Transform your associative arrays into proper Book and Author objects with type safety and encapsulation.
 
-**Primary Actor:** Eindgebruiker
+## 📋 Enhanced Use Cases
 
-**Preconditions:**
-- De eindgebruiker heeft toegang tot het systeem.
-- Er zijn al boeken beschikbaar in het systeem.
+### Use Case 2: Display All Books (Enhanced)
 
-**Postconditions:**
-- De lijst van alle boeken wordt getoond aan de eindgebruiker.
+**Goal**: User wants to see all books and optionally view detailed information about a specific book
 
-**Main Success Scenario:**
-1. De eindgebruiker kiest de optie om alle boeken te tonen.
-2. Het systeem haalt de lijst van alle boeken op.
-3. Het systeem toont de lijst van alle boeken de titel en auteur.
-4. Het systeem vraagt de gebruiker om een boek te kiezen om de details te tonen.
-5. De eindgebruiker kiest een boek.
-6. Het systeem gaat verder met "Use Case 4".
+**Main Success Scenario**:
+1. User chooses "Show All Books" from the main menu
+2. System retrieves all books from BookRepository
+3. System displays list showing only **title and author** for readability
+4. System prompts user to select a book for detailed view or return to menu
+5. User selects a book by entering its number
+6. System proceeds to **Use Case 5: Show Book Details**
 
-**Extensions:**
-- 2a. Er zijn geen boeken beschikbaar in het systeem:
-    - 1. Het systeem toont een melding dat er geen boeken beschikbaar zijn.
-- 5a. De eindgebruiker kiest er voor om terug te gaan naar het hoofdmenu.
-    - 1. Het systeem keert terug naar het hoofdmenu.
-- 5b. De eindgebruiker kiest een niet-bestaand boek:
-    - 1. Het systeem toont een foutmelding en vraagt de eindgebruiker om opnieuw een boek te selecteren.
+**Extensions (Error Handling)**:
+- **2a.** No books exist in the system:
+  - System displays "No books available yet. Add some books first!"
+  - System returns to main menu
+- **5a.** User chooses to return to main menu:
+  - System returns to main menu without showing details
+- **5b.** User enters invalid book number:
+  - System shows error message "Invalid selection. Please try again."
+  - System re-prompts for valid book selection
 
--------
+### Use Case 5: Show Book Details (New)
 
-De volgende Use Case wordt toegevoegd:
+**Goal**: User wants to see complete information about a specific book and optionally remove it
 
-### Use Case 5: Toon details van een boek
+**Main Success Scenario**:
+1. User selects a book from the books list
+2. System displays complete book details (title, author, ISBN, publisher, publication date, pages)
+3. System offers option to remove the book or return to book list
+4. User makes selection
 
-**Primary Actor:** Eindgebruiker
+**Extensions (Error Handling)**:
+- **3a.** User chooses to remove the book:
+  1. System displays confirmation dialog: "Are you sure you want to remove '[Book Title]'? (y/n)"
+  2. User confirms removal
+  3. System removes book from repository using `remove()` method
+  4. System displays success message: "Book '[Book Title]' has been removed successfully"
+  5. System returns to "Show All Books" view
+- **3a.2a.** User cancels removal:
+  - System cancels operation and returns to book details view
 
-**Preconditions:**
-- De eindgebruiker heeft toegang tot het systeem.
-- Er zijn al boeken beschikbaar in het systeem.
+## 🛠️ Required Functions
 
-**Postconditions:**
-- De details van het geselecteerde boek worden getoond aan de eindgebruiker.
-- Het geselecteerde boek kan worden verwijderd uit de bibliotheek.
+### Main Class Functions
 
-**Main Success Scenario:**
-1. De eindgebruiker kiest de optie om de details van een boek te tonen.
-2. Het systeem toont de details van het geselecteerde boek (titel, auteur, ISBN, uitgever, publicatiedatum, aantal pagina's).
+**Core Navigation**:
+- `showMainMenu()`: Display main application menu
+- `showAllBooks()`: Enhanced to include book selection for details
 
-**Extensions:**
-- 2a. De eindgebruiker kiest de optie om het boek te verwijderen.
-- 1. Het systeem vraagt de eindgebruiker om de keuze te bevestigen.
-- 2. De eindgebruiker bevestigt de keuze.
-    - 2a. De eindgebruiker annuleert de verwijdering.
-        - 1. Het systeem annuleert de verwijdering en keert terug naar de detailweergave van het boek.
-- 3. Het systeem verwijdert het geselecteerde boek uit de lijst van boeken.
-- 4. Het systeem keert terug naar het 'Toon Alle Boeken' menu en bevestigt dat het boek succesvol is verwijderd.
+**New Functions**:
+- `showBookDetails(int $bookId)`: 
+  - Calls `BookRepository->get($bookId)` to retrieve book
+  - Displays complete book information
+  - Offers removal option
+- `showRemoveBookDialogue(Book $book)`: 
+  - Confirms user intent to delete
+  - Calls `BookRepository->remove($bookId)` if confirmed
+  - Provides user feedback
 
-## Functies
-Er komen een aantal functies bij in de `Main` class en er wijzigen een paar.
+**Repository Integration**: All functions that previously manipulated the `$books` array directly must now use BookRepository methods.
 
-- Use Case 2: Toon alle boeken
- - Voeg aan `showAllBooks()` toe dat de eind gebruiker een index kan invoeren voor het tonen van boek details.
-    - `showBookDetails()` - roept de `get()` methode aan op het `BookRepository` object, toont het boek en geeft de eind gebruiker de mogelijkheid om het boek te verwijderen.
-        - `showRemoveBookDialogue()` wordt getoond wanneer de eind gebruiker kiest om een boek te verwijderen. Wanneer de eind gebruiker het verwijderen bevestigt wordt de `remove()` methode aan geroepen op het `BookRepository` object.
+## 🧪 Testing Strategy
 
-## Testen
-Om het programmeren wat makkelijker te maken is het handig om testen te schrijven, zodat je niet een heel menu door hoeft om nieuwe functionaliteit te testen.
+**Why Testing Matters**: Instead of manually navigating through menus every time you make a change, write tests to verify your functionality automatically.
 
-Wanneer je zover bent laat het mij dan weten. Het is makkelijker om te laten zien hoe je testen moet schrijven, dan het te beschrijven.
+**When to Test**: Once you've implemented your basic structure, we'll cover how to write proper tests. Testing is easier to demonstrate than to describe in text.
 
-## Checklist
-- Variabelen zijn in het engels geschreven.
-- Variabelen zijn in camelCase.
-- Naamgeving van de variabelen zijn duidelijk en beschrijvend.
-- Elk code block (begint met `{` en eindigt met `}`) wordt voorgegaan door een regel commentaar.
-- Comments zijn in het engels geschreven.
-- De code is geformateerd aan de hand van de Google Java Style Guide.
-- Een loop bevat alleen code dat ook echt herhaalt hoort te worden. Berekeningen of andere zware
-  operaties die voor elke iteratie hetzelfde blijven, horen niet in een loop te staan.
-- Declareer variabelen zo dicht mogelijk waar het gebruikt word.
-- De code bevat geen/tot zeer weinig code duplicatie. (DRY: Don't Repeat Yourself)
-- Methodes doen maar 1 ding. Als je merkt dat je methode meerdere dingen doet, splits deze dan op in meerdere methodes.
-- Een methode heeft een zelf documenterende naam. Aan de naam van de methode is het direct duidelijk wat het doet.
-- Een methode heeft een Javadoc commentaar boven de methode. Hierin staat wat de methode doet, en wat de parameters zijn.
-- Een class heeft een Javadoc commentaar boven de class. Hierin staat waar de class voor verantwoordelijk is.
-  Zodat het duidelijk is welke code in de class hoort.
+**Professional Benefit**: Tests allow you to confidently make changes and immediately verify that everything still works correctly.
+
+## 📋 Quality Checklist
+
+**Code Organization & Naming**:
+- [ ] All variable names are in English and use camelCase
+- [ ] All class names use PascalCase (BookRepository, not bookRepository)
+- [ ] Method names clearly describe their purpose: `showBookDetails()` not `showStuff()`
+- [ ] Each code block `{...}` has a comment explaining its purpose
+
+**Object-Oriented Principles**:
+- [ ] Each class has a single, clear responsibility
+- [ ] Properties are private with public getters/setters only when needed
+- [ ] Constructor properly initializes all required properties
+- [ ] Static properties used correctly for shared data (like ID counters)
+
+**Repository Pattern Implementation**:
+- [ ] Main class never directly manipulates the `$books` array
+- [ ] All data operations go through BookRepository methods
+- [ ] Repository methods have clear names (`add()`, `get()`, `remove()`, `getAll()`)
+- [ ] Proper separation between data management and user interface
+
+**Professional Documentation**:
+- [ ] Each class has a PHPDoc comment explaining its responsibility
+- [ ] Each method has a PHPDoc comment describing its purpose and parameters
+- [ ] Code follows consistent formatting standards
+- [ ] No code duplication (DRY: Don't Repeat Yourself)
+
+**Error Handling & User Experience**:
+- [ ] Graceful handling of empty data (no books, invalid selections)
+- [ ] Clear user feedback for all actions
+- [ ] Confirmation dialogs for destructive actions (like removing books)
+- [ ] Input validation with helpful error messages
+
+**Advanced Concepts**:
+- [ ] Proper use of varargs in repository `add()` method
+- [ ] Auto-incrementing IDs implemented with static properties
+- [ ] Understanding and implementation of Repository Pattern
+- [ ] Encapsulation principles followed (private properties, public interface)
+
+## 🎆 How You'll Know You're Ready to Move On
+
+You've mastered Object-Oriented Programming basics when you can:
+
+- [ ] **Create classes** with proper encapsulation (private properties, public methods)
+- [ ] **Implement design patterns** like Repository for professional data management
+- [ ] **Use constructors effectively** with auto-incrementing IDs and proper initialization
+- [ ] **Apply separation of concerns** so each class has a single responsibility
+- [ ] **Handle object relationships** between Books, Authors, and Repository
+- [ ] **Write professional documentation** with clear PHPDoc comments
+- [ ] **Debug object interactions** when data flows between classes
+
+**Remember**: This module is about learning to think in terms of objects and responsibilities rather than just functions and data. Every class you create should have a clear purpose that you can explain in one sentence.
+
+## 💡 Professional Development Tips
+
+**Think in Objects**: When planning your application, ask "What real-world things am I modeling?" Each thing becomes a class.
+
+**Single Responsibility**: Each class should have only one reason to change. If you're tempted to add unrelated functionality, create a new class.
+
+**Documentation First**: Before writing a class, write a comment explaining what it's responsible for. This clarifies your thinking.
+
+**Test Early**: Once you have basic functionality, write tests to verify it works. This makes debugging much easier.
+
+## ➡️ What's Next?
+
+After mastering basic OOP concepts, you'll advance to [05 - HTML & Forms & Sessions](../05%20-%20HTML%20&%20Forms%20&%20Sessions/) where you'll learn to build web interfaces for your object-oriented applications and handle user sessions.
+
+**Remember**: Object-Oriented Programming is the foundation of modern PHP development. The patterns you learn here—encapsulation, separation of concerns, and design patterns—are used in every professional PHP framework including Laravel.
