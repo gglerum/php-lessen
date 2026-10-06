@@ -20,9 +20,20 @@ elkaar en zonder gebruik te maken van functies. In dit voorbeeld kun je zien hoe
 ## Huiswerk
 Maak een simpel console raadspel waarbij de speler een getal moet raden tussen 0 en N. N is het getal dat de speler zelf in mag voeren. De speler mag 10 keer raden.
 
-Je kunt gebruik maken van [readline](https://www.php.net/manual/en/function.readline.php) om de gebruiker om input te vragen.
+**Terminal input uitlezen**
 
-Letop: vergeet geen commentaar te gebruiken om te omschrijven wat er in code blokken gebeurt. Code blokken starten met een `{` en eindigen met een `}`.
+Je kunt de volgende snippet gebruiken om gebruikers input uit te lezen.
+```PHP
+// open de terminal input buffer als stream
+$stdin = fopen('php://stdin', 'r');
+// vraag om input
+echo "Jouw input: ";
+// lees de gebruiker input van de terminal en haal wit ruimte voor en achter de input weg
+$input = trim(fgets($stdin));
+
+//sluit de stream weer
+fclose($stdin);
+```
 
 ### Checklist
 - Variabelen zijn in het engels geschreven.
