@@ -26,8 +26,9 @@ Je kunt de volgende snippet gebruiken om gebruikers input uit te lezen.
 ```PHP
 // open de terminal input buffer als stream
 $stdin = fopen('php://stdin', 'r');
+
 // vraag om input
-echo "Jouw input: ";
+echo "Jouw input:";
 // lees de gebruiker input van de terminal en haal wit ruimte voor en achter de input weg
 $input = trim(fgets($stdin));
 
