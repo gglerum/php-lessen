@@ -17,6 +17,8 @@ Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed d
 In de example map staat een eerste versie van Galgje in een procedurele stijl. Dat wil zeggen dat het in één bestand staat, onder
 elkaar en zonder gebruik te maken van functies. In dit voorbeeld kun je zien hoe de eerder genoemde onderwerpen (syntax, comments, variables, etc) gebruikt worden om een simpel console spel te schrijven.
 
+*LETOP: in het voorbeeld wordt gebruik gemaakt van de PHP functie `readline()`. Deze is niet in elke build van PHP besschikbaar. Zie de snippet hieronder by **huiswerk** die gebruikt kan worden om console input uit te lezen.*
+
 ## Huiswerk
 Maak een simpel console raadspel waarbij de speler een getal moet raden tussen 0 en N. N is het getal dat de speler zelf in mag voeren. De speler mag 10 keer raden.
 
