@@ -1,695 +1,358 @@
-# PHP vs Python: Understanding the Differences
-
-> **📍 Learning Path**: Step 1 of 6 → [Step 2: VS Code Extensions](vscode_extensions.md) | [Back to Learning Path](README.md#🎯-your-learning-path)
-
-Coming from Python? Understanding how PHP differs will help you transition smoothly and leverage the strengths of each language. While both are beginner-friendly, PHP has its own conventions and design philosophy **specifically optimized for web development**.
-
-> **New to Web Development?** Don't worry! This guide will explain web concepts as we go. PHP is designed to create websites and web applications that run on servers and respond to user requests through browsers.
-
-## 🎯 Key Learning Objectives
-
-By understanding these differences, you'll:
-
-- **Write PHP with confidence** instead of fighting the syntax
-- **Understand PHP's design philosophy** and why certain features exist
-- **Apply proper PHP conventions** from the beginning
-- **Appreciate PHP's strengths** for web development
-
-## 🔍 Side-by-Side Comparison
-
-### Hello World - The Basics
+## Verschillen tussen PHP & Phyton
+Er zijn een aantal verschillen tussen het schrijven van code voor Python en PHP. Hier vindt je een
+vergelijking op basis van de lessen van Martin.
 
 **Python**
-```python
+```Python
 print("Hello World")
 ```
-
 **PHP**
-```php
+```PHP
 <?php
 echo "Hello World";
-?>
 ```
 
-**Key Insight**: Every PHP file starts with `<?php` and statements end with semicolons. This explicit structure makes PHP's intent crystal clear in web contexts.
+Zoals je ziet aan d bovenstaande snippets is PHP niet heel veel moeilijker dan Python. Er zijn echter wel een
+aantal verschillen. Zoals dat elke php bestand met een `<?php` tag begint.
 
-> **Why the `<?php` tag?** Unlike Python scripts that run directly, PHP code is often mixed with HTML in web pages. The `<?php` tag tells the web server "start running PHP code here" and `?>` means "stop running PHP code". This allows you to seamlessly combine programming logic with web page content!
+### Scope & Indentation
+Waar Python gebruik maakt van indentation om aan te geven dat een stuk code bij een bepaalde
+scope hoort, maakt PHP gebruik van `{}`. In PHP gebruik je eigenlijk alleen whitespaces voor de
+leesbaarheid.
 
-### Scope & Structure Philosophy
+Omdat PHP niet naar whitespaces kijkt moeten we dus elke regel eidigen met `;` en bepalen we de scope met curly braces `{}`.
 
-**Python relies on indentation**
-```python
-if condition:
-    print("This is inside the if block")
-    if nested_condition:
-        print("This is nested")
-```
-
-**PHP uses explicit braces**
-```php
-<?php
-if ($condition) {
-    echo "This is inside the if block";
-    if ($nestedCondition) {
-        echo "This is nested";
-    }
-}
-?>
-```
-**Professional Advantage**: PHP's explicit braces make code structure visible even with inconsistent formatting, crucial for collaborative web development projects.
-
-**Key Differences**:
-- **Python** uses indentation to indicate code scope and structure
-- **PHP** uses curly braces `{}` for scope definition
-- **Whitespace** in PHP is purely for readability, not functionality
-- **Semicolons** are required to terminate each PHP statement
-
-This explicit approach makes PHP code more resilient to formatting inconsistencies and easier to parse programmatically.
-
-### Variable Declaration & Type Handling
-
+### Types
 **Python**
-```python
+```Python
 x = 5
-name = "John"
 ```
-
 **PHP**
-```php
+```PHP
 <?php
 $x = 5;
-$name = "John";
-?>
 ```
 
-**Key Variable Differences**:
-- In PHP, every variable (except constants) starts with a `$` symbol
-- Unlike Python, you don't need to declare types in PHP, but it's strongly recommended
-- Type declarations are possible for function parameters, return values, and class properties
+In PHP begint elke variabele (met uitzondering van constanten) met een `$`. Je hoeft in PHP zoals bij Python geen type te declareren. Het wordt echter aangeraden om dit wel te doen. Dit mogelijk voor functie parameters, functie return waarde en class properties.
 
-**Modern PHP with Type Declarations**
-```php
+**PHP**
+```PHP
 <?php
-function calculateTax(float $amount, float $rate): float 
+function showText(string $text): void
 {
-    return $amount * $rate;
+    echo $text;
 }
-
-class User 
-{
-    private string $name;
-    private int $age;
-    
-    public function __construct(string $name, int $age) 
-    {
-        $this->name = $name;
-        $this->age = $age;
-    }
-}
-?>
 ```
-
-## 💡 PHP's Type System
-
-PHP offers flexible typing with optional strict typing—perfect for rapid development and production reliability.
-
-> **What are types?** Types tell PHP (and you!) what kind of data you're working with. Is it a number? Text? A list? This helps prevent bugs and makes code easier to understand.
-
-**Available Type Categories in PHP:**
+De mogelijke types zijn: 
 
 ```
-Built-in types (the basic building blocks)
-- null      (nothing/empty)
-- bool      (true or false)
-- int       (whole numbers like 42)
-- float     (decimal numbers like 3.14)
-- string    (text like "Hello World")
-- array     (lists of things)
-- object    (complex data structures)
-- resource  (connections to databases, files, etc.)
-- never     (advanced - ignore for now)
-- void      (functions that don't return anything)
-
-Relative class types (advanced - don't worry about these yet)
+Built-in types
+- null
+- bool
+- int
+- float
+- string
+- array
+- object
+- resource
+- never
+- void
+Relative class types:
 - self
-- parent  
+- parent
 - static
-
-User-defined types (custom types you create)
+User-defined types (generally referred to as class-types)
 - Interfaces
 - Classes
 - Enumerations
 - callable type
 ```
 
-While PHP offers an extensive type system, **for beginners, focus on these essential types**: `bool`, `int`, `float`, `string`, `array`, and `void`. These core types handle 90% of your everyday programming needs.
+Een best lange lijst van types. Geen paniek, voor nu zijn alleen de volgende relevant: `bool`, `int`, `float`, `string`, `array` en `void`.
 
-### Built-in Types
-```php
-<?php
-// Scalar types
-string $name = "John";
-int $age = 25;
-float $salary = 45000.50;
-bool $isActive = true;
-
-// Compound types
-array $skills = ["PHP", "JavaScript"];
-object $user = new User();
-
-// Special types
-$nothing = null;
-?>
-```
-
-### Advanced Type Features
-```php
-<?php
-// Union types (PHP 8.0+)
-function process(int|string $id): bool 
-{
-    return is_numeric($id);
-}
-
-// Nullable types
-function getName(): ?string 
-{
-    return $this->name ?? null;
-}
-?>
-```
-
-## 🚀 PHP's Web Development Advantages
-
-> **What makes PHP special for web development?** Unlike Python (which is general-purpose), PHP was built specifically for creating websites. This means it has built-in features that make web development easier.
-
-### Built-in Web Features
-```php
-<?php
-// PHP automatically collects data from web forms and user interactions
-$username = $_POST['username'] ?? '';  // Data from a form submission
-$userId = $_SESSION['user_id'] ?? null; // Data stored for logged-in users  
-$userPrefs = $_COOKIE['preferences'] ?? 'default'; // Data saved in browser
-
-// You can easily mix PHP with HTML
-?>
-<h1>Welcome <?= htmlspecialchars($username) ?></h1>
-```
-
-**Why This Matters**: In other languages, you'd need to install and configure extra libraries to handle web forms, user sessions, and HTML generation. PHP does this automatically!
-
-### Server Integration
-```php
-<?php
-// PHP gives you instant access to web server information
-$websiteName = $_SERVER['SERVER_NAME'];     // What website is this?
-$requestType = $_SERVER['REQUEST_METHOD'];  // GET, POST, etc.
-$userBrowser = $_SERVER['HTTP_USER_AGENT']; // What browser is the user using?
-?>
-```
-
-**Beginner Tip**: These `$_SERVER`, `$_POST`, `$_SESSION` variables are called "superglobals" - they're automatically available in any PHP script without you having to set them up.
-
-
-
-
-
-## 🔄 Control Structures & Logic
-
-### Conditional Statements (If/Else)
-
+### If statements
 **Python**
-```python
+```Python
 if x > 5:
-    print("x is greater than 5")
+    print("x is groter dan 5")
 elif x == 5:
-    print("x equals 5")
+    print("x is gelijk aan 5")
 else:
-    print("x is less than 5")
+    print("x is kleiner dan 5")
 ```
-
 **PHP**
-```php
+```PHP
 <?php
 if ($x > 5) {
-    echo "x is greater than 5";
-} elseif ($x == 5) {
-    echo "x equals 5";
+    echo "x is groter dan 5";
+} else if ($x == 5) {
+    echo "x is gelijk aan 5";
 } else {
-    echo "x is less than 5";
+    echo "x is kleiner dan 5";
 }
-?>
 ```
+Zoals je kunt zien is de syntax van de if statements in PHP en Python bijna hetzelfde. Het enige
+verschil is dat je in PHP de conditie tussen `()` zet en de code tussen `{}`.
 
-**Key Differences**: PHP syntax is remarkably similar to Python, but requires parentheses around conditions and curly braces for code blocks. This explicit structure prevents ambiguity in complex nested conditions.
 
-### Logical Operators
+#### Logical operators
+Een ander verschil die zowel voor loops als de if statements geldt is dat de logical operators in PHP
+anders zijn dan in Python.
 
-**Python uses words**
-```python
+OR en AND in Python:
+```Python
 if x > 5 or x < 10:
-    print("x is greater than 5 or less than 10")
+    print("x is groter dan 5 of kleiner dan 10")
     
 while x > 5 and x < 10:
     print(x)
 ```
-
-**PHP uses symbols**
-```php
+in PHP:
+```PHP
 <?php
-if ($x > 5 || $x < 10) {
-    echo "x is greater than 5 or less than 10";
+if ($x > 5 || $x < 10){
+    echo "x is groter dan 5 of kleiner dan 10";
 }
 
-while ($x > 5 && $x < 10) {
+while($x > 5 && $x < 10){
     echo $x;
 }
-?>
 ```
 
-**Professional Advantage**: PHP's symbolic operators (`||`, `&&`) are more concise and universally recognized across C-family languages.
-
-## 🔁 Iteration & Loops
-
-### Traditional For Loops
-
+### Loops
+#### For loop
 **Python**
-```python
+```Python
 for i in range(5):
     print(i)
     if i == 2:
         break
 ```
-
 **PHP**
-```php
+```PHP
 <?php
-for ($i = 0; $i < 5; $i++) {
+for($i = 0; $i < 5; $i++){
     echo $i;
-    if ($i == 2) {
-        break;  
+    if($i == 2){
+      break;  
     }
 }
-?>
 ```
+In PHP moet je de variabele `i` eerst definieren, daarna geef je de conditie op waaraan voldaan moet
+worden om de loop te blijven draaien en daarna geef je aan wat er moet gebeuren na elke iteratie.
+Zoals je kunt zien kun je binnen PHP ook `break` en `continue` gebruiken.
 
-**PHP's C-Style Advantage**: PHP's for loop explicitly defines initialization, condition, and increment—perfect for precise control over iterations.
-
-### Array/Collection Iteration
-
+Gelukkig is de for loop voor het uitlezen van een array (list in Python) een stuk makkelijker:
 **Python**
-```python
+```Python
 arr = [1, 2, 3, 4, 5]
-for item in arr:
-    print(item)
+for i in arr:
+    print(i)
 ```
-
-**PHP - Simple Iteration**
-```php
+**PHP**
+```PHP
 <?php
 $arr = [1, 2, 3, 4, 5];
-foreach ($arr as $item) {
-    echo $item;
+foreach($arr as $i){
+    echo $i;
 }
-?>
 ```
-
-**PHP - Key-Value Iteration**
-```php
+of als je ook de array key (index) wilt gebruiken:
+```PHP
 <?php
 $arr = [1, 2, 3, 4, 5];
-foreach ($arr as $key => $value) {
-    echo "$key: $value\n";
+foreach($arr as $key => $value){
+    echo $key . ": " . $value;
 }
 
-// Output: 0: 1
-//         1: 2
-//         2: 3
-//         3: 4
-//         4: 5
-?>
+output: 0: 1
+        1: 2
+        2: 3
+        3: 4
+        4: 5
 ```
 
-**Professional Insight**: PHP's `foreach` with key-value pairs is incredibly powerful for working with associative arrays and database results.
-
-### While Loops
-
+#### While loop
 **Python**
-```python
+```Python
 i = 0
 while i < 5:
     print(i)
     i += 1
 ```
-
 **PHP**
-```php
+```PHP
 <?php
 $i = 0;
-while ($i < 5) {
+while($i < 5){
     echo $i;
     $i++;
 }
-?>
 ```
+Ook hier is de syntax vrijwel hetzelfde.
 
-Both languages handle while loops identically—simple and effective for unknown iteration counts.
-
-## 📊 Data Structures
-
-> **What are data structures?** Ways to store and organize multiple pieces of information together, like a shopping list or contact book.
-
-### Arrays vs Lists
+### Arrays (Lists in Python)
+Zoals we bij de for loop al zagen is de syntax voor het aanmaken van een array in PHP en een list in
+Python vrijwel hetzelfde.
 
 **Python**
-```python
-shoppingList = ["apples", "bread", "milk"]
-print(shoppingList[0])  # "apples" (first item)
+```Python
+arr = [1, 2, 3, 4, 5]
+print(arr[0]) # 1
 ```
-
 **PHP**
-```php
+```PHP
 <?php
-$shoppingList = ["apples", "bread", "milk"];
-echo $shoppingList[0];  // "apples" (first item)
-?>
+$arr = [1, 2, 3, 4, 5];
+echo $arr[0]; // 1
 ```
 
-**Good News**: Arrays in PHP work almost exactly like lists in Python! The syntax is nearly identical.
+Het is een goed idee om te kijken welke functies PHP standaard beschikbaar heeft om een array te werken:
+https://www.php.net/manual/en/ref.array.php Je hoeft ze niet uit de hoofd te weten. Maar het is wel handig
+om te weten wat er ongeveer beschikbaar is.
 
-**PHP Array Power**: Explore PHP's extensive array functions at [php.net/manual/en/ref.array.php](https://www.php.net/manual/en/ref.array.php). Functions like `array_map()`, `array_filter()`, and `array_reduce()` provide functional programming capabilities.
-
-### Associative Arrays (Dictionaries)
-
-> **What's an associative array?** It's like Python dictionaries - you can store data with custom labels instead of just numbers.
-
+### Dictionary
 **Python**
-```python
-user_data = {
-    "name": "John",
-    "email": "john@example.com"
+```Python
+dictionary = {
+    "Dier": "Hond",
+    "Voertuig": "Auto"
 }
-print(user_data["name"])  # John
+print(dictionary["Dier"]) # Hond
 ```
 
 **PHP**
-```php
+```PHP
 <?php
-$userData = [
-    "name" => "John",
-    "email" => "john@example.com"
+$dictionary = [
+    "Dier" => "Hond",
+    "Voertuig" => "Auto"
 ];
-echo $userData["name"];  // John
-?>
+echo $dictionary["Dier"]; //Hond
 ```
+Een dictionary in PHP wordt ook wel een associative array genoemd. Je kunt voor een associative array dezelfde
+functies gebruiken als een normale array.
 
-**Why This Matters for Web Development**: When users fill out forms on websites, PHP automatically organizes that data into associative arrays. If someone fills out a registration form, PHP might create:
-
-```php
-<?php
-// This happens automatically when someone submits a web form:
-$_POST = [
-    "username" => "john_doe",
-    "email" => "john@example.com",
-    "password" => "secret123"
-];
-?>
-```
-
-## 🔧 Functions & Advanced Features
-
-### Basic Function Syntax
-
+### Functions
 **Python**
-```python
+```Python
 def add(a, b):
     return a + b
 ```
-
 **PHP**
-```php
+```PHP
 <?php
 function add(int $a, int $b): int
 {
     return $a + $b;
 }
-?>
 ```
+In de basis lijk de syntax van een method in PHP en Python op elkaar. Het voornaamste verschil is dat
+je in PHP naast de types van de parameters ook het type van de return value kan aangeven, door het
+type met een `:` achter de method naam te zetten.
 
-**PHP's Type Safety Edge**: PHP allows explicit type declarations for parameters and return values—crucial for large applications and team collaboration.
+Letop: dit is de meest simpele vorm van een method, in de praktijk kunnen de method definities er een
+stuk complexer uitzien. Bijvoorbeeld:
 
-### Advanced Function Features
-
-**PHP offers sophisticated function capabilities:**
-
-```php
+```PHP
 <?php
-// Advanced function with multiple PHP features
-static public function processData(?int $id, int $limit = 10, int &$count, int ...$numbers): void
+static public function add(?int $a, int $b = 5, int &$sum, int ...$numbers): void
 {
-    foreach ($numbers as $number) {
-        $count += $number;
+    foreach($numbers as $number){
+        $sum += $number;
     }
-    $count = $count * ($id ?? 1) + $limit;
+    $sum = $sum * $a + $b;
 }
-?>
 ```
 
-**Features Demonstrated**:
-- **Static methods**: Call without class instantiation
-- **Nullable types**: `?int` allows null values
-- **Default parameters**: `$limit = 10`
-- **Reference parameters**: `&$count` modifies original variable
-- **Variadic parameters**: `...$numbers` accepts unlimited arguments
+### Namespaces & Imports (Modules in Python)
+Waar je in Python je code opdeelt in modules, gebruik je in PHP namespaces. Een namespace is een map waarin
+meerdere classes kunnen staan. Een class is een bestand waarin je code staat.
 
-## 📦 Code Organization
-
-### Namespaces vs Modules
-
-> **What are namespaces?** Think of them like folders on your computer - they help organize your code files so they don't conflict with each other.
-
-**Python Modules**
-```python
+**Python**
+```Python
 import random
-
 def random_number():
     return random.randint(0, 10)
 ```
-
-**PHP Namespaces**
-
-```php
-// File: models/User.php
+**PHP**
+```PHP
+\Person.php
 <?php
-namespace App\Models;  // This file is in the "App\Models" folder
+namespace Glenn\Test;
 
-class User 
-{
+public class Person {
     public function __construct(
-        public string $name,
-        public string $email
-    ) {}
+        public string ...$properties
+    ){}
 }
-?>
-```
 
-```php
-// File: controllers/UserController.php
+\factory\MakePerson.php
 <?php
-namespace App\Controllers;  // This file is in the "App\Controllers" folder
+namespace Glenn\Test\Factory;
 
-use App\Models\User;  // Import the User class from Models folder
+use Glenn\Test\Person;
 
-class UserController 
-{
-    public static function createUser(string $name, string $email): User
+public class MakePerson {
+    public static makePerson(string $name, string $address): Person
     {
-        return new User($name, $email);
+        return new Person($name, $address);
     }
 }
-?>
 ```
+In de bovenstaande PHP code zijn `Glenn\Test` en `Glenn\Test\Factory` de namespaces (mappen) waar de class `Person` en `MakePerson` in staan. Hoewel je in PHP niet alles in classes en namespaces hoeft onder te brengen, is dit met
+Object Georienteerd programmeren wel de bedoeling.
 
-**Why This Matters**: In web applications, you might have hundreds of files. Namespaces prevent conflicts - you could have a `User` class for database users and a different `User` class for admin users, and PHP knows which is which based on their namespace.
-
-## 💬 Documentation & Comments
-
-### Basic Comments
-
+### Comments
 **Python**
-```python
-# Single line comment
+```Python
+#Single line comment
 
 """
 Multi line comment
 """
 ```
-
 **PHP**
-```php
-<?php
+```PHP
 // Single line comment
 
 /*
 Multi line comment
 */
 
-# Shell-style comment (rarely used)
-?>
+#  This is a one-line shell-style comment
 ```
+Er is nog een soort comment in PHP, namelijk de `phpdoc` comment. Dit is een comment die je boven een
+class of method zet en die je kunt gebruiken om een website met documentatie te genereren. Ook maakt de IDE
+gebruik van deze informatie om te laten zien wanneer je met je muis over een class of functie hovert.
 
-### Professional Documentation (PHPDoc)
-
-**PHP's documentation standard:**
-
-```php
-<?php
+```PHP
 /**
- * Represents a user in the system
- * 
- * @author Your Name <email@example.com>
- * @since 1.0.0
+ * An example class
+ * @author Glenn Glerum <email@email.com>
  */
-class User
+class Example
 {
     /**
-     * Calculate user's total score based on activities
+     * This method does something.
      *
-     * @param array<int, Activity> $activities User's activities
-     * @param float $multiplier Score multiplier
-     * @return float Total calculated score
-     * @throws InvalidArgumentException When multiplier is negative
+     * @param string $param1 A string parameter.
+     * @param int $param2 An integer parameter.
+     * @return void
      */
-    public function calculateScore(array $activities, float $multiplier): float
+    public function doSomething($param1, $param2)
     {
-        // Implementation
+        // ...
     }
 }
-?>
 ```
-
-**Professional Advantage**: PHPDoc comments generate documentation automatically and provide IDE intelligence for better development experience.
-
-## 🔗 String Operations
 
 ### String Concatenation
-
 **Python**
-```python
-message = "Hello " + "World"
+```Python
+string = "Hello " + "World"
 ```
-
 **PHP**
-```php
-<?php
-$message = "Hello " . "World";
-?>
+```PHP
+$string = "Hello " . "World"; 
 ```
-
-**PHP String Power**: PHP uses the dot (`.`) operator for concatenation, reserving `+` strictly for mathematical operations—preventing type confusion common in other languages.
-
-## 🔧 Professional Development Patterns
-
-Now that you understand PHP's basic syntax, let's explore advanced patterns used in professional web development.
-
-> **Don't panic!** These concepts might seem complex now, but they become important as your websites grow larger and more complex. For now, just understand that these tools exist.
-
-### Error Handling Evolution
-
-> **What's error handling?** When something goes wrong in your website (like a database connection failing), you want to show users a nice message instead of scary error text.
-
-```php
-<?php
-// Modern PHP error handling
-try {
-    // Try to do something that might fail
-    $result = connectToDatabase();
-} catch (DatabaseException $e) {
-    // If it fails, do this instead
-    showUserFriendlyMessage("Sorry, we're having technical difficulties");
-    logError($e->getMessage());  // Save error details for developers
-} finally {
-    // This always runs, whether there was an error or not
-    cleanup();
-}
-?>
-```
-
-**Why This Matters**: Professional websites don't crash or show confusing error messages to users. They handle problems gracefully.
-
-### Object-Oriented Power
-
-> **What's Object-Oriented Programming?** A way of organizing code that mimics real-world objects. Instead of having separate functions for everything, you group related functions and data together.
-
-```php
-<?php
-// Think of this as a blueprint for creating user accounts
-interface UserRepositoryInterface 
-{
-    public function findById(int $id): ?User;
-}
-
-// A base template that other classes can build upon
-abstract class BaseEntity 
-{
-    protected int $id;
-    protected DateTime $createdAt;
-}
-
-// A specific implementation for users
-class User extends BaseEntity implements UserRepositoryInterface 
-{
-    public function __construct(
-        public string $name,
-        public string $email
-    ) {
-        $this->createdAt = new DateTime();
-    }
-    
-    public function findById(int $id): ?User
-    {
-        // Code to find user in database
-    }
-}
-?>
-```
-
-**Beginner Tip**: Don't worry about understanding all the details yet! The important thing is that PHP has powerful tools for organizing complex applications, which is why it's used by sites like Facebook and WordPress.
-
-## 🎯 When to Choose PHP vs Python
-
-> **Simple Rule**: If you're building websites or web applications, PHP is often the easier choice. If you're doing data analysis or automation, Python might be better.
-
-### PHP Excels At:
-- **Websites & Web Apps**: Built specifically for this - everything you need is included
-- **Quick Web Projects**: You can build a working website in minutes
-- **Popular Platforms**: WordPress (blogs), Shopify (online stores), Facebook originally used PHP
-- **Web Hosting**: Most web hosting services support PHP automatically
-- **Learning Web Development**: Easier to understand how websites work
-
-### Python Excels At:
-- **Data Analysis**: Excel with millions of rows, scientific calculations
-- **Artificial Intelligence**: Machine learning, chatbots, image recognition  
-- **Automation Scripts**: Automatically organizing files, sending emails
-- **Desktop Programs**: Apps that run on your computer (not in browsers)
-- **Scientific Research**: Used by researchers and universities worldwide
-
-**Bottom Line**: Both are great languages! PHP makes web development easier, Python makes everything else easier.
-
-## 🚀 Success Indicators
-
-You're ready to move forward when you can:
-
-- [ ] Write a simple PHP script without syntax errors
-- [ ] Understand why PHP variables start with `$`
-- [ ] Explain the difference between `echo` and `print` in Python
-- [ ] Recognize when you're looking at PHP code vs HTML
-- [ ] Understand why PHP is popular for websites
-
-**Don't worry if you don't understand everything yet!** The goal is to recognize the patterns and know that PHP is designed to make web development easier.
-
-## ➡️ Next Steps
-
-Now that you understand PHP's philosophy, move on to [VS Code Extensions](vscode_extensions.md) to set up the essential tools that will make your PHP development efficient and professional.
-
-**Remember**: Every language has its strengths. PHP's design makes web development intuitive and powerful—embrace its conventions rather than fighting them!
