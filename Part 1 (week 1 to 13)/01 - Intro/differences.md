@@ -256,7 +256,7 @@ stuk complexer uitzien. Bijvoorbeeld:
 
 ```PHP
 <?php
-static public function add(?int $a, int $b = 5, int &$sum, int ...$numbers): void
+static public function add(namedArgumentA: int $a, namedArgumentSum: &$sum, namedArgumentB: int $b = 5, namedArgumentNumbers: ?int ...$numbers): void
 {
     foreach($numbers as $number){
         $sum += $number;

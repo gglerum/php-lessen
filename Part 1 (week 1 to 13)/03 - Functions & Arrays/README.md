@@ -9,6 +9,8 @@ Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed d
 - Magic Constants
 - Callback Functions
 
+In [functions.md](./functions.md) worden de basis van functies, parameters, argumenten, `return` en scope uitgelegd. Ook staat daar extra uitleg over arrays als parameter en type declaraties.
+
 ## Voorbeeld
 In de example map staat de 2e versie van Galgje. In deze versie is het spel opgesplits in functies. Door code te verdelen over functies wordt het overzichtelijker en kunnen we makkelijker code hergebruiken. Zie bijvoorbeeld de functie `handleMistake()` die zowel vanuit `handleLetter()` als `handleWord()` wordt aangeroepen om een foute gok af te handelen. 
 
