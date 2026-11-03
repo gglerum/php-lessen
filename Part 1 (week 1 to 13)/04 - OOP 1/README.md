@@ -9,6 +9,8 @@ Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed d
 - Encapsulation (https://www.geeksforgeeks.org/php-encapsulation/)
 - Static Properties
 
+In [classes.md](./classes.md) wordt de basis van classes uitgelegd: waarom we classes gebruiken naast functies, properties, methods, de constructor en access modifiers. De bijbehorende opgaven staan in [classes_opgaven_1.md](./classes_opgaven_1.md).
+
 ## Voorbeeld
 ### Hangman v3
 Met Object Georienteerd programmeren nemen we een volgende stap in het organiseren van onze code, door variabelen en functies die bij elkaar horen samen te plaatsen in een class.
