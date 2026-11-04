@@ -6,8 +6,10 @@ import json
 import re
 import shutil
 import subprocess
+import posixpath
 import sys
 from pathlib import Path
+from urllib.parse import quote, unquote
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "_site_src"
@@ -97,6 +99,45 @@ def add_callouts(body: str) -> str:
     return "\n".join(out)
 
 
+REPO_URL = "https://github.com/gglerum/php-lessen"
+LINK = re.compile(r"\]\(((?:[^()\s]|\([^()]*\))+)\)")
+
+
+def rewrite_links(body: str, rel: Path, known: set, dirs: set) -> str:
+    """Herschrijft relatieve links (buiten codeblokken):
+    - .md  -> .html (README.md -> map), relatief gehouden zodat baseurl niet uitmaakt
+    - .html / afbeeldingen die op de site staan -> ongewijzigd
+    - alles anders (php, drawio, mappen zonder pagina) -> de bron op GitHub,
+      zodat code getoond wordt in plaats van gedownload."""
+    base = rel.parent.as_posix()
+
+    def fix(m: re.Match) -> str:
+        url = m.group(1)
+        if re.match(r"([a-z][a-z0-9+.-]*:|#|/)", url, re.I):
+            return m.group(0)
+        path, sep, frag = url.partition("#")
+        target = posixpath.normpath(posixpath.join(base, unquote(path))) if path else ""
+        if not target or target.startswith(".."):
+            return m.group(0)
+        if target in dirs or target == ".":
+            return m.group(0)  # map met (eventueel gegenereerde) indexpagina
+        if target.endswith(".md") and target in known:
+            name = posixpath.basename(target)
+            if name == "README.md":  # wordt index.html van de map
+                out = posixpath.relpath(posixpath.dirname(target) or ".", base) + "/"
+            else:
+                out = posixpath.relpath(target, base)[:-3] + ".html"
+            return "](" + quote(out, safe="/.&()") + (sep + frag) + ")"
+        if target.endswith((".html", ".png", ".jpg", ".svg", ".gif")) and target in known:
+            return m.group(0)
+        kind = "tree" if (path.endswith("/") or not posixpath.splitext(target)[1]) and target not in known else "blob"
+        return "](" + REPO_URL + "/" + kind + "/main/" + quote(target, safe="/&()") + (sep + frag) + ")"
+
+    parts = re.split(r"(^[ \t]*(?:```|~~~)[^\n]*\n.*?^[ \t]*(?:```|~~~)[ \t]*$)", body,
+                     flags=re.M | re.S)
+    return "".join(x if i % 2 else LINK.sub(fix, x) for i, x in enumerate(parts))
+
+
 def main() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -130,6 +171,8 @@ def main() -> None:
             meta["parent"], meta["grand_parent"] = c[-2], c[-3]
         return meta
 
+    known = {p.relative_to(ROOT).as_posix() for p in files}
+    dirs_rel = {d.relative_to(ROOT).as_posix() for d in dirs}
     for d in dirs:  # mappen zonder README krijgen een eigen indexpagina
         if not (d / "README.md").exists():
             (OUT / d.relative_to(ROOT) / "index.md").write_text(fm(dir_meta(d)), encoding="utf-8")
@@ -155,10 +198,8 @@ def main() -> None:
             for k in ("parent", "grand_parent", "has_children"):
                 meta.pop(k, None)
             meta["nav_exclude"] = True
-        # README.md -> index.md: jekyll-readme-index maakte geen startpagina aan
-        body = re.sub(r"\]\(([^)]*?)README\.md([#)][^)]*|)\)",
-                      lambda m: "](" + m.group(1) + "index.md" + m.group(2) + ")", body)
         body = add_callouts(body)
+        body = rewrite_links(body, rel, known, dirs_rel)
         if p.name == "README.md":
             dest.unlink()
             dest = dest.with_name("index.md")
