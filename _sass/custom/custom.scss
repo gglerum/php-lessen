@@ -1,0 +1,213 @@
+// Eigen opmaak voor de lessen. Alleen styling, de Markdown blijft onaangeroerd.
+$accent: #4f5b93;
+$accent-soft: #e9ebf6;
+$code-bg: #1e2330;
+$code-fg: #e6e9f2;
+$mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+
+body {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1rem;
+}
+
+// Leesbare tekstbreedte
+.main-content {
+  max-width: 47rem;
+  line-height: 1.7;
+
+  p, li { font-size: 1rem; }
+  li + li { margin-top: 0.3rem; }
+}
+
+// Koppen: duidelijke secties
+.main-content h1 {
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin: 0.5rem 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px solid $accent;
+}
+
+.main-content h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 3.25rem 0 1rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid #dcd8cf;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 3.5rem;
+    height: 3px;
+    background: $accent;
+  }
+}
+
+.main-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: $accent;
+  margin: 2.25rem 0 0.6rem;
+}
+
+.main-content h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6a6f7d;
+  margin: 1.75rem 0 0.4rem;
+}
+
+// Inline code
+.main-content :not(pre) > code {
+  font-family: $mono;
+  font-size: 0.86em;
+  background: $accent-soft;
+  color: #323a6b;
+  border: 1px solid #d3d8ee;
+  border-radius: 4px;
+  padding: 0.08em 0.38em;
+}
+
+// Codeblokken: donker paneel, los van de tekst
+div.highlighter-rouge,
+figure.highlight {
+  position: relative;
+  margin: 1.5rem 0;
+  background: $code-bg;
+  border-radius: 8px;
+  border-left: 4px solid $accent;
+  box-shadow: 0 2px 10px rgba(20, 24, 40, 0.18);
+  overflow: hidden;
+}
+
+div.language-php::before,
+div.language-PHP::before {
+  content: "PHP";
+  position: absolute;
+  top: 0.35rem;
+  right: 0.7rem;
+  font: 600 0.65rem/1 "Inter", sans-serif;
+  letter-spacing: 0.1em;
+  color: #8e97c4;
+  pointer-events: none;
+}
+
+div.highlighter-rouge pre,
+div.highlighter-rouge pre.highlight,
+div.highlighter-rouge .highlight,
+figure.highlight pre {
+  background: transparent;
+  margin: 0;
+}
+
+div.highlighter-rouge pre.highlight,
+figure.highlight pre {
+  padding: 1.1rem 1.2rem;
+  overflow-x: auto;
+  font-family: $mono;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  font-variant-ligatures: none;
+  color: $code-fg;
+}
+
+div.highlighter-rouge code,
+figure.highlight code {
+  font-family: $mono;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font-variant-ligatures: none;
+}
+
+// Syntax highlighting (Rouge) in een donker palet
+.highlight {
+  .c, .cm, .c1, .cs, .cp, .cd { color: #7e879f; font-style: italic; }
+  .k, .kd, .kn, .kp, .kr, .kt, .kc, .nt { color: #c792ea; }
+  .o, .ow { color: #89ddff; }
+  .s, .s1, .s2, .sb, .sc, .sd, .se, .sh, .si, .sx, .sr, .ss { color: #a5e07f; }
+  .m, .mi, .mf, .mh, .mo, .il { color: #f78c6c; }
+  .nf, .fm { color: #82aaff; }
+  .nc, .nn, .no { color: #ffcb6b; }
+  .nb, .bp { color: #82aaff; }
+  .nv, .vi, .vg, .vc { color: #f07178; }
+  .na { color: #ffcb6b; }
+  .p { color: #c3c9dc; }
+  .err { color: #f07178; background: transparent; }
+}
+
+// Kopieerknop past bij het donkere paneel
+.copy-code-button, .code-example .btn {
+  border-radius: 4px;
+}
+
+// Tabellen (o.a. "Samengevat")
+.main-content table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #dcd8cf;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: none;
+  width: 100%;
+  font-size: 0.93rem;
+
+  th {
+    background: $accent;
+    color: #fff;
+    font-weight: 600;
+    border-bottom: 0;
+  }
+  td, th { border-left: 0; padding: 0.6rem 0.8rem; }
+  tbody tr:nth-child(even) td { background: #f3f1ec; }
+  td { border-bottom: 1px solid #e6e2d9; }
+  tbody tr:last-child td { border-bottom: 0; }
+}
+
+.table-wrapper { box-shadow: none; overflow-x: auto; }
+
+// Opgaven: ### Opgave N als kaart-kop
+.main-content h3[id^="opgave"] {
+  background: $accent-soft;
+  border-left: 4px solid $accent;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  margin-top: 2.75rem;
+}
+
+// Callouts (Let op / Hint), gemaakt in scripts/prepare-site.py
+.main-content .callout-note,
+.main-content .callout-hint {
+  border-radius: 8px;
+  padding: 0.8rem 1rem 0.8rem 1.1rem;
+  margin: 1.4rem 0;
+  border-left: 4px solid;
+
+  &::first-line { font-weight: 500; }
+}
+
+.main-content .callout-note {
+  background: #fff6e0;
+  border-color: #e0a526;
+}
+
+.main-content .callout-hint {
+  background: #e8f4ec;
+  border-color: #3f9a62;
+}
+
+@media (max-width: 50rem) {
+  .main-content h1 { font-size: 1.7rem; }
+  .main-content h2 { font-size: 1.35rem; margin-top: 2.5rem; }
+}
+
+@media print {
+  div.highlighter-rouge { box-shadow: none; border: 1px solid #999; }
+}

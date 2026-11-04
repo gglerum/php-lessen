@@ -21,7 +21,8 @@ titles_from_headings:
 
 search_enabled: true
 heading_anchors: true
-color_scheme: light
+color_scheme: course
+enable_copy_code_button: true
 nav_external_links:
   - title: Bron op GitHub
     url: https://github.com/gglerum/php-lessen

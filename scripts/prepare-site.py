@@ -56,6 +56,45 @@ def fm(d: dict) -> str:
     return "\n".join(lines) + "\n---\n\n"
 
 
+CALLOUT_START = re.compile(r"(let op|\*\*hint:?\*\*)", re.IGNORECASE)
+
+
+def add_callouts(body: str) -> str:
+    """Zet alinea's die met 'Let op' / 'LETOP' / '**Hint:**' beginnen om in
+    callout-blokken (kramdown: {: .class } onder de alinea). Codeblokken blijven
+    ongemoeid; de bron-Markdown verandert niet."""
+    out, para, in_code = [], [], False
+
+    def flush() -> None:
+        if para:
+            text = "\n".join(para)
+            first = para[0]
+            # geen lijsten, tabellen of citaten in dezelfde alinea
+            plain = not any(l.startswith((" ", "\t", ">", "|", "- ", "* ", "#"))
+                            or re.match(r"\d+\. ", l) for l in para)
+            # een alinea die op ':' eindigt leidt een codeblok in: geen callout
+            if plain and not para[-1].rstrip().endswith(":") and re.match(r"(let\s?op|\*\*hint:?\*\*)", first, re.I):
+                cls = "callout-hint" if first.lower().startswith("**hint") else "callout-note"
+                text += "\n{: ." + cls + " }"
+            out.append(text)
+            para.clear()
+
+    for line in body.split("\n"):
+        if line.lstrip().startswith(("```", "~~~")):
+            flush()
+            in_code = not in_code
+            out.append(line)
+        elif in_code:
+            out.append(line)
+        elif line.strip() == "":
+            flush()
+            out.append(line)
+        else:
+            para.append(line)
+    flush()
+    return "\n".join(out)
+
+
 def main() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -117,6 +156,7 @@ def main() -> None:
         # README.md -> index.md: jekyll-readme-index maakte geen startpagina aan
         body = re.sub(r"\]\(([^)]*?)README\.md([#)][^)]*|)\)",
                       lambda m: "](" + m.group(1) + "index.md" + m.group(2) + ")", body)
+        body = add_callouts(body)
         if p.name == "README.md":
             dest.unlink()
             dest = dest.with_name("index.md")
