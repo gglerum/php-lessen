@@ -6,7 +6,7 @@ Het gaat niet om regels uit je hoofd leren. Het gaat erom dat je kunt zien waaro
 
 ## Onderwerpen
 
-1. **General Design Principles**: KISS, DRY, YAGNI en Separation of Concerns.
+1. [General Design Principles](01%20-%20General%20Design%20Principles/): KISS, DRY, YAGNI en Separation of Concerns.
 2. **Clean Code**: namen, functies en comments die duidelijk maken wat de code doet.
 3. **SOLID**: vijf principes voor het opzetten van classes en interfaces.
 4. **GRASP**: bepalen in welke class een stuk code thuishoort.
