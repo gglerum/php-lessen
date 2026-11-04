@@ -11,7 +11,7 @@ Het gaat niet om regels uit je hoofd leren. Het gaat erom dat je kunt zien waaro
 3. [SOLID](03%20-%20SOLID/): vijf principes voor het opzetten van classes en interfaces, verdeeld over twee lessen.
 4. [GRASP](04%20-%20GRASP/): bepalen in welke class een stuk code thuishoort.
 5. [Refactoring](05%20-%20Design%20Principles%20&%20Refactoring/): stap voor stap een rommelige controller omzetten naar schone code, plus Law of Demeter en Tell, Don't Ask.
-6. **Design Patterns**: bekende oplossingen voor terugkerende problemen, en wanneer je ze juist niet gebruikt.
+6. [Design Patterns](06%20-%20Design%20Patterns/): bekende oplossingen voor terugkerende problemen, en wanneer je ze juist niet gebruikt, verdeeld over drie lessen.
 7. **Domain Driven Design**: je code opzetten rondom het probleem dat de applicatie oplost.
 
 ## Voorbeeld
