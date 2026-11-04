@@ -11,6 +11,8 @@ Lees op https://www.w3schools.com/php/default.asp de volgende onderwerpen goed d
 
 In [classes.md](./classes.md) wordt de basis van classes uitgelegd: waarom we classes gebruiken naast functies, properties, methods, de constructor en access modifiers. De bijbehorende opgaven staan in [classes_opgaven_1.md](./classes_opgaven_1.md).
 
+In [stack_and_heap.md](./stack_and_heap.md) kijken we wat er in het geheugen gebeurt: waarom een `int` als kopie en een object als verwijzing wordt doorgegeven, hoe de stack en de heap werken, waarom PHP request based is en hoe recursie werkt. Er horen interactieve labs bij.
+
 ## Voorbeeld
 ### Hangman v3
 Met Object Georienteerd programmeren nemen we een volgende stap in het organiseren van onze code, door variabelen en functies die bij elkaar horen samen te plaatsen in een class.

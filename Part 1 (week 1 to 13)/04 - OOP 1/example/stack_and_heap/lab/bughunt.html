@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 4: Zoek de fout</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 4: Zoek de fout</h1>
+    <p class="muted">Elk script doet iets anders dan bedoeld. Bekijk de code, beantwoord de vraag en volg daarna het programma stap voor stap om te zien waar het misgaat. Met de knop Gecorrigeerd zie je de oplossing.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="variants" id="variants" role="group" aria-label="Versie van het script" hidden>
+                <button type="button" class="secondary" data-variant="bug" aria-pressed="true">Met de fout</button>
+                <button type="button" class="secondary" data-variant="fixed" aria-pressed="false">Gecorrigeerd</button>
+            </div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object op de heap. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Heap">
+                    <h3>Heap: objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel"></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// de countdown zonder base case: de stack groeit, er komt nooit een return
+const countdownBugSteps = () => {
+    const steps = [{ at: 'call', say: 'countdown(3) wordt aangeroepen: een nieuw frame.', ops: [['push', 'countdown(3)', { number: 3 }]] }];
+    for (let n = 3; n >= -3; n--) {
+        steps.push({ at: 'echo', say: `De functie toont ${n}.`, ops: [['echo', String(n)]] });
+        if (n > -3) {
+            steps.push({ at: 'rec', say: `countdown(${n - 1}) wordt aangeroepen. Een nieuw frame bovenop de stack, het vorige frame wacht.`, ops: [['push', `countdown(${n - 1})`, { number: n - 1 }]] });
+        }
+    }
+    steps.push({
+        at: 'rec',
+        say: 'Ook nu roept de functie zichzelf weer aan. Er is geen base case, dus er komt nooit een return en geen enkel frame wordt gepopt. De stack groeit tot PHP stopt: met Xdebug na 512 frames ("possible infinite loop"), zonder Xdebug als het geheugen op is ("Allowed memory size exhausted").',
+        ops: [['push', 'countdown(-4)', { number: -4 }]],
+    });
+    return steps;
+};
+
+// de countdown met base case: de stack groeit tot -1 en krimpt daarna
+const countdownFixedSteps = () => {
+    const steps = [{ at: 'call', say: 'countdown(3) wordt aangeroepen: een nieuw frame.', ops: [['push', 'countdown(3)', { number: 3 }]] }];
+    for (let n = 3; n >= 0; n--) {
+        steps.push({ at: 'if', say: `Is ${n} < 0? Nee, dus de functie gaat door.`, ops: [] });
+        steps.push({ at: 'echo', say: `De functie toont ${n}.`, ops: [['echo', String(n)]] });
+        steps.push({ at: 'rec', say: `countdown(${n - 1}) wordt aangeroepen. Een nieuw frame bovenop de stack.`, ops: [['push', `countdown(${n - 1})`, { number: n - 1 }]] });
+    }
+    steps.push({ at: 'if', say: 'Is -1 < 0? Ja. Dit is de base case.', ops: [] });
+    steps.push({ at: 'base', say: 'return: de functie stopt hier en roept zichzelf niet meer aan.', ops: [] });
+    for (let n = -1; n <= 2; n++) {
+        steps.push({ at: 'rec', say: `Het frame van countdown(${n}) wordt gepopt. De aanroeper countdown(${n + 1}) gaat verder en is zelf ook klaar.`, ops: [['pop']] });
+    }
+    steps.push({ at: 'call', say: 'Het laatste frame wordt gepopt. De uitvoer is 3, 2, 1, 0 en de stack is weer terug bij main.', ops: [['pop']] });
+    return steps;
+};
+
+const scenarios = [
+    {
+        title: 'Een voorbeeldsaldo dat het echte saldo verandert',
+        intro: 'previewBalance() moet alleen laten zien wat het saldo met bonus zou zijn. Verwacht: "Met bonus: 150" en daarna "Saldo: 100". Druk op Afspelen en kijk wat er echt gebeurt.',
+        withClass: true,
+        code: `function previewBalance(BankAccount $account, int $bonus): void
+{
+    $account->deposit($bonus); // @f-body
+    echo "Met bonus: " . $account->getBalance(); // @f-echo
+}
+
+$account = new BankAccount(100); // @new
+previewBalance($account, 50); // @call
+echo "Saldo: " . $account->getBalance(); // @echo`,
+        steps: [
+            ...ctorSteps('new', 'account', 100, 'o1', 'main'),
+            { at: 'call', say: 'previewBalance() wordt aangeroepen. $account in de functie is een kopie van de verwijzing: hetzelfde object.', ops: [['push', 'previewBalance()', { account: ref('o1'), bonus: 50 }]] },
+            ...depositSteps('f-body', 'o1', 50, 150),
+            ...getBalanceSteps('f-echo', 'o1', 150, 'Met bonus: '),
+            { at: 'call', say: 'previewBalance() is klaar. Het frame is weg, maar het object is veranderd.', ops: [['pop']] },
+            ...getBalanceSteps('echo', 'o1', 150, 'Saldo: '),
+            { at: 'echo', say: 'Fout: het saldo is 150 in plaats van 100. De functie paste het originele object aan, want er is geen kopie gemaakt.', ops: [] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: de functie werkt op een kopie van het object. Verwacht: "Met bonus: 150" en daarna "Saldo: 100".',
+            code: `function previewBalance(BankAccount $account, int $bonus): void
+{
+    $copy = clone $account; // @f-clone
+    $copy->deposit($bonus); // @f-body
+    echo "Met bonus: " . $copy->getBalance(); // @f-echo
+}
+
+$account = new BankAccount(100); // @new
+previewBalance($account, 50); // @call
+echo "Saldo: " . $account->getBalance(); // @echo`,
+            steps: [
+                ...ctorSteps('new', 'account', 100, 'o1', 'main'),
+                { at: 'call', say: 'previewBalance() wordt aangeroepen. $account in de functie wijst naar hetzelfde object als in main.', ops: [['push', 'previewBalance()', { account: ref('o1'), bonus: 50 }]] },
+                { at: 'f-clone', say: 'clone maakt een nieuw object met dezelfde waarden. $copy wijst naar die kopie, $account naar het origineel.', ops: [['clone', 'o2', 'o1'], ['set', 'copy', ref('o2')]] },
+                ...depositSteps('f-body', 'o2', 50, 150),
+                ...getBalanceSteps('f-echo', 'o2', 150, 'Met bonus: '),
+                { at: 'call', say: 'previewBalance() is klaar. $copy is weg en niets wijst meer naar de kopie, dus PHP ruimt die op. Het origineel is niet veranderd.', ops: [['pop']] },
+                ...getBalanceSteps('echo', 'o1', 100, 'Saldo: '),
+                { at: 'echo', say: 'Goed: het saldo is nog 100.', ops: [] },
+            ],
+        },
+    },
+    {
+        title: 'Twee rekeningen uit dezelfde sjabloon',
+        intro: 'Twee nieuwe rekeningen moeten beginnen met het saldo van de sjabloon. Alleen de eerste krijgt een storting. Verwacht: "Tweede rekening: 0". Druk op Afspelen en kijk wat er echt gebeurt.',
+        withClass: true,
+        code: `$template = new BankAccount(0); // @new
+$first = $template; // @a
+$second = $template; // @b
+$first->deposit(100); // @dep
+echo "Tweede rekening: " . $second->getBalance(); // @echo`,
+        steps: [
+            ...ctorSteps('new', 'template', 0, 'o1', 'main'),
+            { at: 'a', say: '$first krijgt alleen de verwijzing naar het object, geen kopie van het object.', ops: [['set', 'first', ref('o1')]] },
+            { at: 'b', say: '$second krijgt dezelfde verwijzing. Er is nog steeds maar een object.', ops: [['set', 'second', ref('o1')]] },
+            ...depositSteps('dep', 'o1', 100, 100),
+            ...getBalanceSteps('echo', 'o1', 100, 'Tweede rekening: '),
+            { at: 'echo', say: 'Fout: de tweede rekening heeft 100, terwijl alleen de eerste een storting kreeg. Alle drie de variabelen wijzen naar hetzelfde object.', ops: [] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: elke rekening is een eigen kopie van de sjabloon. Verwacht: "Tweede rekening: 0".',
+            code: `$template = new BankAccount(0); // @new
+$first = clone $template; // @a
+$second = clone $template; // @b
+$first->deposit(100); // @dep
+echo "Tweede rekening: " . $second->getBalance(); // @echo`,
+            steps: [
+                ...ctorSteps('new', 'template', 0, 'o1', 'main'),
+                { at: 'a', say: 'clone maakt een eigen object voor $first.', ops: [['clone', 'o2', 'o1'], ['set', 'first', ref('o2')]] },
+                { at: 'b', say: 'En nog een eigen object voor $second. Nu zijn het drie losse objecten.', ops: [['clone', 'o3', 'o1'], ['set', 'second', ref('o3')]] },
+                ...depositSteps('dep', 'o2', 100, 100),
+                ...getBalanceSteps('echo', 'o3', 0, 'Tweede rekening: '),
+                { at: 'echo', say: 'Goed: de tweede rekening heeft nog 0.', ops: [] },
+            ],
+        },
+    },
+    {
+        title: 'Een afteller die nooit stopt',
+        intro: 'countdown(3) moet 3, 2, 1 en 0 tonen en dan stoppen. Verwacht: vier regels. Druk op Afspelen en kijk wat er echt gebeurt.',
+        withClass: false,
+        code: `function countdown(int $number): void
+{
+    echo $number; // @echo
+    countdown($number - 1); // @rec
+}
+
+countdown(3); // @call`,
+        steps: countdownBugSteps(),
+        fixed: {
+            intro: 'Gecorrigeerd: een base case stopt de recursie. Verwacht: 3, 2, 1 en 0.',
+            code: `function countdown(int $number): void
+{
+    if ($number < 0) { // @if
+        return; // @base
+    }
+
+    echo $number; // @echo
+    countdown($number - 1); // @rec
+}
+
+countdown(3); // @call`,
+            steps: countdownFixedSteps(),
+        },
+    },
+];
+
+// de vraag bij elk scenario: kies eerst zelf wat er misgaat
+const quizzes = [
+    {
+        question: 'Wat is de oorzaak van het verkeerde saldo?',
+        options: [
+            ['$bonus wordt op de verkeerde manier doorgegeven.', 'Nee: $bonus is een int en wordt netjes gekopieerd. Kijk naar wat $account is.'],
+            ['De functie past het originele object aan, want er is geen kopie gemaakt.', 'Klopt. $account in de functie wijst naar hetzelfde object als in main. Met clone werk je op een kopie.'],
+            ['getBalance() telt zelf het bonusbedrag erbij.', 'Nee: getBalance() geeft alleen de property terug. Kijk wie de property verandert.'],
+        ],
+        correct: 1,
+    },
+    {
+        question: 'Waarom heeft de tweede rekening een saldo van 100?',
+        options: [
+            ['deposit() telt bij alle BankAccount objecten op.', 'Nee: deposit() verandert alleen het object waarop je hem aanroept.'],
+            ['$second krijgt het saldo van $first omdat ze na elkaar zijn gemaakt.', 'Nee: er is maar een object. De volgorde maakt niet uit.'],
+            ['$template, $first en $second wijzen alle drie naar hetzelfde object.', 'Klopt. Een toewijzing kopieert alleen de verwijzing. Met clone krijgt elke variabele een eigen object.'],
+        ],
+        correct: 2,
+    },
+    {
+        question: 'Waarom blijft de afteller doorgaan?',
+        options: [
+            ['Er is geen base case, dus de functie roept zichzelf eindeloos aan.', 'Klopt. Zonder base case komt er nooit een return en blijft de stack groeien.'],
+            ['$number - 1 is fout, het moet $number + 1 zijn.', 'Nee: de teller gaat de goede kant op, alleen de functie weet niet wanneer hij moet stoppen.'],
+            ['echo houdt de functie draaiende.', 'Nee: echo toont alleen iets en gaat meteen verder.'],
+        ],
+        correct: 0,
+    },
+];
+
+const quizForm = document.getElementById('quiz');
+
+function renderQuiz() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const index = n >= 1 && n <= quizzes.length ? n - 1 : 0;
+    const quiz = quizzes[index];
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = quiz.question;
+    fieldset.append(legend);
+
+    quiz.options.forEach(([text], i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const i = parseInt(chosen.value, 10);
+            const isCorrect = i === quiz.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect ? 'Goed.' : 'Niet helemaal.';
+            box.append(strong, quiz.options[i][1]);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', renderQuiz);
+renderQuiz();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

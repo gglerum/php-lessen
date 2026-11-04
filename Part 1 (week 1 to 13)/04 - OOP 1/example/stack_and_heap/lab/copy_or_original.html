@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 1: Kopie of origineel?</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main>
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 1: Kopie of origineel?</h1>
+    <p class="muted">Kies een scenario, voorspel de uitkomst en controleer. Onder de code staat wat de gebruikte onderdelen van de class doen.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+
+    <h2 id="title"></h2>
+    <pre><code id="code"></code></pre>
+
+    <details class="classpanel" id="classpanel" open></details>
+
+    <form id="form">
+        <div>
+            <label for="guess" id="question"></label>
+            <input type="text" id="guess" inputmode="numeric" autocomplete="off" required>
+        </div>
+        <button type="submit">Controleer</button>
+    </form>
+
+    <div id="result" aria-live="polite"></div>
+
+    <div class="controls">
+        <a class="button secondary" id="previous" href="#">Vorige</a>
+        <a class="button" id="next" href="#">Volgend scenario</a>
+    </div>
+</main>
+
+<script src="common.js"></script>
+<script>
+// De uitkomsten zijn vooraf bepaald. Controleer ze met: php verify_lab1.php
+// De objectnummers zijn voorbeelden: in PHP verschillen de nummers per run, maar "gelijk of verschillend" klopt altijd.
+const scenarios = [
+    {
+        title: 'Een int aan een functie geven',
+        question: 'Wat is de waarde van $balance na de aanroep van addBonus()?',
+        code: `function addBonus(int $balance): void
+{
+    $balance = $balance + 50;
+}
+
+$balance = 100;
+addBonus($balance);
+echo $balance;`,
+        answer: 100,
+        why: 'De functie krijgt een kopie van de waarde. De $balance in het frame van addBonus() is een andere variabele dan de $balance in main. Het origineel blijft 100.',
+        uses: [],
+        ids: [],
+    },
+    {
+        title: 'Een object aan een functie geven',
+        question: 'Wat is het saldo van $account na de aanroep van addBonus()?',
+        code: `function addBonus(BankAccount $account): void
+{
+    $account->deposit(50);
+}
+
+$account = new BankAccount(100);
+addBonus($account);
+echo $account->getBalance();`,
+        answer: 150,
+        why: 'Er wordt een kopie van de verwijzing meegegeven, niet van het object. Beide variabelen wijzen naar hetzelfde object op de heap (zie de objectnummers), dus de aanpassing is ook buiten de functie zichtbaar.',
+        uses: ['constructor', 'deposit', 'getBalance'],
+        ids: [['in main: $account', 1], ['in addBonus: $account', 1]],
+    },
+    {
+        title: 'In de functie een nieuw object toewijzen',
+        question: 'Wat is het saldo van $account na de aanroep van replaceAccount()?',
+        code: `function replaceAccount(BankAccount $account): void
+{
+    $account = new BankAccount(9999);
+}
+
+$account = new BankAccount(100);
+replaceAccount($account);
+echo $account->getBalance();`,
+        answer: 100,
+        why: 'De verwijzing in de functie is een kopie. Met new laat je die kopie naar een nieuw object wijzen, maar de verwijzing in main wijst nog steeds naar het eerste object. Je ziet het aan de objectnummers.',
+        uses: ['constructor', 'getBalance'],
+        ids: [['in main: $account', 1], ['in replaceAccount, vooraf: $account', 1], ['in replaceAccount, na new: $account', 2]],
+    },
+    {
+        title: 'Een tweede variabele voor hetzelfde object',
+        question: 'Wat is het saldo van $backup nadat $account 50 heeft gestort?',
+        code: `$account = new BankAccount(100);
+$backup = $account;
+
+$account->deposit(50);
+echo $backup->getBalance();`,
+        answer: 150,
+        why: 'Bij een toewijzing wordt alleen de verwijzing gekopieerd. $backup en $account zijn twee namen voor hetzelfde object, dus $backup is geen back-up.',
+        uses: ['constructor', 'deposit', 'getBalance'],
+        ids: [['$account', 1], ['$backup', 1]],
+    },
+    {
+        title: 'Een echte kopie met clone',
+        question: 'Wat is het saldo van $backup nadat $account 50 heeft gestort?',
+        code: `$account = new BankAccount(100);
+$backup = clone $account;
+
+$account->deposit(50);
+echo $backup->getBalance();`,
+        answer: 100,
+        why: 'clone maakt een nieuw object op de heap. $account en $backup wijzen nu naar twee verschillende objecten (zie de objectnummers), dus een storting op het ene verandert het andere niet.',
+        uses: ['constructor', 'deposit', 'getBalance'],
+        ids: [['$account', 1], ['$backup', 2]],
+    },
+];
+
+const steps = document.getElementById('steps');
+const title = document.getElementById('title');
+const code = document.getElementById('code');
+const question = document.getElementById('question');
+const guessInput = document.getElementById('guess');
+const form = document.getElementById('form');
+const result = document.getElementById('result');
+const previous = document.getElementById('previous');
+const next = document.getElementById('next');
+const classPanel = document.getElementById('classpanel');
+
+// het scenario staat in de URL (#3), zodat verversen en links delen werken
+function currentIndex() {
+    const number = parseInt(location.hash.replace('#', ''), 10);
+    return number >= 1 && number <= scenarios.length ? number - 1 : 0;
+}
+
+function show() {
+    const index = currentIndex();
+    const scenario = scenarios[index];
+
+    steps.replaceChildren();
+    scenarios.forEach((item, i) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + (i + 1);
+        a.textContent = String(i + 1);
+        a.setAttribute('aria-label', `Scenario ${i + 1}: ${item.title}`);
+        if (i === index) a.setAttribute('aria-current', 'step');
+        li.append(a);
+        steps.append(li);
+    });
+
+    title.textContent = `Scenario ${index + 1} van ${scenarios.length}: ${scenario.title}`;
+    code.textContent = scenario.code;
+    question.textContent = scenario.question;
+    guessInput.value = '';
+    result.replaceChildren();
+
+    previous.hidden = index === 0;
+    previous.href = '#' + index;
+    next.hidden = index === scenarios.length - 1;
+    next.href = '#' + (index + 2);
+
+    // een scenario zonder class heeft geen class-paneel nodig
+    classPanel.hidden = scenario.uses.length === 0;
+    if (!classPanel.hidden) renderClassPanel(classPanel, scenario.uses);
+}
+
+function showResult(scenario, guess) {
+    const correct = guess === scenario.answer;
+    result.replaceChildren();
+
+    const feedback = document.createElement('div');
+    feedback.className = 'feedback ' + (correct ? 'ok' : 'warn');
+    const strong = document.createElement('strong');
+    strong.textContent = correct
+        ? `Goed: het antwoord is ${scenario.answer}.`
+        : `Niet helemaal. Je voorspelde ${guess}, het antwoord is ${scenario.answer}.`;
+    feedback.append(strong, scenario.why);
+    result.append(feedback);
+
+    if (scenario.ids.length === 0) return;
+
+    const heading = document.createElement('h2');
+    heading.textContent = 'Wat staat waar?';
+    const intro = document.createElement('p');
+    intro.className = 'muted';
+    intro.textContent = 'Het objectnummer is de identiteit van een object op de heap. Hetzelfde nummer betekent hetzelfde object.';
+
+    const memory = document.createElement('div');
+    memory.className = 'memory';
+
+    const stack = document.createElement('section');
+    stack.className = 'stack';
+    stack.setAttribute('aria-label', 'Stack');
+    const stackTitle = document.createElement('h3');
+    stackTitle.textContent = 'Stack: variabelen';
+    const stackList = document.createElement('ul');
+    for (const [name, id] of scenario.ids) {
+        const li = document.createElement('li');
+        li.textContent = `${name} → object #${id}`;
+        stackList.append(li);
+    }
+    stack.append(stackTitle, stackList);
+
+    const heap = document.createElement('section');
+    heap.className = 'heap';
+    heap.setAttribute('aria-label', 'Heap');
+    const heapTitle = document.createElement('h3');
+    heapTitle.textContent = 'Heap: objecten';
+    const heapList = document.createElement('ul');
+    for (const id of [...new Set(scenario.ids.map(([, id]) => id))]) {
+        const li = document.createElement('li');
+        li.textContent = `BankAccount #${id}`;
+        heapList.append(li);
+    }
+    heap.append(heapTitle, heapList);
+
+    memory.append(stack, heap);
+    result.append(heading, intro, memory);
+}
+
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const raw = guessInput.value.trim();
+    if (!/^-?\d+$/.test(raw)) {
+        result.replaceChildren();
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback warn';
+        feedback.textContent = 'Vul een geheel getal in, bijvoorbeeld 100.';
+        result.append(feedback);
+        return;
+    }
+    showResult(scenarios[currentIndex()], parseInt(raw, 10));
+});
+
+window.addEventListener('hashchange', show);
+show();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+name: Labs publiceren
+
+# Publiceert alleen de map met de labs op GitHub Pages.
+# De labs zijn statische pagina's (HTML, CSS en JavaScript), er is geen PHP of build-stap nodig.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Part 1 (week 1 to 13)/04 - OOP 1/example/stack_and_heap/lab/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# een nieuwe publicatie vervangt een lopende
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: "Part 1 (week 1 to 13)/04 - OOP 1/example/stack_and_heap/lab"
+      - id: deployment
+        uses: actions/deploy-pages@v4

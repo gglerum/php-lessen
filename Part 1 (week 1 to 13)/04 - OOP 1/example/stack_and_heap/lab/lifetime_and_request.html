@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 3: Levensduur en request</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 3: Levensduur en request</h1>
+    <p class="muted">Wanneer ontstaat een object en wanneer verdwijnt het? Volg het programma stap voor stap en kijk naar de heap en de uitvoer.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object op de heap. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Heap">
+                    <h3>Heap: objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+            <section class="panel" id="storage" aria-label="Opslag buiten het script" hidden>
+                <h3>Opslag buiten het script (de sessie, op de server)</h3>
+                <div class="body" id="storage-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel"></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// de bankrekening met een owner en een destructor, zoals in object_lifetime.php
+const ACCOUNT_CLASS = `class BankAccount
+{
+    private string $owner;
+
+    public function __construct(string $owner)
+    {
+        $this->owner = $owner; // @ctor-assign
+        echo "rekening van $owner aangemaakt"; // @ctor-body
+    }
+
+    public function __destruct()
+    {
+        echo "rekening van {$this->owner} opgeruimd"; // @dtor-body
+    }
+}
+`;
+
+const accountCtor = (at, varName, owner, id, where) => [
+    {
+        at,
+        say: `new BankAccount("${owner}") maakt een object op de heap en start de constructor. De parameter $owner is "${owner}".`,
+        ops: [['new', id, 'BankAccount', { owner: null }], ['push', '__construct()', { this: ref(id), owner }]],
+    },
+    { at: 'ctor-assign', say: `De constructor zet de property owner van het object op "${owner}".`, ops: [['prop', id, 'owner', owner]] },
+    { at: 'ctor-body', say: 'De constructor toont een regel in de uitvoer.', ops: [['echo', `rekening van ${owner} aangemaakt`]] },
+    {
+        at,
+        say: `De constructor is klaar en zijn frame verdwijnt. $${varName} in ${where} wijst naar het object.`,
+        ops: [['pop'], ['set', varName, ref(id)]],
+    },
+];
+
+// de vorige stap moet keepGarbage hebben: het object staat dan nog op de heap terwijl de destructor draait
+const accountDestroy = (at, id, owner, afterSay) => [
+    {
+        at: 'dtor-body',
+        say: 'PHP merkt dat niets meer naar het object wijst en roept de destructor aan. Het object staat nog op de heap, maar is niet meer te bereiken.',
+        ops: [['push', '__destruct()', { this: ref(id) }], ['echo', `rekening van ${owner} opgeruimd`]],
+    },
+    { at, say: afterSay, ops: [['pop']] },
+];
+
+// de teller uit het request-voorbeeld: elke request begint met een nieuw script
+const COUNTER_CLASS = `class VisitCounter
+{
+    private int $count = 0;
+
+    public function increment(): void
+    {
+        $this->count = $this->count + 1; // @c-inc-body
+    }
+
+    public function getCount(): int
+    {
+        return $this->count;
+    }
+}
+`;
+
+const requestSteps = (number, first) => [
+    first
+        ? {
+            at: 'session',
+            say: 'Request 1 begint. session_start() leest de sessiedata in die op de server is bewaard. Er is nog niets bewaard, dus de sessie is leeg.',
+            ops: [],
+        }
+        : {
+            at: 'session',
+            say: 'Request 2 begint. PHP start het script opnieuw, met een lege stack en een lege heap. session_start() leest de sessiedata weer in van de server, en die is nog gewoon aanwezig.',
+            ops: [['push', 'main', {}]],
+        },
+    {
+        at: 'new',
+        say: `new VisitCounter() maakt een nieuw object op de heap. De property $count begint bij 0.${first ? '' : ' Het object van het vorige request bestaat niet meer.'}`,
+        ops: [['new', 'o1', 'VisitCounter', { count: 0 }], ['set', 'counter', ref('o1')]],
+    },
+    { at: 'inc', say: 'increment() wordt aangeroepen op het object.', ops: [['push', 'increment()', { this: ref('o1') }]] },
+    { at: 'c-inc-body', say: 'count wordt 0 + 1 = 1.', ops: [['prop', 'o1', 'count', 1]] },
+    { at: 'inc', say: 'increment() is klaar en zijn frame is weg.', ops: [['pop']] },
+    {
+        at: 'sess',
+        say: first
+            ? "$_SESSION['visits'] bestaat nog niet, dus we beginnen bij 0. Het wordt 0 + 1 = 1. PHP bewaart de sessiedata aan het einde van het request op de server."
+            : "$_SESSION['visits'] is al 1, want de sessie is bewaard tussen de requests. Het wordt 1 + 1 = 2.",
+        ops: [['store', 'visits', number]],
+    },
+    { at: 'echo', say: `getCount() geeft 1 terug. De sessie staat op ${number}. Het script toont "1 en ${number}".`, ops: [['echo', `1 en ${number}`]] },
+    {
+        at: 'echo',
+        say: first
+            ? 'Het request is klaar. PHP gooit de stack en de heap weg, dus ook het object. De sessie blijft wel bestaan, want die staat op de server.'
+            : 'Ook dit request is klaar en het object is weer weg. De sessie telt door, het object niet.',
+        ops: [['pop'], ['echo', `--- einde request ${number} ---`]],
+    },
+];
+
+const scenarios = [
+    {
+        title: 'Een object dat alleen in een functie leeft',
+        intro: 'Het script begint in main. Let op de volgorde in de uitvoer. Druk op Afspelen of op Verder.',
+        withClass: false,
+        members: LIFETIME_ACCOUNT_MEMBERS,
+        className: 'BankAccount',
+        code: `${ACCOUNT_CLASS}
+function openTemporaryAccount(): void
+{
+    $account = new BankAccount("Tijdelijk"); // @new
+    echo "einde van de functie"; // @end
+}
+
+openTemporaryAccount(); // @call
+echo "terug in main"; // @back`,
+        steps: [
+            { at: 'call', say: 'openTemporaryAccount() wordt aangeroepen: er komt een nieuw frame bovenop main.', ops: [['push', 'openTemporaryAccount()', {}]] },
+            ...accountCtor('new', 'account', 'Tijdelijk', 'o1', 'openTemporaryAccount()'),
+            { at: 'end', say: 'De functie toont een regel en is bijna klaar.', ops: [['echo', 'einde van de functie']] },
+            {
+                at: 'call',
+                say: 'De functie is klaar. Het frame wordt gepopt, dus $account bestaat niet meer. Niets wijst nog naar het object, maar het staat nog op de heap.',
+                ops: [['pop']],
+                keepGarbage: true,
+            },
+            ...accountDestroy('call', 'o1', 'Tijdelijk', 'De destructor is klaar. Nu pas geeft PHP het geheugen van het object vrij: het verdwijnt van de heap.'),
+            { at: 'back', say: 'Terug in main. Het object bestaat niet meer.', ops: [['echo', 'terug in main']] },
+        ],
+    },
+    {
+        title: 'Een object dat uit de functie wordt teruggegeven',
+        intro: 'Het script begint in main. Verdwijnt het object nu ook als de functie klaar is? Druk op Afspelen of op Verder.',
+        withClass: false,
+        members: LIFETIME_ACCOUNT_MEMBERS,
+        className: 'BankAccount',
+        code: `${ACCOUNT_CLASS}
+function openAndReturnAccount(): BankAccount
+{
+    $account = new BankAccount("Teruggegeven"); // @new
+    return $account; // @ret
+}
+
+$kept = openAndReturnAccount(); // @call
+echo "terug in main"; // @back
+$kept = null; // @null
+echo "einde van het script"; // @end`,
+        steps: [
+            { at: 'call', say: 'openAndReturnAccount() wordt aangeroepen: een nieuw frame.', ops: [['push', 'openAndReturnAccount()', {}]] },
+            ...accountCtor('new', 'account', 'Teruggegeven', 'o1', 'openAndReturnAccount()'),
+            { at: 'ret', say: 'return $account geeft de verwijzing naar het object terug aan de aanroeper.', ops: [['ret', ref('o1')]] },
+            {
+                at: 'call',
+                say: 'Het frame wordt gepopt en $account in de functie bestaat niet meer. Maar de verwijzing is teruggegeven en opgeslagen in $kept: het object blijft bestaan.',
+                ops: [['pop'], ['set', 'kept', ref('o1')]],
+            },
+            { at: 'back', say: 'Terug in main. Het object leeft nog, er is geen destructor aangeroepen.', ops: [['echo', 'terug in main']] },
+            {
+                at: 'null',
+                say: '$kept = null haalt de laatste verwijzing weg. Het object staat nog op de heap, maar is niet meer te bereiken.',
+                ops: [['set', 'kept', NULL]],
+                keepGarbage: true,
+            },
+            ...accountDestroy('null', 'o1', 'Teruggegeven', 'De destructor is klaar en het object verdwijnt van de heap.'),
+            { at: 'end', say: 'Het script is bijna klaar. De heap is al leeg.', ops: [['echo', 'einde van het script']] },
+        ],
+    },
+    {
+        title: 'Een object dat tot het einde van het script blijft',
+        intro: 'Het script begint in main. Wanneer wordt dit object opgeruimd? Druk op Afspelen of op Verder.',
+        withClass: false,
+        members: LIFETIME_ACCOUNT_MEMBERS,
+        className: 'BankAccount',
+        code: `${ACCOUNT_CLASS}
+$last = new BankAccount("Laatste"); // @new
+echo "einde van het script"; // @end`,
+        steps: [
+            ...accountCtor('new', 'last', 'Laatste', 'o1', 'main'),
+            { at: 'end', say: 'Het script toont de laatste regel.', ops: [['echo', 'einde van het script']] },
+            {
+                at: 'end',
+                say: 'Het script is klaar. Het frame van main wordt weggegooid, dus ook $last. Het object staat nog even op de heap.',
+                ops: [['pop']],
+                keepGarbage: true,
+            },
+            ...accountDestroy('end', 'o1', 'Laatste', 'De destructor is klaar. De stack en de heap zijn leeg: het request is voorbij.'),
+        ],
+    },
+    {
+        title: 'PHP is request based: twee requests na elkaar',
+        intro: 'Een bezoeker laadt dezelfde pagina twee keer. Let op wat wel en niet blijft bestaan. Druk op Afspelen of op Verder.',
+        withClass: false,
+        storage: true,
+        members: VISIT_COUNTER_MEMBERS,
+        className: 'VisitCounter',
+        code: `${COUNTER_CLASS}
+session_start(); // @session
+$counter = new VisitCounter(); // @new
+$counter->increment(); // @inc
+$_SESSION['visits'] = ($_SESSION['visits'] ?? 0) + 1; // @sess
+echo $counter->getCount() . " en " . $_SESSION['visits']; // @echo`,
+        steps: [...requestSteps(1, true), ...requestSteps(2, false)],
+    },
+];
+
+createStepper({ scenarios });
+</script>
+</body>
+</html>

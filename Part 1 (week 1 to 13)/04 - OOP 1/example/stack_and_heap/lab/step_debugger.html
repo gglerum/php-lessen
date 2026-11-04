@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 2: Stap voor stap</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 2: Stap voor stap</h1>
+    <p class="muted">Volg een programma regel voor regel, zoals in een step debugger. Je ziet de stack (links) en de heap (rechts) veranderen.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object op de heap. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Heap">
+                    <h3>Heap: objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel"></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @call") en wat die regel doet met stack en heap.
+const scenarios = [
+    {
+        title: 'Een int aan een functie geven',
+        intro: 'Het script begint in main. Er zijn nog geen variabelen. Druk op Afspelen of op Verder.',
+        withClass: false,
+        code: `function addBonus(int $balance): void
+{
+    $balance = $balance + 50; // @f-body
+}
+
+$balance = 100; // @set
+addBonus($balance); // @call
+echo $balance; // @echo`,
+        steps: [
+            { at: 'set', say: 'De variabele $balance in main krijgt de waarde 100. Een gewone waarde staat direct in het frame op de stack.', ops: [['set', 'balance', 100]] },
+            { at: 'call', say: 'addBonus() wordt aangeroepen. Er komt een nieuw frame bovenop de stack. De parameter $balance is een nieuwe variabele met een kopie van de waarde 100.', ops: [['push', 'addBonus()', { balance: 100 }]] },
+            { at: 'f-body', say: 'De functie telt 50 op bij zijn eigen $balance. Alleen de kopie in dit frame wordt 150. De $balance in main blijft 100.', ops: [['set', 'balance', 150]] },
+            { at: 'call', say: 'De functie is klaar. Het frame wordt gepopt en de kopie is weg uit het geheugen. In main is $balance nog steeds 100.', ops: [['pop']] },
+            { at: 'echo', say: 'Het script toont 100. Een gewone variabele werd als kopie doorgegeven, dus het origineel is niet veranderd.', ops: [['echo', '100']] },
+        ],
+    },
+    {
+        title: 'Een object aan een functie geven',
+        intro: 'Het script begint in main. Let straks op het verschil met het vorige scenario. Druk op Afspelen of op Verder.',
+        withClass: true,
+        code: `function addBonus(BankAccount $account): void
+{
+    $account->deposit(50); // @f-body
+}
+
+$account = new BankAccount(100); // @new
+addBonus($account); // @call
+echo $account->getBalance(); // @echo`,
+        steps: [
+            ...ctorSteps('new', 'account', 100, 'o1', 'main'),
+            {
+                at: 'call',
+                say: 'addBonus() wordt aangeroepen. De parameter $account is een kopie van de verwijzing, niet van het object. Er wijzen nu twee variabelen naar hetzelfde object.',
+                ops: [['push', 'addBonus()', { account: ref('o1') }]],
+            },
+            ...depositSteps('f-body', 'o1', 50, 150),
+            { at: 'call', say: 'addBonus() is klaar. Het frame is weg, maar het object op de heap niet: $account in main wijst er nog naar.', ops: [['pop']] },
+            ...getBalanceSteps('echo', 'o1', 150),
+        ],
+    },
+    {
+        title: 'In de functie een nieuw object toewijzen',
+        intro: 'Het script begint in main. Hier gebeurt iets anders met de verwijzing. Druk op Afspelen of op Verder.',
+        withClass: true,
+        code: `function replaceAccount(BankAccount $account): void
+{
+    $account = new BankAccount(9999); // @f-body
+}
+
+$account = new BankAccount(100); // @new
+replaceAccount($account); // @call
+echo $account->getBalance(); // @echo`,
+        steps: [
+            ...ctorSteps('new', 'account', 100, 'o1', 'main'),
+            {
+                at: 'call',
+                say: 'replaceAccount() wordt aangeroepen. $account in de functie is een kopie van de verwijzing en wijst naar hetzelfde object.',
+                ops: [['push', 'replaceAccount()', { account: ref('o1') }]],
+            },
+            ...ctorSteps('f-body', 'account', 9999, 'o2', 'replaceAccount()', '$account in main wijst nog steeds naar het eerste object.'),
+            {
+                at: 'call',
+                say: 'De functie is klaar en zijn frame is weg. Niets wijst nog naar het tweede object, dus PHP ruimt dat op. Het eerste object is onaangeroerd.',
+                ops: [['pop']],
+            },
+            ...getBalanceSteps('echo', 'o1', 100),
+        ],
+    },
+    {
+        title: 'Een tweede variabele voor hetzelfde object',
+        intro: 'Het script begint in main. Is $backup straks echt een back-up? Druk op Afspelen of op Verder.',
+        withClass: true,
+        code: `$account = new BankAccount(100); // @new
+$backup = $account; // @copy
+$account->deposit(50); // @dep
+echo $backup->getBalance(); // @echo`,
+        steps: [
+            ...ctorSteps('new', 'account', 100, 'o1', 'main'),
+            { at: 'copy', say: 'Bij een toewijzing wordt alleen de verwijzing gekopieerd. $backup wijst naar hetzelfde object als $account. Er is nog maar een object.', ops: [['set', 'backup', ref('o1')]] },
+            ...depositSteps('dep', 'o1', 50, 150),
+            ...getBalanceSteps('echo', 'o1', 150),
+        ],
+    },
+    {
+        title: 'Een echte kopie met clone',
+        intro: 'Het script begint in main. Nu maken we de kopie wel zelf. Druk op Afspelen of op Verder.',
+        withClass: true,
+        code: `$account = new BankAccount(100); // @new
+$backup = clone $account; // @clone
+$account->deposit(50); // @dep
+echo $backup->getBalance(); // @echo`,
+        steps: [
+            ...ctorSteps('new', 'account', 100, 'o1', 'main'),
+            { at: 'clone', say: 'clone maakt een nieuw object op de heap met dezelfde waarden. $backup wijst naar dat nieuwe object, $account naar het oorspronkelijke.', ops: [['clone', 'o2', 'o1'], ['set', 'backup', ref('o2')]] },
+            ...depositSteps('dep', 'o1', 50, 150),
+            ...getBalanceSteps('echo', 'o2', 100),
+        ],
+    },
+    {
+        title: 'Recursie: factorial(3)',
+        intro: 'Het script begint in main. Kijk hoe de stack groeit en daarna weer krimpt. Druk op Afspelen of op Verder.',
+        withClass: false,
+        code: `function factorial(int $number): int
+{
+    if ($number <= 1) { // @if
+        return 1; // @base
+    }
+
+    return $number * factorial($number - 1); // @rec
+}
+
+echo factorial(3); // @call`,
+        steps: [
+            { at: 'call', say: 'factorial(3) wordt aangeroepen. Er komt een frame bovenop main.', ops: [['push', 'factorial(3)', { number: 3 }]] },
+            { at: 'if', say: 'Is 3 <= 1? Nee, dus we gaan door naar de laatste regel.', ops: [] },
+            { at: 'rec', say: 'De functie roept zichzelf aan met 2. Dit is een nieuwe aanroep, dus een nieuw frame met een eigen $number. factorial(3) wacht tot deze klaar is.', ops: [['push', 'factorial(2)', { number: 2 }]] },
+            { at: 'if', say: 'Is 2 <= 1? Nee.', ops: [] },
+            { at: 'rec', say: 'Weer een aanroep, nu met 1. De stack is nu vier frames hoog.', ops: [['push', 'factorial(1)', { number: 1 }]] },
+            { at: 'if', say: 'Is 1 <= 1? Ja. Dit is de base case: hier roept de functie zichzelf niet meer aan.', ops: [] },
+            { at: 'base', say: 'factorial(1) geeft 1 terug.', ops: [['ret', 1]] },
+            { at: 'rec', say: 'Het frame van factorial(1) wordt gepopt. factorial(2) kan nu rekenen: 2 * 1 = 2.', ops: [['pop'], ['ret', 2]] },
+            { at: 'rec', say: 'Het frame van factorial(2) wordt gepopt. factorial(3) rekent: 3 * 2 = 6.', ops: [['pop'], ['ret', 6]] },
+            { at: 'call', say: 'Het laatste frame wordt gepopt en het script toont 6. Zonder base case zou de stack blijven groeien en nooit meer krimpen.', ops: [['pop'], ['echo', '6']] },
+        ],
+    },
+];
+
+createStepper({ scenarios });
+</script>
+</body>
+</html>
