@@ -12,10 +12,9 @@ Het gaat niet om regels uit je hoofd leren. Het gaat erom dat je kunt zien waaro
 4. [GRASP](04%20-%20GRASP/): bepalen in welke class een stuk code thuishoort.
 5. [Refactoring](05%20-%20Design%20Principles%20&%20Refactoring/): stap voor stap een rommelige controller omzetten naar schone code, plus Law of Demeter en Tell, Don't Ask.
 6. [Design Patterns](06%20-%20Design%20Patterns/): bekende oplossingen voor terugkerende problemen, en wanneer je ze juist niet gebruikt, verdeeld over drie lessen.
-7. **Domain Driven Design**: je code opzetten rondom het probleem dat de applicatie oplost.
+7. [Domain Driven Design](07%20-%20Domain%20Driven%20Design/): je code opzetten rondom het probleem dat de applicatie oplost, verdeeld over twee lessen.
+
+Elke les heeft een uitleg, een `example` map met kleine scripts die je zelf kunt uitvoeren (`php bestandsnaam.php`) en een bestand met opgaven. De voorbeelden zijn bijna altijd in paren: dezelfde code zonder en met het principe.
 
 ## Voorbeeld
-In de map [example](./example/) staat een Laravel voorbeeld waarin gebruikers ingevulde sjablonen voor een vragenlijst uploaden. De map `bad` bevat een controller die bijna alle principes uit dit deel overtreedt, de map `better` bevat dezelfde functionaliteit na refactoring. We kijken er in meerdere lessen naar terug.
-
-## Status
-Dit deel wordt les voor les herschreven. Totdat een onderwerp is vervangen kan de map nog oude tekst bevatten.
+In de map [example](./example/) staat een Laravel voorbeeld waarin gebruikers ingevulde sjablonen voor een vragenlijst uploaden. De map `bad` bevat een controller die bijna alle principes uit dit deel overtreedt, de map `better` bevat dezelfde functionaliteit na refactoring. In les 05 werken we het uit en in een aantal andere lessen komt het terug.
