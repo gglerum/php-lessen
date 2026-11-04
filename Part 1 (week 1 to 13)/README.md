@@ -1,153 +1,37 @@
-# Part 1: PHP Fundamentals & Web Development (Weeks 1-13)
+# Part 1: PHP basis
 
-Welcome to Part 1 of the PHP course! This comprehensive section covers all the fundamental concepts and practical skills needed to become proficient in PHP web development.
+In dit deel leer je de basis van PHP. We beginnen met console applicaties, zodat we eerst bekend raken met de taal voor we in http requests en andere web specifieke dingen duiken. Daarna volgen classes, formulieren, sessions en databases.
 
-## 🎯 What You'll Master
+De les mappen hebben een nummer. Het nummer geeft de volgorde van de onderwerpen aan, niet de week.
 
-By completing Part 1, you'll understand:
+## Lessen
 
-- **Core PHP Syntax**: Variables, data types, operators, and control structures
-- **Functions & Arrays**: How to organize and manipulate data effectively
-- **Object-Oriented Programming**: Classes, objects, inheritance, and polymorphism
-- **Web Development**: HTML forms, sessions, and user interaction
-- **Database Integration**: Working with databases and data persistence
-- **Real-World Applications**: Building complete, functional web applications
+1. [01 - Intro](01%20-%20Intro/)
+   De tools (VS Code, Git, XAMPP, XDebug), de verschillen tussen Python en PHP en naamgeving.
 
-This part provides the solid foundation needed for advanced architectural concepts in Parts 2 and 3.
+2. [02 - Basics](02%20-%20Basics/)
+   Syntax, variabelen, data types, operators, if/else, switch en loops. Het eerste voorbeeld is Galgje in één bestand.
 
-## 📚 Course Structure
+3. [03 - Functions & Arrays](03%20-%20Functions%20&%20Arrays/)
+   Functies, parameters, `return` en scope, arrays en callback functions. Galgje wordt opgesplitst in functies en de eerste bibliotheek opdracht werkt met arrays.
 
-### Foundation Concepts
+4. [04 - OOP 1](04%20-%20OOP%201/)
+   Classes, properties, methods, de constructor en access modifiers. Ook kijken we naar wat er in het geheugen gebeurt (stack en heap). Galgje wordt `hangman_v3`.
 
-1. 📁 **[01 - Intro](01%20-%20Intro/)**
-   - Getting started with PHP development
-   - Setting up your development environment
-   - Understanding the PHP ecosystem
-   - Basic syntax and programming concepts
+5. [05 - HTML & Forms & Sessions](05%20-%20HTML%20&%20Forms%20&%20Sessions/)
+   HTML, formulieren verwerken, sessions en cookies. Het bibliotheek systeem wordt een web applicatie met een router en controller, en je schrijft je eerste tests.
 
-2. 📁 **[02 - Basics](02%20-%20Basics/)**
-   - Variables, data types, and operators
-   - Control structures (if/else, loops)
-   - Basic input/output operations
-   - Practical exercises and examples
+6. [07 - Databases](07%20-%20Databases/)
+   SQL en PDO. Het bibliotheek systeem bewaart zijn gegevens in een database.
 
-3. 📁 **[03 - Functions & Arrays](03%20-%20Functions%20&%20Arrays/)**
-   - Creating and using functions
-   - Understanding scope and parameters
-   - Array manipulation and built-in functions
-   - Practical programming patterns
+7. [08 - OOP 2](08%20-%20OOP%202/)
+   Inheritance, abstract classes en polymorphism.
 
-### Object-Oriented Programming
+8. [09 - OOP 3](09%20-%20OOP%203/)
+   Interfaces, traits, enums, namespaces, de Composer autoloader en exceptions. Galgje wordt `hangman_v4`.
 
-4. 📁 **[04 - OOP 1](04%20-%20OOP%201/)**
-   - Introduction to Object-Oriented Programming
-   - Classes, objects, and properties
-   - Methods and constructors
-   - Basic encapsulation concepts
+## Labs
+Bij de lessen 02, 03 en 04 horen interactieve labs. Je vindt de links onderaan de les zelf of in de README van die les.
 
-5. 📁 **[08 - OOP 2](08%20-%20OOP%202/)**
-   - Inheritance and polymorphism
-   - Abstract classes and interfaces
-   - Static methods and properties
-   - Advanced OOP concepts
-
-6. 📁 **[09 - OOP 3](09%20-%20OOP%203/)**
-   - Design patterns introduction
-   - Error handling and exceptions
-   - Namespaces and autoloading
-   - Professional OOP practices
-
-### Web Development
-
-7. 📁 **[05 - HTML & Forms & Sessions](05%20-%20HTML%20&%20Forms%20&%20Sessions/)**
-   - Creating dynamic HTML with PHP
-   - Processing form data
-   - Session management
-   - User state and authentication basics
-
-8. 📁 **[07 - Databases](07%20-%20Databases/)**
-   - Database fundamentals
-   - SQL basics and PHP integration
-   - PDO and prepared statements
-   - Data modeling and relationships
-
-## 🚀 Learning Path
-
-### Weeks 1-3: **Foundation** 🌱
-- **Week 1**: Introduction and basic syntax
-- **Week 2**: Core programming concepts
-- **Week 3**: Functions and data manipulation
-
-### Weeks 4-7: **Object-Oriented Programming** 🌿
-- **Week 4**: OOP basics and classes
-- **Week 5**: Web forms and user interaction
-- **Week 6**: Database integration
-- **Week 7**: Advanced OOP concepts
-
-### Weeks 8-11: **Advanced Concepts** 🌳
-- **Week 8**: Inheritance and polymorphism
-- **Week 9**: Advanced OOP and design patterns
-- **Week 10-11**: Integration and practical projects
-
-### Weeks 12-13: **Mastery & Integration** 🚀
-- **Week 12**: Complete project development
-- **Week 13**: Best practices and code review
-
-## 💡 Practical Projects
-
-Throughout Part 1, you'll build increasingly complex projects:
-
-- **Hangman Game**: Evolving from basic procedural code to full OOP
-- **Library Management System**: Understanding data relationships and user interfaces
-- **Student Manager**: Database integration and CRUD operations
-- **Movie Management**: Advanced OOP patterns and system architecture
-
-## 🎓 Success Indicators
-
-You're ready for Part 2 when you can:
-
-- [ ] Write clean, functional PHP code using proper syntax
-- [ ] Create and use functions effectively
-- [ ] Build classes with proper encapsulation and inheritance
-- [ ] Process HTML forms and manage user sessions
-- [ ] Interact with databases using PDO
-- [ ] Debug and troubleshoot PHP applications
-- [ ] Understand basic design patterns and when to use them
-
-## 🔄 Prerequisites
-
-**Before Starting Part 1:**
-- Basic computer literacy
-- Understanding of web concepts (HTML/CSS helpful but not required)
-- Logical thinking and problem-solving mindset
-
-**No prior programming experience required!** This course starts from the very beginning.
-
-## 🛠️ Development Setup
-
-Each section includes:
-- **Concepts**: Clear explanations of new topics
-- **Examples**: Working code demonstrations
-- **Exercises**: Hands-on practice opportunities  
-- **Projects**: Real-world application development
-
-## ➡️ What's Next?
-
-After completing Part 1, you'll be ready to tackle:
-
-- **Part 2 (Weeks 14-26)**: Laravel framework and professional web development
-- **Part 3 (Weeks 27-39)**: Advanced architecture and design principles
-
-## 🌟 Key Learning Philosophy
-
-Part 1 emphasizes:
-- **Learning by doing** - Every concept includes practical exercises
-- **Progressive complexity** - Building skills step by step
-- **Real-world relevance** - Projects mirror actual development work
-- **Best practices** - Establishing good habits from the beginning
-
-**Remember**: Programming is a skill that improves with practice. Don't rush through the material—take time to understand each concept thoroughly before moving on.
-
----
-
-**Ready to begin your PHP journey?** Start with [`01 - Intro/`](01%20-%20Intro/) and build the foundation for your web development career! 🚀
+## Huiswerk
+Elke les sluit af met huiswerk. Sommige lessen hebben een aparte opgaven pagina, zoals [classes_opgaven_1.md](04%20-%20OOP%201/classes_opgaven_1.md). De bibliotheek opdracht loopt door vanaf les 03 en wordt elke keer uitgebreid.
