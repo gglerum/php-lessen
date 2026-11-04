@@ -1,20 +1,22 @@
-## Example
-On a questionaire website users must upload filled in templates. These uploaded files will be stored on the server and will be
-related to the question the files belong to. For some reason a filled in questionaire was called an "application", don't ask me why, but this ambigious name should give you a hint of the overall quality of the code.
+## Voorbeeld: de FileController
 
-This has been implemented in a bad way [Bad example](../../example/bad/app). All the mistakes where made in [`FileController.php`](../../example/bad/app/Http/Controllers/FileController.php). But to understand the context and optimizations made later on, the used [`Model`](../../example/bad/app/Models/User.php) and [`FormRequest`](../../example/bad/app/Http/Requests/StoreRequest.php) are supplied.
+Op een website voor vragenlijsten uploaden gebruikers ingevulde sjablonen. De bestanden worden op de server bewaard en gekoppeld aan de vraag waar ze bij horen. Een ingevulde vragenlijst heet in de code om de een of andere reden een "application". Die verwarrende naam geeft al een idee van de kwaliteit van de rest.
 
-I have refactored the `FileController` which was a major violation of "Break down complex problems into smaller tasks — every function should have one job." and the Single Responsibility Principle. The new code can be found here: [Better example](../../example/better/app)
+De eerste versie is in [bad](../../example/bad/app) te vinden. Alle fouten zitten in [`FileController.php`](../../example/bad/app/Http/Controllers/FileController.php). Om de context en de verbeteringen te begrijpen staan de gebruikte [`Model`](../../example/bad/app/Models/User.php) en [`FormRequest`](../../example/bad/app/Http/Requests/StoreRequest.php) er ook bij.
 
-### Improvements
-#### Dependency injection
+De `FileController` is daarna gerefactored. De oude versie overtrad "breek een probleem op in kleinere taken, elke functie heeft één taak" en het Single Responsibility Principle. De nieuwe code staat in [better](../../example/better/app).
+
+De uitleg van de werkwijze staat in [refactoring.md](../refactoring.md). Hieronder staan de verbeteringen één voor één.
+
+## Verbeteringen
+
+### Dependency injection
 **Application**
 
-The `Application` is one of the most frequent used models in our *cough* application. So it makes sense to [bind](https://laravel.com/docs/12.x/container#simple-bindings)
-the model in the Service container when either the `{application}` route parameter is present, or `applicationId` is specified
-in the request.
+De `Application` is het model dat het vaakst in deze applicatie wordt gebruikt. Daarom loont het om het model in de service container te [binden](https://laravel.com/docs/12.x/container#simple-bindings) voor de route parameter `{application}` of de waarde `applicationId` in het request.
 
-To make this happen the following binding was added in the [`AppServiceProvider`](../../example/better/app/Providers/AppServiceProvider.php) class:
+Daarvoor is in de [`AppServiceProvider`](../../example/better/app/Providers/AppServiceProvider.php) deze binding toegevoegd:
+
 ```PHP
 $this->app->bind(Application::class, function () {
     $applicationId = request('applicationId') ?: request()->route('application');
@@ -22,62 +24,45 @@ $this->app->bind(Application::class, function () {
 });
 ```
 
-Now the model will be automatically injected when we type hint `Application` in a controller method or one of our `Service` classes.
+Wanneer we nu `Application` als type declareren in een controller method of een `Service` class, wordt het model automatisch meegegeven.
 
-**Authenticated User**
+**De ingelogde gebruiker**
 
-Since Laravel 11 we can make use of ["contextual attributes"](https://laravel.com/docs/12.x/container#contextual-attributes) that are automatically resolved by the `Service Container`. One of these attributes is the `Authenticated User`. For a `Controller class`, `Controller method` or other class bound by the `Service Container` we don't have to use the `Auth` facade or `auth()` helper to get
-the authenticated user. Which gives a clearer view of which dependencies we are actually using.
+Sinds Laravel 11 bestaan er ["contextual attributes"](https://laravel.com/docs/12.x/container#contextual-attributes) die de service container zelf invult. Eén daarvan is de ingelogde gebruiker. In een class die door de service container wordt aangemaakt hoef je dus geen `Auth` facade of `auth()` helper meer te gebruiken. Daardoor zie je duidelijker welke dependencies de class gebruikt.
 
 **Service classes**
 
-We can inject our own `Service` classes as well. And if we don't need any additional logic, we don't have to add a custom binding. 
-If we type hint our `Service` class, which I named [`AnswerService`](../../example/better/app/Services/AnswerService.php) in the `Controller` method the `Service Container` will automatically resolve the constructor parameters by injection dependencies.
+Onze eigen `Service` classes kunnen op dezelfde manier worden geïnjecteerd. Heeft een service geen extra logica nodig, dan hoeft er geen aparte binding te worden gemaakt. Declareer je de [`AnswerService`](../../example/better/app/Services/AnswerService.php) als type in de controller method, dan lost de service container de parameters van de constructor zelf op.
 
-
-**Code**
 ```PHP
 class FileController extends Controller
 {
-    /**
-     * Store files for a specific question in an application.
-     *
-     * @param StoreFileRequest $request
-     * @param User $user
-     * @param AnswerService $answerService
-     * @return void
-     */
     public function store(StoreFileRequest $request, #[CurrentUser] User $user, AnswerService $answerService)
     {
         //...
 ```
-*[View full FileController](../../example/better/app/Http/Controllers/FileController.php)*
 
-#### Making use of Form Request's
-##### Authorization logic
-As said before authorization logic can be moved to a Form Request when already used, like in our case the [`StoreFileRequest`](../../example/better/app/Http/Requests/StoreFileRequest.php).
+*[Bekijk de hele FileController](../../example/better/app/Http/Controllers/FileController.php)*
+
+### Form Requests gebruiken
+**Autorisatie**
+
+Autorisatie hoort in een Form Request als die er al is, zoals hier de [`StoreFileRequest`](../../example/better/app/Http/Requests/StoreFileRequest.php).
 
 ```PHP
- /**
- * Determine if the user is authorized to make this request.
- */
 public function authorize(): bool
 {
     return $this->user()->can('update', [$this->application, $this->user()->organisation_id]);
 }
 ```
 
-Which looks a whole lot better than always returning `true`. Notice that we use the `Authenticated User` that automatically available
-in the `Request` by calling `user()` on the `Request` object (we are in a Form Request that inherits from `Request`). Through our
-binding in the Service Container, the application should also be resolved in the request and available to us.
+Dat is een stuk beter dan een `authorize()` die altijd `true` teruggeeft. Let op dat we de ingelogde gebruiker via `user()` van het `Request` object halen. Door de binding in de service container is ook de `application` beschikbaar in de request.
 
-##### prepareForValidation
-Form Requests are able to sanitize, or prepare in other ways, the data before the validation logic is run. To simplify the logic for checking the maximum upload size and making it available outside of the request, I made a new attribute using this method.
+**prepareForValidation**
+
+Een Form Request kan gegevens opschonen of aanvullen voordat de validatie draait. Om de controle op de maximale uploadgrootte te vereenvoudigen is hier een nieuw attribuut aan toegevoegd.
 
 ```PHP
-/**
- * Prepare the data for validation.
- */
 protected function prepareForValidation(): void
 {
     $this->merge([
@@ -85,34 +70,26 @@ protected function prepareForValidation(): void
     ]);
 }
 ```
-This makes it possible to validate this new `total_file_size` attribute instead of the `files` array.
 
-##### Validation logic
-As it happens the rules that where validated within the `FileController` where almost a duplication of the rules that were already
-declared in the `StoreFileRequest`. The only new validation logic introduced in the `StoreFileRequest` is the new rule [`UploadLimit`](../../example/better/app/Rules/UploadLimit.php)
-which is separate class that handles that logic. Because we have added the `total_file_size` to our request in the `prepareForValidation` method, we now have an elegant rule:
+Daardoor kunnen we `total_file_size` valideren in plaats van de hele `files` array.
+
+**Validatieregels**
+
+De regels die in de `FileController` werden gevalideerd, stonden bijna al in de `StoreFileRequest`. Het is dus ook een voorbeeld van DRY. Nieuw is alleen de regel [`UploadLimit`](../../example/better/app/Rules/UploadLimit.php), een eigen class voor de uploadlimiet.
 
 ```PHP
-/**
- * Run the validation rule.
- */
 public function validate(string $attribute, int $value, Closure $fail): void
 {
-    //check if uploadlimit has been exceeded
+    // controleer of de uploadlimiet is overschreden
     if (!request()->user()->canUpload($value)) {
         $fail('Attachments total size exceeds upload limit.');
     }
 }
 ```
 
-Which is used like so:
+Dit wordt zo gebruikt:
 
 ```PHP
-/**
- * Get the validation rules that apply to the request.
- *
- * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
- */
 public function rules(): array
 {
     return [
@@ -124,39 +101,52 @@ public function rules(): array
 }
 ```
 
-#### Value Object Introduction
-One of the biggest improvements is the introduction of a [`FileSize`](../../example/better/app/ValueObjects/FileSize.php) value object. Instead of passing around raw integers for file sizes everywhere, we now have a proper object that knows how to handle file size operations.
+### Value object: FileSize
+Een grote verbetering is het [`FileSize`](../../example/better/app/ValueObjects/FileSize.php) value object. In plaats van overal losse getallen voor bestandsgroottes rond te geven, is er nu een object dat weet hoe het met groottes omgaat.
 
-This gives us several benefits:
-- No more confusion about whether a number represents bytes, kilobytes, or something else
-- File size calculations are centralized in one place
-- We get methods like `exceedsLimit()` and `add()` that make the code much more readable
-- Type safety - you can't accidentally pass a file size where you meant to pass something else
+- Het is duidelijk dat het om bytes gaat, en niet om kilobytes of iets anders.
+- De berekeningen staan op één plek.
+- Methods als `exceedsLimit()` en `add()` maken de code leesbaarder.
+- Je kunt niet per ongeluk een grootte meegeven waar iets anders hoort.
 
 ```PHP
-// Much clearer what's happening here
+// duidelijk wat hier gebeurt
 $user->updateUploadSizeTotal(FileSize::fromBytes($validatedData['total_file_size']));
 
-// vs the old way with raw numbers
+// de oude manier met losse getallen
 $user->updateUploadSizeTotal($totalUploadedSize);
 ```
 
-#### Polymorphic Action Architecture
-Instead of just moving business logic to a simple service class, I've implemented a more sophisticated system that can handle different types of questions.
+De methods van het [`User`](../../example/better/app/Models/User.php) model werken nu met dit object:
 
-Here's how it works:
-- [`AnswerAction`](../../example/better/app/Contracts/AnswerAction.php) interface defines what every question handler must do
-- Abstract [`AnswerAction`](../../example/better/app/Actions/Answer/AnswerAction.php) class provides shared functionality
-- [`UploadAction`](../../example/better/app/Actions/Answer/UploadAction.php) handles file upload questions specifically  
-- New question types can be added without touching existing code
-- Everything is configured in [`config/answer.php`](../../example/better/config/answer.php) so it's easy to extend
+```PHP
+// oud: losse getallen
+public function getTotalUploadSize(): int
+public function updateUploadSizeTotal(int $totalUploadedSize): void
+public function getUploadLimit(): int
 
-This might seem like overkill for just file uploads, but it makes the system much more flexible for the future.
+// nieuw: FileSize objecten
+public function getTotalUploadSize(): FileSize
+public function updateUploadSizeTotal(FileSize $totalUploadedSize): void
+public function getUploadLimit(): FileSize
+public function canUpload(int $fileSize): bool
+```
 
-#### Service Container Enhancements
-**Advanced Service Binding**
+Nieuw is `canUpload()`. Die bevat alle controles op de uploadlimiet, die eerst verspreid in de controller stonden. Dit is Tell, Don't Ask: de controller vraagt het `User` model of er geüpload mag worden in plaats van zelf de getallen te vergelijken.
 
-The [`AppServiceProvider`](../../example/better/app/Providers/AppServiceProvider.php) does more than just the simple `Application` binding. It also sets up the `AnswerService` with some pretty neat service container magic:
+### Business logic naar een service class
+De oorspronkelijke `FileController` deed veel te veel: bestanden opslaan, valideren en database records bijhouden. Die logica staat nu in een service laag.
+
+Daarbij is er niet gekozen voor één grote service class. De [`AnswerService`](../../example/better/app/Services/AnswerService.php) zoekt per vraagtype de juiste handler en laat die het werk doen:
+
+- De interface [`AnswerAction`](../../example/better/app/Contracts/AnswerAction.php) bepaalt wat elke handler moet kunnen.
+- De abstracte class [`AnswerAction`](../../example/better/app/Actions/Answer/AnswerAction.php) bevat wat alle handlers gemeen hebben.
+- [`UploadAction`](../../example/better/app/Actions/Answer/UploadAction.php) handelt vragen af waar bestanden bij horen.
+- De lijst met handlers staat in [`config/answer.php`](../../example/better/config/answer.php).
+
+Een nieuw vraagtype (tekst, meerkeuze) betekent een nieuwe action class en een regel in de config, zonder bestaande code aan te passen. Dit is Open/Closed uit les 03. Voor alleen bestanden uploaden is dit meer dan nodig. Het laat zien hoe het eruit ziet als er meer types bij komen, en het sluit aan op design patterns die we in les 06 zien.
+
+De binding in de `AppServiceProvider` bouwt de service met de handlers uit de config:
 
 ```PHP
 $this->app->singleton(AnswerService::class, function ($app) {
@@ -168,60 +158,19 @@ $this->app->singleton(AnswerService::class, function ($app) {
 });
 ```
 
-What this does:
-- Creates one `AnswerService` instance for the entire request (singleton)
-- Loads the list of handlers from the config file
-- Uses the service container to build each handler with all its dependencies
-- Gives the service a collection of ready-to-use handlers
+- `singleton` maakt één `AnswerService` voor het hele request.
+- De lijst met handlers komt uit de config.
+- `$app->make()` bouwt elke handler met al zijn dependencies.
 
-This way, if you want to add a new question type, you just create the handler class and add it to the config. No need to touch the service itself.
+### Kleine verbeteringen in het model
+- `$fillable` bevatte veel velden. Groeit die lijst sneller dan het aantal velden dat niet mass assignable is, dan is `$guarded` met alleen de uitzonderingen korter.
+- Laravel 11 heeft de `once()` helper, waarmee het resultaat van een method voor de duur van het request wordt onthouden. Zo wordt de berekening in `getTotalUploadSize()` maar één keer gedaan.
 
-#### Model Method Changes
-The [`User`](../../example/better/app/Models/User.php) model methods have been completely rewritten to work with the new `FileSize` value object:
+## Resultaat
 
-```PHP
-// Old way - raw integers everywhere
-public function getTotalUploadSize(): int
-public function updateUploadSizeTotal(int $totalUploadedSize): void
-public function getUploadLimit(): int
-
-// New way - proper FileSize objects
-public function getTotalUploadSize(): FileSize
-public function updateUploadSizeTotal(FileSize $totalUploadedSize): void
-public function getUploadLimit(): FileSize
-public function canUpload(int $fileSize): bool  // This one's new
-```
-
-The new `canUpload()` method is particularly nice because it encapsulates all the upload limit checking logic that used to be scattered around the controller.
-
-#### Moving business logic to a service class
-
-The original `FileController` was doing way too much - handling files, validating uploads, managing database records, you name it. I've moved all that business logic into a proper service layer.
-
-But instead of just creating one big service class, I've set up a system where different types of questions can be handled by different action classes. The [`AnswerService`](../../example/better/app/Services/AnswerService.php) acts as a coordinator that finds the right handler for each question type.
-
-Right now we only have [`UploadAction`](../../example/better/app/Actions/Answer/UploadAction.php) for file uploads, but if we needed to handle text questions, multiple choice, or whatever else, we'd just add new action classes without touching any existing code.
-
-#### Small Model optimizations
-I have made a couple of small corrections to the [`User`](../../example/better/app/Models/User.php) model.
-
-The property `$fillable` was used to define a lot of properties, if this list expands faster than the properties that are not `fillable`, it makes sense to use the `$guarded` property for the exceptions instead.
-
-Laravel 11 introduced the `once()` helper, which makes it possible to cache the result of any method for the duration of the request.
-Like for example the calculation of the `getTotalUploadSize` method is only needed to be done once.
-
-### Result
 ```PHP
 class FileController extends Controller
 {
-    /**
-     * Store files for a specific question in an application.
-     *
-     * @param StoreFileRequest $request
-     * @param User $user
-     * @param AnswerService $answerService
-     * @return void
-     */
     public function store(StoreFileRequest $request, #[CurrentUser] User $user, AnswerService $answerService)
     {
         $validatedData = $request->validated();
@@ -236,8 +185,8 @@ class FileController extends Controller
 }
 ```
 
-All the improvements resulted into a controller class that is small enough to show here. All the logic has been delegated to the 
-correct classes:
-- Authorization and Validation logic to the [`StoreFileRequest`](../../example/better/app/Http/Requests/StoreFileRequest.php) and [`UploadLimit`](../../example/better/app/Rules/UploadLimit.php) rule.
-- Business logic to the [`AnswerService`](../../example/better/app/Services/AnswerService.php)
-- Resolving of the `Application` model to the [`AppServiceProvider`](../../example/better/app/Providers/AppServiceProvider.php)
+De controller is klein genoeg om hier te laten zien. Alle logica is naar de juiste plek verhuisd:
+
+- Autorisatie en validatie naar de [`StoreFileRequest`](../../example/better/app/Http/Requests/StoreFileRequest.php) en de [`UploadLimit`](../../example/better/app/Rules/UploadLimit.php) regel.
+- Business logic naar de [`AnswerService`](../../example/better/app/Services/AnswerService.php).
+- Het ophalen van het `Application` model naar de [`AppServiceProvider`](../../example/better/app/Providers/AppServiceProvider.php).
