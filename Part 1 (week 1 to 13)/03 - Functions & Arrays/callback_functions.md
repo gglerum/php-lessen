@@ -174,3 +174,13 @@ Bij een arrow functie hoeft dit niet, deze heeft altijd toegang tot variabelen b
 $max = 5;
 $test = array_filter($numbers, fn($number) => is_numeric($number) && $number > $max);
 ```
+
+## Labs
+
+Wil je zien hoe `array_filter` de callback functie aanroept? In de interactieve labs volg je een programma regel voor regel. Open [index.html](./example/callbacks/lab/index.html) in je browser, je hoeft niets te installeren. Werkt de opmaak niet, start dan `php -S localhost:8090` in de map `example/callbacks/lab`.
+
+1. [filter_step.html](./example/callbacks/lab/filter_step.html) is Lab 1. Een step debugger die laat zien wat `array_filter` achter de schermen doet, met een ingebouwde functie, een eigen functie, een anonieme functie, een arrow functie en de scope van variabelen (`use`).
+2. [predict_output.html](./example/callbacks/lab/predict_output.html) is Lab 2. Zes scenario's waarbij je eerst voorspelt wat er gebeurt.
+3. [bughunt.html](./example/callbacks/lab/bughunt.html) is Lab 3. Drie scripts die iets anders doen dan bedoeld: een vergeten `use`, een vergeten `return` en een functienaam zonder aanhalingstekens.
+
+Met `php verify_lab1.php` tot en met `php verify_lab3.php` (in de map `example/callbacks`) controleer je dat de antwoorden in de labs kloppen met wat PHP echt doet.

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 2: Wie ziet welke variabele?</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 2: Wie ziet welke variabele?</h1>
+    <p class="muted">Variabelen buiten een functie zijn niet vanzelf beschikbaar binnen de functie. Volg per scenario in welk frame welke variabele staat.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Elke functie-aanroep krijgt een eigen frame. Het nieuwste frame staat bovenaan. Een functie ziet alleen de variabelen in zijn eigen frame. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2 single" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @call") en wat die regel doet met de stack.
+const scenarios = [
+    {
+        title: 'Een functie zonder parameter',
+        intro: 'Het script begint in main. Verwacht: "Hallo Sam". Druk op Afspelen of op Verder.',
+        code: `function printGreeting(): void
+{
+    echo "Hallo " . $name; // @body
+}
+
+$name = "Sam"; // @set
+printGreeting(); // @call`,
+        steps: [
+            { at: 'set', say: 'De variabele $name staat in het frame van main.', ops: [['set', 'name', 'Sam']] },
+            { at: 'call', say: 'printGreeting() wordt aangeroepen. Het nieuwe frame is leeg: er zijn geen parameters, dus er is geen enkele variabele in dit frame.', ops: [['push', 'printGreeting()', {}]] },
+            { at: 'body', say: 'De functie zoekt $name, maar die staat alleen in het frame van main. PHP geeft een waarschuwing en gebruikt een lege waarde. Er wordt alleen "Hallo " getoond.', ops: [['warn', 'Undefined variable $name'], ['echo', 'Hallo ']] },
+            { at: 'call', say: 'Het frame verdwijnt. Het script ging door, maar de uitvoer klopt niet.', ops: [['pop']] },
+        ],
+    },
+    {
+        title: 'Dezelfde functie met een parameter',
+        intro: 'Het script begint in main. Nu geven we de informatie mee. Druk op Afspelen of op Verder.',
+        code: `function printGreeting(string $name): void
+{
+    echo "Hallo " . $name; // @body
+}
+
+$name = "Sam"; // @set
+printGreeting($name); // @call`,
+        steps: [
+            { at: 'set', say: 'De variabele $name staat in het frame van main.', ops: [['set', 'name', 'Sam']] },
+            { at: 'call', say: 'printGreeting($name) wordt aangeroepen. De waarde "Sam" wordt gekopieerd naar de parameter $name in het nieuwe frame. Het zijn twee verschillende variabelen met toevallig dezelfde naam.', ops: [['push', 'printGreeting()', { name: 'Sam' }]] },
+            { at: 'body', say: 'Nu staat $name wel in het frame van de functie. De uitvoer klopt.', ops: [['echo', 'Hallo Sam']] },
+            { at: 'call', say: 'Het frame verdwijnt.', ops: [['pop']] },
+        ],
+    },
+    {
+        title: 'global',
+        intro: 'Het script begint in main. Dit lost het probleem ook op, maar op een andere manier. Druk op Afspelen of op Verder.',
+        code: `function printGreeting(): void
+{
+    global $name; // @global
+    echo "Hallo " . $name; // @body
+}
+
+$name = "Sam"; // @set
+printGreeting(); // @call`,
+        steps: [
+            { at: 'set', say: 'De variabele $name staat in het frame van main.', ops: [['set', 'name', 'Sam']] },
+            { at: 'call', say: 'printGreeting() wordt aangeroepen zonder argumenten. Het frame is weer leeg.', ops: [['push', 'printGreeting()', {}]] },
+            { at: 'global', say: 'global haalt $name uit main naar binnen. Dit is geen kopie: het is dezelfde variabele. Past de functie $name aan, dan verandert $name in main ook.', ops: [['set', 'name', 'Sam']] },
+            { at: 'body', say: 'De uitvoer klopt. Maar aan de aanroep printGreeting() zie je niet meer dat de functie $name nodig heeft. Daarom gebruiken we liever een parameter.', ops: [['echo', 'Hallo Sam']] },
+            { at: 'call', say: 'Het frame verdwijnt.', ops: [['pop']] },
+        ],
+    },
+    {
+        title: 'Zelfde naam, andere variabele',
+        intro: 'Het script begint in main. Wat is $name aan het eind in main? Druk op Afspelen of op Verder.',
+        code: `function describe(string $name): string
+{
+    $name = $name . "!"; // @body
+    return "Hallo " . $name; // @ret
+}
+
+$name = "Sam"; // @set
+echo describe($name) . " en " . $name; // @call`,
+        steps: [
+            { at: 'set', say: 'De variabele $name in main is "Sam".', ops: [['set', 'name', 'Sam']] },
+            { at: 'call', say: 'describe($name) wordt aangeroepen. De parameter $name in het nieuwe frame krijgt een kopie van de waarde.', ops: [['push', 'describe()', { name: 'Sam' }]] },
+            { at: 'body', say: 'De functie voegt een uitroepteken toe aan zijn eigen $name. Alleen de variabele in dit frame verandert.', ops: [['set', 'name', 'Sam!']] },
+            { at: 'ret', say: 'De functie geeft "Hallo Sam!" terug.', ops: [['ret', 'Hallo Sam!']] },
+            { at: 'call', say: 'Het frame verdwijnt, met de aangepaste $name. In main is $name nog steeds "Sam". Daarom toont echo "Hallo Sam! en Sam".', ops: [['pop'], ['echo', 'Hallo Sam! en Sam']] },
+        ],
+    },
+];
+
+createStepper({ scenarios });
+</script>
+</body>
+</html>

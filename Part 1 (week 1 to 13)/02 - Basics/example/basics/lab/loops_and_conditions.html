@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 1: Stap voor stap</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 1: Stap voor stap</h1>
+    <p class="muted">Volg stukjes uit Galgje regel voor regel: variabelen en operators, de for loop, de while loop, if en else en de switch. Je ziet de variabelen en de uitvoer veranderen.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het hele script draait in een frame met de naam main. Hier zie je de variabelen en hun waarde. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2 single" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @for") en wat die regel doet met de variabelen.
+function forLoopScenario() {
+    const { steps, display } = loopSteps('kiwi', ['i']);
+    return [
+        { at: 'w', say: '$word wordt "kiwi".', ops: [['set', 'word', 'kiwi']] },
+        { at: 'g', say: '$guessedLetters is een array met de geraden letters. Alleen de "i" is al geraden.', ops: [['set', 'guessedLetters', ['i']]] },
+        { at: 'd', say: '$display begint als lege tekst. Daar bouwen we het woord met streepjes in op.', ops: [['set', 'display', '']] },
+        ...steps,
+        { at: 'echo', say: 'echo toont het resultaat: alleen de geraden letter is zichtbaar.', ops: [['echo', display]] },
+    ];
+}
+
+function whileScenario() {
+    return [
+        { at: 'a', say: '$attempts is 3.', ops: [['set', 'attempts', 3]] },
+        { at: 'g', say: '$gameOver is false: het spel is nog niet afgelopen.', ops: [['set', 'gameOver', false]] },
+        { at: 'while', say: 'Is !$gameOver waar? $gameOver is false, !false is true. De loop draait.', ops: [] },
+        { at: 'dec', say: '$attempts-- haalt 1 af: 2.', ops: [['set', 'attempts', 2]] },
+        { at: 'if', say: 'Is $attempts == 0? 2 is niet 0, dus het blok wordt overgeslagen.', ops: [] },
+        { at: 'while', say: 'Terug naar de voorwaarde: !false is nog steeds true. De loop draait opnieuw.', ops: [] },
+        { at: 'dec', say: '$attempts wordt 1.', ops: [['set', 'attempts', 1]] },
+        { at: 'if', say: 'Is 1 == 0? Nee.', ops: [] },
+        { at: 'while', say: 'De voorwaarde is nog waar.', ops: [] },
+        { at: 'dec', say: '$attempts wordt 0.', ops: [['set', 'attempts', 0]] },
+        { at: 'if', say: 'Is 0 == 0? Ja, dus het blok wordt uitgevoerd.', ops: [] },
+        { at: 'over', say: '$gameOver wordt true.', ops: [['set', 'gameOver', true]] },
+        { at: 'while', say: 'Is !$gameOver waar? !true is false. De voorwaarde is niet meer waar, dus de loop stopt.', ops: [] },
+        { at: 'echo', say: 'De code gaat verder na de loop.', ops: [['echo', 'Game Over']] },
+    ];
+}
+
+function ifScenario(input) {
+    const isLetter = input.length === 1;
+    const found = isLetter && !'kiwi'.includes(input);
+    const steps = [
+        { at: 'w', say: '$word is "kiwi".', ops: [['set', 'word', 'kiwi']] },
+        { at: 'a', say: '$attempts is 7.', ops: [['set', 'attempts', 7]] },
+        { at: 'in', say: `De speler voert "${input}" in.`, ops: [['set', 'input', input]] },
+        { at: 'if', say: `Is strlen($input) == 1? strlen("${input}") is ${input.length}. ${isLetter ? 'Ja, dus het if blok wordt uitgevoerd en het else blok wordt overgeslagen.' : 'Nee, dus het if blok wordt overgeslagen en het else blok wordt uitgevoerd.'}`, ops: [] },
+    ];
+    if (isLetter) {
+        steps.push({ at: 'letter', say: 'De invoer is een enkele letter.', ops: [['echo', 'Een letter']] });
+        steps.push({ at: 'find', say: `Zit "${input}" niet in het woord? ${found ? 'Klopt: strpos geeft false.' : 'Het zit er wel in, dus het blok wordt overgeslagen.'}`, ops: [] });
+        if (found) steps.push({ at: 'min', say: 'Een foute gok kost een poging: $attempts wordt 6.', ops: [['set', 'attempts', 6]] });
+        steps.push({ at: 'echo', say: 'De code gaat verder na de if.', ops: [['echo', found ? '6' : '7']] });
+    } else {
+        steps.push({ at: 'whole', say: 'De invoer is meer dan een letter, dus de speler probeert het hele woord.', ops: [['echo', 'Het hele woord']] });
+        steps.push({ at: 'echo', say: 'De code gaat verder na de if. $attempts is niet veranderd.', ops: [['echo', '7']] });
+    }
+    return steps;
+}
+
+const ifCode = (input) => `$word = "kiwi"; // @w
+$attempts = 7; // @a
+$input = "${input}"; // @in
+if (strlen($input) == 1) { // @if
+    echo "Een letter"; // @letter
+    if (strpos($word, $input) === false) { // @find
+        $attempts--; // @min
+    }
+} else {
+    echo "Het hele woord"; // @whole
+}
+echo $attempts; // @echo`;
+
+const scenarios = [
+    {
+        title: 'Variabelen en operators',
+        intro: 'Het script begint in main: het script zelf. Er zijn nog geen variabelen. Druk op Afspelen of op Verder.',
+        code: `$word = "kiwi"; // @l1
+$attempts = 7; // @l2
+$guessedLetters = []; // @l3
+$guessedLetters[] = "i"; // @l4
+$attempts--; // @l5
+$display = ""; // @l6
+$display .= "_"; // @l7
+echo "Nog " . $attempts . " pogingen"; // @l8`,
+        steps: [
+            { at: 'l1', say: 'Een variabele begint met $. $word krijgt de waarde "kiwi", een string.', ops: [['set', 'word', 'kiwi']] },
+            { at: 'l2', say: '$attempts krijgt de waarde 7, een int.', ops: [['set', 'attempts', 7]] },
+            { at: 'l3', say: '[] maakt een lege array.', ops: [['set', 'guessedLetters', []]] },
+            { at: 'l4', say: '$guessedLetters[] = voegt een element achteraan de array toe.', ops: [['set', 'guessedLetters', ['i']]] },
+            { at: 'l5', say: '-- haalt 1 af van de variabele: 7 wordt 6.', ops: [['set', 'attempts', 6]] },
+            { at: 'l6', say: '$display wordt een lege tekst.', ops: [['set', 'display', '']] },
+            { at: 'l7', say: '.= plakt tekst achter de bestaande tekst: "" en "_" wordt "_".', ops: [['set', 'display', '_']] },
+            { at: 'l8', say: 'De punt plakt stukjes tekst aan elkaar, ook de waarde van $attempts.', ops: [['echo', 'Nog 6 pogingen']] },
+        ],
+    },
+    {
+        title: 'De for loop uit Galgje',
+        intro: 'Het script begint in main. Volg de variabele $i en $display. Druk op Afspelen of op Verder.',
+        code: `$word = "kiwi"; // @w
+$guessedLetters = ["i"]; // @g
+$display = ""; // @d
+for ($i = 0; $i < strlen($word); $i++) { // @for
+    if (in_array($word[$i], $guessedLetters)) { // @if
+        $display .= $word[$i]; // @show
+    } else {
+        $display .= "_"; // @hide
+    }
+}
+echo $display; // @echo`,
+        steps: forLoopScenario(),
+    },
+    {
+        title: 'De while loop',
+        intro: 'Het script begint in main. Een while loop draait zolang de voorwaarde waar is. Druk op Afspelen of op Verder.',
+        code: `$attempts = 3; // @a
+$gameOver = false; // @g
+while (!$gameOver) { // @while
+    $attempts--; // @dec
+    if ($attempts == 0) { // @if
+        $gameOver = true; // @over
+    }
+}
+echo "Game Over"; // @echo`,
+        steps: whileScenario(),
+    },
+    {
+        title: 'if en else met een letter',
+        intro: 'Het script begint in main. De speler voert een enkele letter in. Druk op Afspelen of op Verder.',
+        code: ifCode('z'),
+        steps: ifScenario('z'),
+    },
+    {
+        title: 'if en else met het hele woord',
+        intro: 'Het script begint in main. Dezelfde code, nu met een ander woord als invoer. Druk op Afspelen of op Verder.',
+        code: ifCode('kiwi'),
+        steps: ifScenario('kiwi'),
+    },
+    {
+        title: 'De switch',
+        intro: 'Het script begint in main. Een switch vergelijkt een waarde met elk case. Druk op Afspelen of op Verder.',
+        code: `$attempts = 3; // @a
+switch ($attempts) { // @switch
+    case 5: // @c5
+        echo "hoofd"; // @e5
+        break;
+    case 4: // @c4
+        echo "hoofd en romp"; // @e4
+        break;
+    case 3: // @c3
+        echo "hoofd, romp en arm"; // @e3
+        break; // @b3
+    default:
+        echo "nog niets"; // @ed
+}
+echo "Volgende ronde"; // @after`,
+        steps: [
+            { at: 'a', say: '$attempts is 3.', ops: [['set', 'attempts', 3]] },
+            { at: 'switch', say: 'De switch vergelijkt de waarde van $attempts (3) met de cases, van boven naar beneden.', ops: [] },
+            { at: 'c5', say: 'Is 3 gelijk aan 5? Nee, dit case wordt overgeslagen.', ops: [] },
+            { at: 'c4', say: 'Is 3 gelijk aan 4? Nee.', ops: [] },
+            { at: 'c3', say: 'Is 3 gelijk aan 3? Ja. De code onder dit case wordt uitgevoerd.', ops: [] },
+            { at: 'e3', say: 'echo toont de tekst.', ops: [['echo', 'hoofd, romp en arm']] },
+            { at: 'b3', say: 'break verlaat de switch. De cases eronder (ook default) worden niet meer bekeken.', ops: [] },
+            { at: 'after', say: 'De code gaat verder na de switch.', ops: [['echo', 'Volgende ronde']] },
+        ],
+    },
+];
+
+createStepper({ scenarios });
+</script>
+</body>
+</html>

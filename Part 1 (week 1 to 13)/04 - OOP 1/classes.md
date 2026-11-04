@@ -209,6 +209,17 @@ De voorbeelden hieronder bouwen stap voor stap op. Alle voorbeelden gebruiken ee
 
 Je kunt de voorbeelden uitvoeren met `php bestandsnaam.php` vanuit de map `example/classes`.
 
+## Labs
+
+Wil je zien wat er gebeurt met objecten en hun data? In de interactieve labs volg je een programma regel voor regel. Open [index.html](./example/classes/lab/index.html) in je browser, je hoeft niets te installeren. Werkt de opmaak niet, start dan `php -S localhost:8090` in de map `example/classes/lab`.
+
+1. [objects.html](./example/classes/lab/objects.html) is Lab 1. Een step debugger die begint met alleen functies en daarna laat zien wat een class en een object zijn. Je ziet twee objecten met elk hun eigen saldo, wat `$this` is bij elke aanroep en wat de constructor doet.
+2. [private.html](./example/classes/lab/private.html) is Lab 2. Je ziet waarom een controle in een method niet genoeg is als de property `public` is, hoe `private` het saldo beschermt en wat er gebeurt als je van buiten de class bij het saldo wilt.
+3. [predict_output.html](./example/classes/lab/predict_output.html) is Lab 3. Zes scenario's waarbij je eerst voorspelt wat er gebeurt: twee objecten, een controle in een method, een `private` property lezen, een `readonly` property aanpassen en een constructor zonder argumenten.
+4. [bughunt.html](./example/classes/lab/bughunt.html) is Lab 4. Drie scripts die iets anders doen dan bedoeld: een vergeten `$this->`, een constructor die de property niet zet en een vergeten `new`. Je beantwoordt eerst een vraag, volgt daarna het programma en bekijkt met de knop Gecorrigeerd de oplossing.
+
+Met `php verify_lab1.php` tot en met `php verify_lab4.php` (in de map `example/classes`) controleer je dat de antwoorden in de labs kloppen met wat PHP echt doet.
+
 ## Opgaven
 
 De opgaven staan in [classes_opgaven_1.md](./classes_opgaven_1.md).

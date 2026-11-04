@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 1: Van functies naar objecten</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 1: Van functies naar objecten</h1>
+    <p class="muted">Volg een programma regel voor regel. Je ziet wat een class en een object zijn, wat $this is en wat de constructor doet. Onder de code staat wat de onderdelen van de class doen.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @dep") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'Alleen functies',
+        intro: 'Het script begint in main. Let op hoeveel losse variabelen er nodig zijn voor twee rekeningen. Druk op Afspelen of op Verder.',
+        members: null,
+        code: `function deposit(int $balance, int $amount): int
+{
+    return $balance + $amount; // @body
+}
+
+$balance = 100; // @b1
+$balanceOfSecondAccount = 20; // @b2
+$balance = deposit($balance, 50); // @call1
+$balanceOfSecondAccount = deposit($balanceOfSecondAccount, 10); // @call2
+echo $balance . " en " . $balanceOfSecondAccount; // @echo`,
+        steps: [
+            { at: 'b1', say: 'Het saldo van de eerste rekening is een losse variabele in main.', ops: [['set', 'balance', 100]] },
+            { at: 'b2', say: 'Voor de tweede rekening is een tweede losse variabele met een andere naam nodig. Wij moeten zelf onthouden welke variabele bij welke rekening hoort.', ops: [['set', 'balanceOfSecondAccount', 20]] },
+            { at: 'call1', say: 'deposit() krijgt het saldo als parameter mee, want de functie weet niet bij welke rekening hij hoort.', ops: [['push', 'deposit()', { balance: 100, amount: 50 }]] },
+            { at: 'body', say: 'De functie rekent 100 + 50 = 150 en geeft dat terug.', ops: [['ret', 150]] },
+            { at: 'call1', say: 'Het frame verdwijnt. Wij moeten het resultaat zelf weer opslaan in $balance. Vergeten we dat, dan klopt het saldo niet meer.', ops: [['pop'], ['set', 'balance', 150]] },
+            { at: 'call2', say: 'Voor de tweede rekening hetzelfde verhaal, maar nu met de andere variabele.', ops: [['push', 'deposit()', { balance: 20, amount: 10 }]] },
+            { at: 'body', say: '20 + 10 = 30 wordt teruggegeven.', ops: [['ret', 30]] },
+            { at: 'call2', say: 'Het frame verdwijnt en het resultaat wordt opgeslagen in $balanceOfSecondAccount.', ops: [['pop'], ['set', 'balanceOfSecondAccount', 30]] },
+            { at: 'echo', say: 'Dit werkt, maar de data en de functie staan los van elkaar. Met een class staan ze samen.', ops: [['echo', '150 en 30']] },
+        ],
+    },
+    {
+        title: 'Een class en een object',
+        intro: 'Het script begint in main. Boven het script staat de class: de blauwdruk. Druk op Afspelen of op Verder.',
+        members: 'basic',
+        code: LISTING_BASIC + `
+$account = new BankAccount(); // @new
+$account->deposit(150); // @dep
+echo $account->balance; // @echo`,
+        steps: [
+            { at: 'new', say: 'new maakt een object volgens de blauwdruk van de class. Het saldo begint op 0, de standaardwaarde uit de class. $account wijst naar het nieuwe object.', ops: [['new', 'o1', 'BankAccount', { balance: 0 }], ['set', 'account', ref('o1')]] },
+            ...depositSteps('dep', 'o1', 150, 150, '$account'),
+            { at: 'echo', say: 'Met -> lees je de property van het object. Het script toont 150.', ops: [['echo', '150']] },
+        ],
+    },
+    {
+        title: 'Twee objecten, elk met eigen data',
+        intro: 'Het script begint in main. Let op wat $this is bij elke aanroep van deposit(). Druk op Afspelen of op Verder.',
+        members: 'basic',
+        code: LISTING_BASIC + `
+$account = new BankAccount(); // @new1
+$secondAccount = new BankAccount(); // @new2
+$account->deposit(150); // @dep1
+$secondAccount->deposit(20); // @dep2
+echo $account->balance . " en " . $secondAccount->balance; // @echo`,
+        steps: [
+            { at: 'new1', say: 'Het eerste object, met saldo 0.', ops: [['new', 'o1', 'BankAccount', { balance: 0 }], ['set', 'account', ref('o1')]] },
+            { at: 'new2', say: 'Het tweede object, ook met saldo 0. We hoeven geen nieuwe variabele voor het saldo te bedenken: elk object heeft zijn eigen balance.', ops: [['new', 'o2', 'BankAccount', { balance: 0 }], ['set', 'secondAccount', ref('o2')]] },
+            ...depositSteps('dep1', 'o1', 150, 150, '$account'),
+            ...depositSteps('dep2', 'o2', 20, 20, '$secondAccount'),
+            { at: 'echo', say: 'Elk object heeft zijn eigen saldo. Dezelfde method werkte met een ander object, omdat $this elke keer naar een ander object wees.', ops: [['echo', '150 en 20']] },
+        ],
+    },
+    {
+        title: 'De constructor',
+        intro: 'Het script begint in main. Let op wanneer de properties een waarde krijgen. Druk op Afspelen of op Verder.',
+        members: 'ctor',
+        code: LISTING_CTOR + `
+$account = new BankAccount("John", 100); // @new
+$account->deposit(50); // @dep
+echo $account->owner . ": " . $account->balance; // @echo`,
+        steps: [
+            { at: 'new', say: 'new maakt een leeg object en start de constructor. De argumenten "John" en 100 komen binnen als parameters. $this is het nieuwe object, dat nog geen waarden heeft.', ops: [['new', 'o1', 'BankAccount', { owner: null, balance: null }], ['push', '__construct()', { this: ref('o1'), owner: 'John', balance: 100 }]] },
+            { at: 'c-owner', say: 'De constructor zet de property owner van het object.', ops: [['prop', 'o1', 'owner', 'John']] },
+            { at: 'c-balance', say: 'De constructor zet de property balance. Het object is nu helemaal ingevuld.', ops: [['prop', 'o1', 'balance', 100]] },
+            { at: 'new', say: 'De constructor is klaar en zijn frame verdwijnt. $account wijst naar het object. Het object was vanaf het begin geldig: het heeft altijd een eigenaar en een saldo.', ops: [['pop'], ['set', 'account', ref('o1')]] },
+            ...depositSteps('dep', 'o1', 50, 150, '$account'),
+            { at: 'echo', say: 'Het script toont de eigenaar en het saldo.', ops: [['echo', 'John: 150']] },
+        ],
+    },
+];
+
+const membersByKey = { basic: MEMBERS_BASIC, ctor: MEMBERS_CTOR };
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members ? membersByKey[scenario.members] : null);
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

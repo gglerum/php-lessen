@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 4: Zoek de fout</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 4: Zoek de fout</h1>
+    <p class="muted">Elk script doet iets anders dan bedoeld. Bekijk de code, beantwoord de vraag en volg daarna het programma stap voor stap om te zien waar het misgaat. Met de knop Gecorrigeerd zie je de oplossing.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="variants" id="variants" role="group" aria-label="Versie van het script" hidden>
+                <button type="button" class="secondary" data-variant="bug" aria-pressed="true">Met de fout</button>
+                <button type="button" class="secondary" data-variant="fixed" aria-pressed="false">Gecorrigeerd</button>
+            </div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Elke functie-aanroep krijgt een eigen frame. Het nieuwste frame staat bovenaan. Een functie ziet alleen de variabelen in zijn eigen frame. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2 single" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @call") en wat die regel doet met de stack.
+const scenarios = [
+    {
+        title: 'Het saldo is niet veranderd',
+        intro: 'addShipping() moet de verzendkosten bij het totaal optellen. Verwacht: "Te betalen: 50". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: `function addShipping(int $total): int
+{
+    return $total + 5; // @body
+}
+
+$total = 45; // @set
+addShipping($total); // @call
+echo "Te betalen: " . $total; // @echo`,
+        steps: [
+            { at: 'set', say: '$total in main is 45.', ops: [['set', 'total', 45]] },
+            { at: 'call', say: 'addShipping($total) wordt aangeroepen. De parameter $total in het nieuwe frame is een kopie van 45.', ops: [['push', 'addShipping()', { total: 45 }]] },
+            { at: 'body', say: 'De functie rekent 45 + 5 = 50 uit en geeft dat terug.', ops: [['ret', 50]] },
+            { at: 'call', say: 'Het frame verdwijnt. De teruggegeven waarde 50 wordt nergens opgeslagen, dus is hij weg. $total in main is nog 45.', ops: [['pop']] },
+            { at: 'echo', say: 'Het script toont 45, niet 50.', ops: [['echo', 'Te betalen: 45']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: de teruggegeven waarde wordt opgeslagen in $total. Verwacht: "Te betalen: 50".',
+            code: `function addShipping(int $total): int
+{
+    return $total + 5; // @body
+}
+
+$total = 45; // @set
+$total = addShipping($total); // @call
+echo "Te betalen: " . $total; // @echo`,
+            steps: [
+                { at: 'set', say: '$total in main is 45.', ops: [['set', 'total', 45]] },
+                { at: 'call', say: 'addShipping($total) wordt aangeroepen met een kopie van 45.', ops: [['push', 'addShipping()', { total: 45 }]] },
+                { at: 'body', say: 'De functie rekent 45 + 5 = 50 uit en geeft dat terug.', ops: [['ret', 50]] },
+                { at: 'call', say: 'Het frame verdwijnt. De teruggegeven waarde 50 wordt nu opgeslagen in $total in main.', ops: [['pop'], ['set', 'total', 50]] },
+                { at: 'echo', say: 'Het script toont 50.', ops: [['echo', 'Te betalen: 50']] },
+            ],
+        },
+    },
+    {
+        title: 'De btw komt niet in het totaal',
+        intro: 'calculateTax() moet de btw berekenen en $tax moet die waarde bevatten. Verwacht: "Totaal: 242". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: `function calculateTax($price)
+{
+    echo "BTW: " . $price * 21 / 100; // @body
+}
+
+$tax = calculateTax(200); // @call
+echo "Totaal: " . (200 + $tax); // @echo`,
+        steps: [
+            { at: 'call', say: 'calculateTax(200) wordt aangeroepen.', ops: [['push', 'calculateTax()', { price: 200 }]] },
+            { at: 'body', say: 'De functie toont de btw (42) met echo. Er is geen return.', ops: [['echo', 'BTW: 42']] },
+            { at: 'call', say: 'Het frame verdwijnt. Omdat er geen return was, is $tax null.', ops: [['pop'], ['set', 'tax', NULL]] },
+            { at: 'echo', say: 'null telt mee als 0, dus het totaal is 200 + 0 = 200 in plaats van 242. De 42 in de uitvoer kwam van de echo in de functie, niet van $tax.', ops: [['echo', 'Totaal: 200']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: de functie geeft de btw terug met return. Verwacht: "Totaal: 242".',
+            code: `function calculateTax(int $price): int
+{
+    return $price * 21 / 100; // @body
+}
+
+$tax = calculateTax(200); // @call
+echo "Totaal: " . (200 + $tax); // @echo`,
+            steps: [
+                { at: 'call', say: 'calculateTax(200) wordt aangeroepen.', ops: [['push', 'calculateTax()', { price: 200 }]] },
+                { at: 'body', say: '200 * 21 / 100 = 42. De functie geeft dit met return terug.', ops: [['ret', 42]] },
+                { at: 'call', say: 'Het frame verdwijnt. De waarde 42 staat nu in $tax.', ops: [['pop'], ['set', 'tax', 42]] },
+                { at: 'echo', say: '200 + 42 = 242.', ops: [['echo', 'Totaal: 242']] },
+            ],
+        },
+    },
+    {
+        title: 'De korting is altijd 0',
+        intro: 'calculateDiscount() moet 10 procent van de prijs teruggeven. Verwacht: "Korting: 8". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: `function calculateDiscount(): int
+{
+    return $price / 10; // @body
+}
+
+$price = 80; // @set
+$discount = calculateDiscount(); // @call
+echo "Korting: " . $discount; // @echo`,
+        steps: [
+            { at: 'set', say: '$price in main is 80.', ops: [['set', 'price', 80]] },
+            { at: 'call', say: 'calculateDiscount() wordt aangeroepen zonder argumenten. Het frame is leeg.', ops: [['push', 'calculateDiscount()', {}]] },
+            { at: 'body', say: '$price staat niet in dit frame. PHP geeft een waarschuwing en rekent met null: null / 10 = 0.', ops: [['warn', 'Undefined variable $price'], ['ret', 0]] },
+            { at: 'call', say: 'Het frame verdwijnt. $discount wordt 0.', ops: [['pop'], ['set', 'discount', 0]] },
+            { at: 'echo', say: 'Het script toont 0 in plaats van 8.', ops: [['echo', 'Korting: 0']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: de prijs gaat als argument mee en komt in een parameter terecht. Verwacht: "Korting: 8".',
+            code: `function calculateDiscount(int $price): int
+{
+    return $price / 10; // @body
+}
+
+$price = 80; // @set
+$discount = calculateDiscount($price); // @call
+echo "Korting: " . $discount; // @echo`,
+            steps: [
+                { at: 'set', say: '$price in main is 80.', ops: [['set', 'price', 80]] },
+                { at: 'call', say: 'calculateDiscount($price) wordt aangeroepen. De parameter $price in het nieuwe frame is een kopie van 80.', ops: [['push', 'calculateDiscount()', { price: 80 }]] },
+                { at: 'body', say: '80 / 10 = 8. De functie vindt $price in zijn eigen frame.', ops: [['ret', 8]] },
+                { at: 'call', say: 'Het frame verdwijnt. $discount wordt 8.', ops: [['pop'], ['set', 'discount', 8]] },
+                { at: 'echo', say: 'Het script toont 8.', ops: [['echo', 'Korting: 8']] },
+            ],
+        },
+    },
+];
+
+// de vraag bij elk scenario: kies eerst zelf wat er misgaat
+const quizzes = [
+    {
+        question: 'Waarom is $total aan het eind nog 45?',
+        options: [
+            ['De functie rekent verkeerd: 45 + 5 is geen 50.', 'Nee: de functie geeft 50 terug. Kijk wat er met die teruggegeven waarde gebeurt.'],
+            ['De teruggegeven waarde wordt niet opgeslagen, dus $total in main verandert niet.', 'Klopt. De functie werkt met een kopie en geeft 50 terug, maar de aanroep slaat die waarde niet op.'],
+            ['De parameter $total heet hetzelfde als de variabele in main.', 'Nee: dezelfde naam is geen probleem. Het zijn twee aparte variabelen in twee frames.'],
+        ],
+        correct: 1,
+    },
+    {
+        question: 'Waarom bevat $tax geen btw?',
+        options: [
+            ['De functie toont de btw met echo maar geeft niets terug, dus $tax is null.', 'Klopt. echo toont iets op het scherm, return geeft een waarde terug. Hier ontbreekt return.'],
+            ['De functie heeft geen types, dus PHP rekent verkeerd.', 'Nee: types helpen fouten vroeg te vinden, maar het ontbreken ervan is niet de oorzaak.'],
+            ['200 * 21 / 100 is geen 42.', 'Nee: de berekening klopt, je ziet "BTW: 42" in de uitvoer. De waarde komt alleen niet terug bij de aanroep.'],
+        ],
+        correct: 0,
+    },
+    {
+        question: 'Waarom is de korting 0?',
+        options: [
+            ['Een return type int mag geen deling bevatten.', 'Nee: de deling is niet het probleem. Kijk welke variabelen er in het frame van de functie staan.'],
+            ['De functie krijgt geen argument, dus $price bestaat niet binnen de functie.', 'Klopt. Variabelen buiten een functie zijn niet beschikbaar binnen de functie. Geef de waarde mee met een parameter.'],
+            ['$price moet na de aanroep gezet worden.', 'Nee: $price staat al goed in main, de functie kan er alleen niet bij.'],
+        ],
+        correct: 1,
+    },
+];
+
+const quizForm = document.getElementById('quiz');
+
+function renderQuiz() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const index = n >= 1 && n <= quizzes.length ? n - 1 : 0;
+    const quiz = quizzes[index];
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = quiz.question;
+    fieldset.append(legend);
+
+    quiz.options.forEach(([text], i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const i = parseInt(chosen.value, 10);
+            const isCorrect = i === quiz.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect ? 'Goed.' : 'Niet helemaal.';
+            box.append(strong, quiz.options[i][1]);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', renderQuiz);
+renderQuiz();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

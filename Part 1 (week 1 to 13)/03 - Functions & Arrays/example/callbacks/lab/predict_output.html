@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 2: Wat toont het script?</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main>
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 2: Wat toont het script?</h1>
+    <p class="muted">Lees de code, kies wat je denkt dat er gebeurt en controleer je antwoord. Daarna lees je waarom.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+
+    <h2 id="title"></h2>
+    <pre><code id="code"></code></pre>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="controls">
+        <a class="button secondary" id="previous" href="#">Vorige</a>
+        <a class="button" id="next" href="#">Volgend scenario</a>
+    </div>
+</main>
+
+<script>
+// De uitkomsten zijn vooraf bepaald. Controleer ze met: php verify_lab3.php
+const scenarios = [
+    {
+        title: 'Een ingebouwde functie als callback',
+        question: 'Wat toont het script?',
+        code: `$items = [1, "twee", 3, "vier"];
+$filtered = array_filter($items, 'is_numeric');
+echo implode(", ", $filtered);`,
+        options: ['1, 3', 'twee, vier', '1, twee, 3, vier'],
+        correct: 0,
+        why: 'array_filter roept is_numeric aan voor elk element en bewaart de elementen waarvoor de callback true teruggeeft. Dat zijn alleen de getallen.',
+    },
+    {
+        title: 'Een callback met een ingebouwde functie die geen true of false teruggeeft',
+        question: 'Wat toont het script?',
+        code: `$names = ["ed", "", "jan"];
+$filtered = array_filter($names, 'strlen');
+echo implode(", ", $filtered);`,
+        options: ['ed, jan', 'ed, , jan', '2, 0, 3'],
+        correct: 0,
+        why: 'strlen geeft een getal terug. array_filter kijkt of dat getal als true telt: 0 is false, elk ander getal is true. De lege tekst heeft lengte 0 en valt dus af.',
+    },
+    {
+        title: 'Een anonieme functie zonder use',
+        question: 'Wat gebeurt er?',
+        code: `$max = 5;
+$numbers = [3, 8, 9];
+$filtered = array_filter($numbers, function ($number) {
+    return $number > $max;
+});
+echo implode(", ", $filtered);`,
+        options: ['8, 9', 'Alle getallen (3, 8, 9) en een waarschuwing', 'Een foutmelding en het script stopt'],
+        correct: 1,
+        why: '$max bestaat niet binnen de functie: PHP geeft een waarschuwing (Undefined variable) en rekent met null. Elk getal groter dan 0 is dan groter dan null, dus alle getallen komen door het filter.',
+    },
+    {
+        title: 'Dezelfde callback als arrow functie',
+        question: 'Wat toont het script?',
+        code: `$max = 5;
+$numbers = [3, 8, 9];
+$filtered = array_filter($numbers, fn($number) => $number > $max);
+echo implode(", ", $filtered);`,
+        options: ['8, 9', '3, 8, 9', 'Er is een waarschuwing'],
+        correct: 0,
+        why: 'Een arrow functie heeft automatisch toegang tot de variabelen om hem heen. use is dus niet nodig, en $max is 5.',
+    },
+    {
+        title: 'Een anonieme functie zonder return',
+        question: 'Wat toont het script?',
+        code: `$names = ["ed", "glenn", "jan"];
+$filtered = array_filter($names, function ($name) {
+    strlen($name) <= 3;
+});
+echo implode(", ", $filtered);`,
+        options: ['ed, jan', 'Niets: de lijst is leeg', 'Een foutmelding'],
+        correct: 1,
+        why: 'De functie berekent een waarde, maar geeft die niet terug. Zonder return is het resultaat null en dat telt als false. Geen enkel element komt door het filter. Bij een arrow functie gebeurt dit niet, want die geeft altijd de waarde terug.',
+    },
+    {
+        title: 'De key gebruiken in de callback',
+        question: 'Wat toont het script?',
+        code: `$items = [1, "twee", 3, "vier", 5];
+$filtered = array_filter($items, function ($item, $key) {
+    return is_numeric($item) && $key % 2 == 0;
+}, ARRAY_FILTER_USE_BOTH);
+echo implode(", ", $filtered);`,
+        options: ['1, 3, 5', '3', '1, twee, 3, vier, 5'],
+        correct: 0,
+        why: 'Met ARRAY_FILTER_USE_BOTH krijgt de callback ook de key. De keys 0, 2 en 4 zijn even, en op die plekken staan de getallen 1, 3 en 5.',
+    },
+];
+
+const steps = document.getElementById('steps');
+const title = document.getElementById('title');
+const code = document.getElementById('code');
+const quizForm = document.getElementById('quiz');
+const previous = document.getElementById('previous');
+const next = document.getElementById('next');
+
+// het scenario staat in de URL (#3), zodat verversen en links delen werken
+function currentIndex() {
+    const number = parseInt(location.hash.replace('#', ''), 10);
+    return number >= 1 && number <= scenarios.length ? number - 1 : 0;
+}
+
+function show() {
+    const index = currentIndex();
+    const scenario = scenarios[index];
+
+    steps.replaceChildren();
+    scenarios.forEach((item, i) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + (i + 1);
+        a.textContent = String(i + 1);
+        a.setAttribute('aria-label', `Scenario ${i + 1}: ${item.title}`);
+        if (i === index) a.setAttribute('aria-current', 'step');
+        li.append(a);
+        steps.append(li);
+    });
+
+    title.textContent = `Scenario ${index + 1} van ${scenarios.length}: ${scenario.title}`;
+    code.textContent = scenario.code;
+
+    previous.hidden = index === 0;
+    previous.href = '#' + index;
+    next.hidden = index === scenarios.length - 1;
+    next.href = '#' + (index + 2);
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = scenario.question;
+    fieldset.append(legend);
+
+    scenario.options.forEach((text, i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const isCorrect = parseInt(chosen.value, 10) === scenario.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect
+                ? `Goed: ${scenario.options[scenario.correct]}.`
+                : `Niet helemaal. Het antwoord is: ${scenario.options[scenario.correct]}.`;
+            box.append(strong, scenario.why);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', show);
+show();
+</script>
+</body>
+</html>

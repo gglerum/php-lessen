@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 4: Zoek de fout</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 4: Zoek de fout</h1>
+    <p class="muted">Elk script doet iets anders dan bedoeld. Bekijk de code, beantwoord de vraag en volg daarna het programma stap voor stap om te zien waar het misgaat. Met de knop Gecorrigeerd zie je de oplossing.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="variants" id="variants" role="group" aria-label="Versie van het script" hidden>
+                <button type="button" class="secondary" data-variant="bug" aria-pressed="true">Met de fout</button>
+                <button type="button" class="secondary" data-variant="fixed" aria-pressed="false">Gecorrigeerd</button>
+            </div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @dep") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'Het saldo verandert niet',
+        intro: 'deposit() moet 100 bij het saldo optellen. Verwacht: "Saldo: 100". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: 'basic',
+        code: LISTING_BASIC_BUG + `
+$account = new BankAccount(); // @new
+$account->deposit(100); // @dep
+echo "Saldo: " . $account->balance; // @echo`,
+        steps: [
+            { at: 'new', say: 'Een nieuw object met saldo 0.', ops: [['new', 'o1', 'BankAccount', { balance: 0 }], ['set', 'account', ref('o1')]] },
+            { at: 'dep', say: 'deposit(100) wordt aangeroepen. $this is het object, $amount is 100.', ops: [['push', 'deposit()', { this: ref('o1'), amount: 100 }]] },
+            { at: 'c-dep', say: 'Hier staat $balance zonder $this->. PHP zoekt een gewone variabele $balance in dit frame, en die bestaat niet: een waarschuwing. De uitkomst wordt opgeslagen in een nieuwe lokale variabele $balance, niet in de property van het object.', ops: [['warn', 'Undefined variable $balance'], ['set', 'balance', 100]] },
+            { at: 'dep', say: 'Het frame verdwijnt, en de lokale $balance met 100 verdwijnt mee. De property van het object is nooit aangepast.', ops: [['pop']] },
+            { at: 'echo', say: 'Het script toont 0 in plaats van 100.', ops: [['echo', 'Saldo: 0']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: $this-> verwijst naar de property van het object. Verwacht: "Saldo: 100".',
+            code: LISTING_BASIC + `
+$account = new BankAccount(); // @new
+$account->deposit(100); // @dep
+echo "Saldo: " . $account->balance; // @echo`,
+            steps: [
+                { at: 'new', say: 'Een nieuw object met saldo 0.', ops: [['new', 'o1', 'BankAccount', { balance: 0 }], ['set', 'account', ref('o1')]] },
+                ...depositSteps('dep', 'o1', 100, 100, '$account'),
+                { at: 'echo', say: 'Het script toont 100.', ops: [['echo', 'Saldo: 100']] },
+            ],
+        },
+    },
+    {
+        title: 'De property is nooit gevuld',
+        intro: 'De constructor moet het beginsaldo zetten. Verwacht: "Saldo: 100". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: 'ctorbug',
+        code: LISTING_CTOR_BUG + `
+$account = new BankAccount(100); // @new
+echo "Saldo: " . $account->balance; // @echo`,
+        steps: [
+            { at: 'new', say: 'new maakt een object en start de constructor. De parameter $balance is 100. De property balance heeft nog geen waarde.', ops: [['new', 'o1', 'BankAccount', { balance: null }], ['push', '__construct()', { this: ref('o1'), balance: 100 }]] },
+            { at: 'c-ctor', say: '$balance = $balance kopieert de parameter naar zichzelf. De property van het object (met $this->) wordt niet aangeraakt.', ops: [['set', 'balance', 100]] },
+            { at: 'new', say: 'De constructor is klaar en zijn frame verdwijnt. Het object heeft nog steeds geen saldo.', ops: [['pop'], ['set', 'account', ref('o1')]] },
+            { at: 'echo', say: 'Het script leest een property die nooit een waarde kreeg. Omdat de property een type heeft, geeft PHP een Error. Het script stopt.', ops: [['fatal', 'Typed property BankAccount::$balance must not be accessed before initialization']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: de constructor zet de property met $this->. Verwacht: "Saldo: 100".',
+            code: LISTING_CTOR_FIXED + `
+$account = new BankAccount(100); // @new
+echo "Saldo: " . $account->balance; // @echo`,
+            steps: [
+                { at: 'new', say: 'new maakt een object en start de constructor. De parameter $balance is 100.', ops: [['new', 'o1', 'BankAccount', { balance: null }], ['push', '__construct()', { this: ref('o1'), balance: 100 }]] },
+                { at: 'c-ctor', say: '$this->balance = $balance zet de property van het object op 100.', ops: [['prop', 'o1', 'balance', 100]] },
+                { at: 'new', say: 'De constructor is klaar. $account wijst naar het object.', ops: [['pop'], ['set', 'account', ref('o1')]] },
+                { at: 'echo', say: 'Het script toont 100.', ops: [['echo', 'Saldo: 100']] },
+            ],
+        },
+    },
+    {
+        title: 'Het object wordt niet gemaakt',
+        intro: 'Het script moet een rekening maken en het saldo tonen. Verwacht: "Saldo: 0". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: 'basic',
+        code: LISTING_BASIC + `
+$account = BankAccount(); // @new
+echo "Saldo: " . $account->balance; // @echo`,
+        steps: [
+            { at: 'new', say: 'Hier staat BankAccount() zonder new. PHP denkt dat je een gewone functie aanroept, maar die bestaat niet. Dat geeft een Error en het script stopt.', ops: [['fatal', 'Call to undefined function BankAccount()']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: met new maak je een object van de class. Verwacht: "Saldo: 0".',
+            steps: [
+                { at: 'new', say: 'new maakt een object van de class. Het saldo is de standaardwaarde 0.', ops: [['new', 'o1', 'BankAccount', { balance: 0 }], ['set', 'account', ref('o1')]] },
+                { at: 'echo', say: 'Het script toont 0.', ops: [['echo', 'Saldo: 0']] },
+            ],
+            code: LISTING_BASIC + `
+$account = new BankAccount(); // @new
+echo "Saldo: " . $account->balance; // @echo`,
+        },
+    },
+];
+
+const quizzes = [
+    {
+        question: 'Waarom is het saldo na deposit(100) nog 0?',
+        options: [
+            ['deposit() heeft een verkeerd type voor $amount.', 'Nee: $amount is een int en komt goed binnen. Kijk naar de regel in de method.'],
+            ['Zonder $this-> pas je een gewone variabele in de method aan, niet de property van het object.', 'Klopt. $balance en $this->balance zijn verschillende dingen. Je ziet het aan de waarschuwing en aan de lokale variabele die met het frame verdwijnt.'],
+            ['Het object bestaat niet meer na de aanroep.', 'Nee: het object blijft bestaan, alleen de property is niet aangepast.'],
+        ],
+        correct: 1,
+    },
+    {
+        question: 'Waarom geeft PHP een Error bij het lezen van het saldo?',
+        options: [
+            ['De constructor mag geen parameter hebben.', 'Nee: parameters in een constructor zijn juist de bedoeling.'],
+            ['De property is public, dus je mag hem niet lezen.', 'Nee: public properties mag je van buiten lezen. De property heeft alleen nog geen waarde.'],
+            ['De constructor zet alleen een lokale variabele. De property krijgt nooit een waarde.', 'Klopt. Je hebt $this-> nodig om de property van het object te vullen.'],
+        ],
+        correct: 2,
+    },
+    {
+        question: 'Wat ontbreekt er in de regel waarmee het object gemaakt wordt?',
+        options: [
+            ['new, het sleutelwoord waarmee je een object van een class maakt.', 'Klopt. Zonder new probeert PHP een functie BankAccount() aan te roepen, en die bestaat niet.'],
+            ['Een argument voor de constructor.', 'Nee: deze class heeft geen constructor, en het saldo heeft een standaardwaarde.'],
+            ['Het type van $account.', 'Nee: variabelen hebben in PHP geen type bij de toewijzing nodig.'],
+        ],
+        correct: 0,
+    },
+];
+
+const membersByKey = { basic: MEMBERS_BASIC, ctorbug: MEMBERS_CTOR_BUG };
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members ? membersByKey[scenario.members] : null);
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+
+const quizForm = document.getElementById('quiz');
+
+function renderQuiz() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const index = n >= 1 && n <= quizzes.length ? n - 1 : 0;
+    const quiz = quizzes[index];
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = quiz.question;
+    fieldset.append(legend);
+
+    quiz.options.forEach(([text], i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const i = parseInt(chosen.value, 10);
+            const isCorrect = i === quiz.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect ? 'Goed.' : 'Niet helemaal.';
+            box.append(strong, quiz.options[i][1]);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', renderQuiz);
+
+renderQuiz();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

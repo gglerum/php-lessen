@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 1: Aanroepen en teruggeven</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 1: Aanroepen en teruggeven</h1>
+    <p class="muted">Volg een programma regel voor regel, zoals in een step debugger. Je ziet wat er met de stack gebeurt als een functie wordt aangeroepen en een waarde teruggeeft.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Elke functie-aanroep krijgt een eigen frame. Het nieuwste frame staat bovenaan. Een functie ziet alleen de variabelen in zijn eigen frame. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2 single" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @call") en wat die regel doet met de stack.
+const scenarios = [
+    {
+        title: 'Parameters, argumenten en return',
+        intro: 'Het script begint in main. Er zijn nog geen variabelen. Druk op Afspelen of op Verder.',
+        code: `function calculateTotal(int $price, int $quantity): int
+{
+    return $price * $quantity; // @body
+}
+
+$result = calculateTotal(15, 4); // @call
+echo $result; // @echo`,
+        steps: [
+            { at: 'call', say: 'calculateTotal(15, 4) wordt aangeroepen. De argumenten 15 en 4 worden gekopieerd naar de parameters $price en $quantity in een nieuw frame bovenop de stack.', ops: [['push', 'calculateTotal()', { price: 15, quantity: 4 }]] },
+            { at: 'body', say: '15 * 4 = 60. Met return geeft de functie deze waarde terug aan de code die hem aanriep.', ops: [['ret', 60]] },
+            { at: 'call', say: 'De functie is klaar en het frame verdwijnt, met $price en $quantity. De teruggegeven waarde 60 wordt opgeslagen in $result in main.', ops: [['pop'], ['set', 'result', 60]] },
+            { at: 'echo', say: 'echo toont de waarde van $result.', ops: [['echo', '60']] },
+        ],
+    },
+    {
+        title: 'echo is niet hetzelfde als return',
+        intro: 'Het script begint in main. Let op wat $total straks bevat. Druk op Afspelen of op Verder.',
+        code: `function showTotal(int $price, int $quantity): void
+{
+    echo $price * $quantity; // @body
+}
+
+$total = showTotal(15, 4); // @call
+echo $total; // @echo`,
+        steps: [
+            { at: 'call', say: 'showTotal(15, 4) wordt aangeroepen. Er komt een frame met de parameters.', ops: [['push', 'showTotal()', { price: 15, quantity: 4 }]] },
+            { at: 'body', say: 'echo toont 60 op het scherm. Er is geen return, dus er gaat niets terug naar de code die de functie aanriep.', ops: [['echo', '60']] },
+            { at: 'call', say: 'Het frame verdwijnt. De functie gaf niets terug, dus $total is null.', ops: [['pop'], ['set', 'total', NULL]] },
+            { at: 'echo', say: 'echo toont null als lege tekst: er verschijnt niets nieuws in de uitvoer. De 60 in de uitvoer kwam van de echo in de functie, niet van $total.', ops: [] },
+        ],
+    },
+    {
+        title: 'Een array als parameter',
+        intro: 'Het script begint in main. Druk op Afspelen of op Verder.',
+        code: `function describeStudent(array $student): string
+{
+    return $student["name"] . ": " . $student["score"]; // @body
+}
+
+$student = ["name" => "Sam", "score" => 72]; // @arr
+echo describeStudent($student); // @call`,
+        steps: [
+            { at: 'arr', say: 'In main wordt een array gemaakt met twee keys: name en score.', ops: [['set', 'student', { name: 'Sam', score: 72 }]] },
+            { at: 'call', say: 'describeStudent($student) wordt aangeroepen. De hele array gaat als een argument mee en komt als een kopie in de parameter $student van de functie.', ops: [['push', 'describeStudent()', { student: { name: 'Sam', score: 72 } }]] },
+            { at: 'body', say: 'De functie leest de waarden uit de array en plakt ze aan elkaar met punten. Het resultaat is een string.', ops: [['ret', 'Sam: 72']] },
+            { at: 'call', say: 'Het frame verdwijnt en de string gaat naar echo.', ops: [['pop'], ['echo', 'Sam: 72']] },
+        ],
+    },
+    {
+        title: 'Een functie die een andere functie aanroept',
+        intro: 'Het script begint in main. Hier staan straks twee functies na elkaar op de stack. Druk op Afspelen of op Verder.',
+        code: `function calculateSubtotal(int $price, int $quantity): int
+{
+    return $price * $quantity; // @sub
+}
+
+function getShippingCost(int $subtotal): int
+{
+    if ($subtotal >= 50) { // @if
+        return 0; // @free
+    }
+
+    return 5; // @paid
+}
+
+$subtotal = calculateSubtotal(15, 3); // @call1
+$shipping = getShippingCost($subtotal); // @call2
+echo $subtotal + $shipping; // @echo`,
+        steps: [
+            { at: 'call1', say: 'calculateSubtotal(15, 3) wordt aangeroepen met een eigen frame.', ops: [['push', 'calculateSubtotal()', { price: 15, quantity: 3 }]] },
+            { at: 'sub', say: '15 * 3 = 45 wordt teruggegeven.', ops: [['ret', 45]] },
+            { at: 'call1', say: 'Het frame verdwijnt. De waarde 45 staat nu in $subtotal in main.', ops: [['pop'], ['set', 'subtotal', 45]] },
+            { at: 'call2', say: 'getShippingCost($subtotal) wordt aangeroepen. Het argument is de waarde van $subtotal: 45. Die komt in de parameter van de nieuwe functie.', ops: [['push', 'getShippingCost()', { subtotal: 45 }]] },
+            { at: 'if', say: 'Is 45 >= 50? Nee, dus de functie gaat verder na het if blok.', ops: [] },
+            { at: 'paid', say: 'De verzendkosten zijn 5. Die waarde wordt teruggegeven.', ops: [['ret', 5]] },
+            { at: 'call2', say: 'Het frame verdwijnt. De waarde 5 staat in $shipping in main.', ops: [['pop'], ['set', 'shipping', 5]] },
+            { at: 'echo', say: '45 + 5 = 50. Twee functies hebben na elkaar hun werk gedaan, elk met hun eigen frame dat daarna weer verdween.', ops: [['echo', '50']] },
+        ],
+    },
+];
+
+createStepper({ scenarios });
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 1: array_filter stap voor stap</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 1: array_filter stap voor stap</h1>
+    <p class="muted">Volg hoe array_filter achter de schermen een callback functie aanroept: eerst een ingebouwde functie, dan een eigen functie, een anonieme functie, een arrow functie en de scope van variabelen. De code van myArrayFilter() staat boven het script.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Elke functie-aanroep krijgt een eigen frame. Het nieuwste frame staat bovenaan. Een functie ziet alleen de variabelen in zijn eigen frame. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2 single" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @call") en wat die regel doet met de stack.
+const echoStep = (list) => ({ at: 'echo', say: 'implode() plakt de elementen aan elkaar en echo toont het resultaat.', ops: [['echo', list.join(', ')]] });
+
+const isNumeric = (v) => typeof v === 'number';
+const hasLetters = (v) => typeof v === 'string';
+
+function scenarioIsNumeric() {
+    const items = [1, 'twee', 3];
+    const { steps, kept } = filterSteps({
+        items, callbackValue: 'is_numeric', frameName: 'is_numeric()', mainLabel: 'main',
+        test: isNumeric,
+        calleeVars: (item) => ({ value: item }),
+        calleeSay: (item, result) => `is_numeric is een ingebouwde functie van PHP. Hij controleert of de waarde een getal is en geeft ${result} terug.`,
+    });
+    return [{ at: 'set', say: 'De array $items staat in main, met twee getallen en een tekst.', ops: [['set', 'items', items]] }, ...steps, echoStep(kept)];
+}
+
+function scenarioUserDefined() {
+    const items = [3, 'twee', 7];
+    const test = (v) => typeof v === 'number' && v >= 5;
+    const { steps, kept } = filterSteps({
+        items, callbackValue: 'is5OrBigger', frameName: 'is5OrBigger()', mainLabel: 'main', bodyLabel: 'cb',
+        test,
+        calleeVars: (item) => ({ number: item }),
+        calleeSay: (item, result) => (typeof item === 'number'
+            ? `${item} is een getal. Is ${item} >= 5? ${result ? 'Ja' : 'Nee'}, dus de functie geeft ${result} terug.`
+            : 'Een tekst is geen getal. is_numeric geeft false, dus de rest van de voorwaarde wordt niet eens bekeken en de functie geeft false terug.'),
+    });
+    return [{ at: 'set', say: 'De array $items staat in main.', ops: [['set', 'items', items]] }, ...steps, echoStep(kept)];
+}
+
+function scenarioAnonymous() {
+    const items = ['ed', 'glenn', 'jan'];
+    const { steps, kept } = filterSteps({
+        items, callbackValue: '(anonieme functie)', frameName: '{closure}()', mainLabel: 'main', bodyLabel: 'cb',
+        test: (v) => v.length <= 3,
+        calleeVars: (item) => ({ name: item }),
+        calleeSay: (item, result) => `De anonieme functie heeft geen naam, maar werkt net zo. strlen("${item}") is ${item.length}. Is dat <= 3? ${result ? 'Ja' : 'Nee'}, dus ${result}.`,
+    });
+    return [{ at: 'set', say: 'De array $names staat in main.', ops: [['set', 'names', items]] }, ...steps, echoStep(kept)];
+}
+
+function scenarioArrow() {
+    const items = ['ed', 'glenn', 'jan'];
+    const { steps, kept } = filterSteps({
+        items, callbackValue: '(arrow functie)', frameName: '{closure}()', mainLabel: 'main', bodyLabel: 'main',
+        test: (v) => v.length <= 3,
+        calleeVars: (item) => ({ name: item }),
+        calleeSay: (item, result) => `De arrow functie geeft de waarde achter => automatisch terug: strlen("${item}") <= 3 is ${result}.`,
+    });
+    return [{ at: 'set', say: 'De array $names staat in main.', ops: [['set', 'names', items]] }, ...steps, echoStep(kept)];
+}
+
+function scenarioUse() {
+    const items = [3, 8, 5, 9];
+    const { steps, kept } = filterSteps({
+        items, callbackValue: '(anonieme functie)', frameName: '{closure}()', mainLabel: 'main', bodyLabel: 'cb',
+        test: (v) => v > 5,
+        calleeVars: (item) => ({ number: item, max: 5 }),
+        calleeSay: (item, result) => `Door use ($max) staat $max in het frame van de functie, met de waarde 5. Is ${item} > 5? ${result ? 'Ja' : 'Nee'}, dus ${result}.`,
+    });
+    return [
+        { at: 'set1', say: 'De array $numbers staat in main.', ops: [['set', 'numbers', items]] },
+        { at: 'set2', say: '$max staat in main. Een anonieme functie ziet deze variabele niet vanzelf, net als een gewone functie.', ops: [['set', 'max', 5]] },
+        ...steps, echoStep(kept),
+    ];
+}
+
+function scenarioArrowScope() {
+    const items = [3, 8, 5, 9];
+    const { steps, kept } = filterSteps({
+        items, callbackValue: '(arrow functie)', frameName: '{closure}()', mainLabel: 'main', bodyLabel: 'main',
+        test: (v) => v > 5,
+        calleeVars: (item) => ({ number: item, max: 5 }),
+        calleeSay: (item, result) => `Een arrow functie neemt $max automatisch mee: het staat al in het frame. Is ${item} > 5? ${result ? 'Ja' : 'Nee'}, dus ${result}.`,
+    });
+    return [
+        { at: 'set1', say: 'De array $numbers staat in main.', ops: [['set', 'numbers', items]] },
+        { at: 'set2', say: '$max staat in main.', ops: [['set', 'max', 5]] },
+        ...steps, echoStep(kept),
+    ];
+}
+
+const scenarios = [
+    {
+        title: 'Een ingebouwde functie als callback',
+        intro: 'Het script begint in main. Je ziet hoe array_filter achter de schermen werkt. Druk op Afspelen of op Verder.',
+        code: LISTING_FILTER + `
+$items = [1, "twee", 3]; // @set
+$filtered = myArrayFilter($items, 'is_numeric'); // @main
+echo implode(", ", $filtered); // @echo`,
+        steps: scenarioIsNumeric(),
+    },
+    {
+        title: 'Een eigen functie als callback',
+        intro: 'Het script begint in main. De callback is nu een functie die je zelf hebt geschreven. Druk op Afspelen of op Verder.',
+        code: LISTING_FILTER + `
+function is5OrBigger($number)
+{
+    return is_numeric($number) && $number >= 5; // @cb
+}
+
+$items = [3, "twee", 7]; // @set
+$filtered = myArrayFilter($items, 'is5OrBigger'); // @main
+echo implode(", ", $filtered); // @echo`,
+        steps: scenarioUserDefined(),
+    },
+    {
+        title: 'Een anonieme functie',
+        intro: 'Het script begint in main. De callback heeft nu geen naam. Druk op Afspelen of op Verder.',
+        code: LISTING_FILTER + `
+$names = ["ed", "glenn", "jan"]; // @set
+$filtered = myArrayFilter($names, function ($name) { // @main
+    return strlen($name) <= 3; // @cb
+});
+echo implode(", ", $filtered); // @echo`,
+        steps: scenarioAnonymous(),
+    },
+    {
+        title: 'Een arrow functie',
+        intro: 'Het script begint in main. Hetzelfde filter, korter opgeschreven. Druk op Afspelen of op Verder.',
+        code: LISTING_FILTER + `
+$names = ["ed", "glenn", "jan"]; // @set
+$filtered = myArrayFilter($names, fn($name) => strlen($name) <= 3); // @main
+echo implode(", ", $filtered); // @echo`,
+        steps: scenarioArrow(),
+    },
+    {
+        title: 'Een variabele van buiten met use',
+        intro: 'Het script begint in main. Let op het frame van de anonieme functie. Druk op Afspelen of op Verder.',
+        code: LISTING_FILTER + `
+$numbers = [3, 8, 5, 9]; // @set1
+$max = 5; // @set2
+$filtered = myArrayFilter($numbers, function ($number) use ($max) { // @main
+    return $number > $max; // @cb
+});
+echo implode(", ", $filtered); // @echo`,
+        steps: scenarioUse(),
+    },
+    {
+        title: 'Een variabele van buiten bij een arrow functie',
+        intro: 'Het script begint in main. Vergelijk met het vorige scenario: hier staat geen use. Druk op Afspelen of op Verder.',
+        code: LISTING_FILTER + `
+$numbers = [3, 8, 5, 9]; // @set1
+$max = 5; // @set2
+$filtered = myArrayFilter($numbers, fn($number) => $number > $max); // @main
+echo implode(", ", $filtered); // @echo`,
+        steps: scenarioArrowScope(),
+    },
+];
+
+createStepper({ scenarios });
+</script>
+</body>
+</html>

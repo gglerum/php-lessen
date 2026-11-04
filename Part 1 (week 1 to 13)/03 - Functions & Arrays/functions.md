@@ -116,6 +116,17 @@ De voorbeelden hieronder bouwen stap voor stap op. Begin met een eenvoudige func
 6. [zonder_comments.php](./example/zonder_comments.php) bevat hetzelfde raadspel, maar verdeelt de code over functies met beschrijvende namen.
 7. [hangman_v2.php](./example/hangman_v2.php) is een uitgebreider voorbeeld waarin de onderdelen van Galgje over meerdere functies zijn verdeeld.
 
+## Labs
+
+Wil je zien wat er gebeurt als een functie wordt aangeroepen? In de interactieve labs volg je een programma regel voor regel. Open [index.html](./example/functions/lab/index.html) in je browser, je hoeft niets te installeren. Werkt de opmaak niet, start dan `php -S localhost:8090` in de map `example/functions/lab`.
+
+1. [call_and_return.html](./example/functions/lab/call_and_return.html) is Lab 1. Een step debugger die laat zien hoe een functie een eigen frame op de stack krijgt, hoe de argumenten in de parameters terechtkomen en wat `return` doet. Ook het verschil tussen `echo` en `return` komt aan bod.
+2. [scope.html](./example/functions/lab/scope.html) is Lab 2. Je ziet waarom een functie een variabele van buiten niet kan gebruiken, en wat een parameter of `global` daaraan verandert.
+3. [predict_output.html](./example/functions/lab/predict_output.html) is Lab 3. Zes scenario's waarbij je eerst voorspelt wat er wordt getoond: een teruggegeven waarde die je niet opslaat, `echo` of `return`, een parameter met `&` en `strict_types`.
+4. [bughunt.html](./example/functions/lab/bughunt.html) is Lab 4. Drie scripts die iets anders doen dan bedoeld. Je beantwoordt eerst een vraag, volgt daarna het programma en bekijkt met de knop Gecorrigeerd de oplossing.
+
+Met `php verify_lab1.php` tot en met `php verify_lab4.php` (in de map `example/functions`) controleer je dat de antwoorden in de labs kloppen met wat PHP echt doet.
+
 ## Opgaven
 
 Probeer de opgaven eerst zelf te maken. De voorbeelden hierboven helpen je met de syntax, maar de opdrachten gebruiken andere voorbeelden en vragen je om de onderdelen zelf te combineren. Bij iedere opgave staat een kleine hint.

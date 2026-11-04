@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 3: Zoek de fout</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 3: Zoek de fout</h1>
+    <p class="muted">Elk script doet iets anders dan bedoeld. Bekijk de code, beantwoord de vraag en volg daarna het programma stap voor stap om te zien waar het misgaat. Met de knop Gecorrigeerd zie je de oplossing.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="variants" id="variants" role="group" aria-label="Versie van het script" hidden>
+                <button type="button" class="secondary" data-variant="bug" aria-pressed="true">Met de fout</button>
+                <button type="button" class="secondary" data-variant="fixed" aria-pressed="false">Gecorrigeerd</button>
+            </div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Elke functie-aanroep krijgt een eigen frame. Het nieuwste frame staat bovenaan. Een functie ziet alleen de variabelen in zijn eigen frame. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2 single" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @call") en wat die regel doet met de stack.
+function echoStep(prefix, list) {
+    return { at: 'echo', say: 'echo toont de tekst met de gevonden elementen.', ops: [['echo', prefix + list.join(', ')]] };
+}
+
+function missingUse(fixed) {
+    const items = [3, 8, 9];
+    const { steps, kept } = filterSteps({
+        items, callbackValue: '(anonieme functie)', frameName: '{closure}()', mainLabel: 'main', bodyLabel: 'cb',
+        test: (v) => (fixed ? v > 5 : true),
+        calleeVars: (item) => (fixed ? { number: item, max: 5 } : { number: item }),
+        calleeOps: (item) => (fixed ? [] : [['warn', 'Undefined variable $max']]),
+        calleeSay: (item, result) => (fixed
+            ? `Door use ($max) staat $max in dit frame. Is ${item} > 5? ${result ? 'Ja' : 'Nee'}.`
+            : `$max staat niet in het frame van de functie. PHP geeft een waarschuwing en gebruikt null. ${item} > null is waar, dus de callback geeft true terug, wat de waarde van $max ook is.`),
+    });
+    return [
+        { at: 'set1', say: '$numbers staat in main.', ops: [['set', 'numbers', items]] },
+        { at: 'set2', say: '$max staat in main.', ops: [['set', 'max', 5]] },
+        ...steps, echoStep('Groter dan 5: ', kept),
+    ];
+}
+
+function missingReturn(fixed) {
+    const items = ['ed', 'glenn', 'jan'];
+    const { steps, kept } = filterSteps({
+        items, callbackValue: '(anonieme functie)', frameName: '{closure}()', mainLabel: 'main', bodyLabel: 'cb',
+        test: (v) => (fixed ? v.length <= 3 : null),
+        calleeVars: (item) => ({ name: item }),
+        calleeSay: (item, result) => (fixed
+            ? `strlen("${item}") <= 3 is ${result}. Dat wordt teruggegeven.`
+            : `De functie berekent ${item.length <= 3}, maar gebruikt die waarde nergens voor. Zonder return geeft een functie null terug. null telt als false.`),
+    });
+    return [{ at: 'set', say: '$names staat in main.', ops: [['set', 'names', items]] }, ...steps, echoStep('Korte namen: ', kept)];
+}
+
+function quotedFunction() {
+    const items = [1, 'twee', 3];
+    const { steps, kept } = filterSteps({
+        items, callbackValue: 'is_numeric', frameName: 'is_numeric()', mainLabel: 'main',
+        test: (v) => typeof v === 'number',
+        calleeVars: (item) => ({ value: item }),
+        calleeSay: (item, result) => `is_numeric controleert of de waarde een getal is: ${result}.`,
+    });
+    return [{ at: 'set', say: '$items staat in main.', ops: [['set', 'items', items]] }, ...steps, echoStep('Getallen: ', kept)];
+}
+
+const scenarios = [
+    {
+        title: 'De callback ziet $max niet',
+        intro: 'Het filter moet de getallen groter dan 5 bewaren. Verwacht: "Groter dan 5: 8, 9". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: LISTING_FILTER + `
+$numbers = [3, 8, 9]; // @set1
+$max = 5; // @set2
+$filtered = myArrayFilter($numbers, function ($number) { // @main
+    return $number > $max; // @cb
+});
+echo "Groter dan 5: " . implode(", ", $filtered); // @echo`,
+        steps: missingUse(false),
+        fixed: {
+            intro: 'Gecorrigeerd: use ($max) neemt de variabele mee in de functie. Verwacht: "Groter dan 5: 8, 9".',
+            code: LISTING_FILTER + `
+$numbers = [3, 8, 9]; // @set1
+$max = 5; // @set2
+$filtered = myArrayFilter($numbers, function ($number) use ($max) { // @main
+    return $number > $max; // @cb
+});
+echo "Groter dan 5: " . implode(", ", $filtered); // @echo`,
+            steps: missingUse(true),
+        },
+    },
+    {
+        title: 'Er komt niets uit het filter',
+        intro: 'Het filter moet de namen van hoogstens 3 letters bewaren. Verwacht: "Korte namen: ed, jan". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: LISTING_FILTER + `
+$names = ["ed", "glenn", "jan"]; // @set
+$filtered = myArrayFilter($names, function ($name) { // @main
+    strlen($name) <= 3; // @cb
+});
+echo "Korte namen: " . implode(", ", $filtered); // @echo`,
+        steps: missingReturn(false),
+        fixed: {
+            intro: 'Gecorrigeerd: de functie geeft de uitkomst terug met return. Verwacht: "Korte namen: ed, jan".',
+            code: LISTING_FILTER + `
+$names = ["ed", "glenn", "jan"]; // @set
+$filtered = myArrayFilter($names, function ($name) { // @main
+    return strlen($name) <= 3; // @cb
+});
+echo "Korte namen: " . implode(", ", $filtered); // @echo`,
+            steps: missingReturn(true),
+        },
+    },
+    {
+        title: 'De callback is geen tekst',
+        intro: 'Het filter moet de getallen bewaren. Verwacht: "Getallen: 1, 3". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: LISTING_FILTER + `
+$items = [1, "twee", 3]; // @set
+$filtered = myArrayFilter($items, is_numeric); // @main
+echo "Getallen: " . implode(", ", $filtered); // @echo`,
+        steps: [
+            { at: 'set', say: '$items staat in main.', ops: [['set', 'items', [1, 'twee', 3]]] },
+            { at: 'main', say: 'is_numeric staat hier zonder aanhalingstekens. PHP leest dat als de naam van een constante, niet van een functie. Die constante bestaat niet: een Error en het script stopt.', ops: [['fatal', 'Undefined constant "is_numeric"']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: de naam van de functie staat tussen aanhalingstekens. Verwacht: "Getallen: 1, 3".',
+            code: LISTING_FILTER + `
+$items = [1, "twee", 3]; // @set
+$filtered = myArrayFilter($items, 'is_numeric'); // @main
+echo "Getallen: " . implode(", ", $filtered); // @echo`,
+            steps: quotedFunction(),
+        },
+    },
+];
+
+const quizzes = [
+    {
+        question: 'Waarom bevat het resultaat ook de 3?',
+        options: [
+            ['De callback ziet $max niet, dus de vergelijking klopt niet meer.', 'Klopt. Een anonieme functie ziet variabelen van buiten niet vanzelf. Met use ($max) of een arrow functie wel.'],
+            ['$number > $max werkt niet voor getallen.', 'Nee: de vergelijking is goed. Kijk welke variabelen er in het frame van de functie staan.'],
+            ['myArrayFilter() voegt altijd het eerste element toe.', 'Nee: de functie voegt alleen toe wat de callback goedkeurt.'],
+        ],
+        correct: 0,
+    },
+    {
+        question: 'Waarom blijft het resultaat leeg?',
+        options: [
+            ['strlen() werkt niet in een callback.', 'Nee: strlen werkt prima. De uitkomst wordt alleen niet teruggegeven.'],
+            ['De functie heeft geen return, dus de callback geeft null terug en dat telt als false.', 'Klopt. Een anonieme functie moet een waarde teruggeven met return (een arrow functie doet dat automatisch).'],
+            ['De array $names is leeg.', 'Nee: de array bevat drie namen.'],
+        ],
+        correct: 1,
+    },
+    {
+        question: 'Wat is er mis met het tweede argument van myArrayFilter()?',
+        options: [
+            ['De naam van de functie staat niet tussen aanhalingstekens, dus PHP zoekt een constante.', 'Klopt. Een bestaande functie geef je als tekst mee. Zonder aanhalingstekens (en zonder haakjes) ziet PHP het als een constante.'],
+            ['is_numeric is geen goede callback.', 'Nee: is_numeric is een prima callback, hij moet alleen goed worden doorgegeven.'],
+            ['De array moet na de callback komen.', 'Nee: de volgorde van de parameters klopt.'],
+        ],
+        correct: 0,
+    },
+];
+
+const quizForm = document.getElementById('quiz');
+
+function renderQuiz() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const index = n >= 1 && n <= quizzes.length ? n - 1 : 0;
+    const quiz = quizzes[index];
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = quiz.question;
+    fieldset.append(legend);
+
+    quiz.options.forEach(([text], i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const i = parseInt(chosen.value, 10);
+            const isCorrect = i === quiz.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect ? 'Goed.' : 'Niet helemaal.';
+            box.append(strong, quiz.options[i][1]);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', renderQuiz);
+
+renderQuiz();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

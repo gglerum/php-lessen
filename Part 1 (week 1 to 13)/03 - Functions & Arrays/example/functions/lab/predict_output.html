@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 3: Wat wordt er getoond?</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main>
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 3: Wat wordt er getoond?</h1>
+    <p class="muted">Lees de code, kies wat je denkt dat er gebeurt en controleer je antwoord. Daarna lees je waarom.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+
+    <h2 id="title"></h2>
+    <pre><code id="code"></code></pre>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="controls">
+        <a class="button secondary" id="previous" href="#">Vorige</a>
+        <a class="button" id="next" href="#">Volgend scenario</a>
+    </div>
+</main>
+
+<script>
+// De uitkomsten zijn vooraf bepaald. Controleer ze met: php verify_lab3.php
+const scenarios = [
+    {
+        title: 'De teruggegeven waarde wordt niet gebruikt',
+        question: 'Wat toont het script?',
+        code: `function applyDiscount(int $price): int
+{
+    $price = $price - 10;
+    return $price;
+}
+
+$price = 50;
+applyDiscount($price);
+echo $price;`,
+        options: ['40', '50', 'Een foutmelding'],
+        correct: 1,
+        why: 'De functie krijgt een kopie van 50 en rekent met zijn eigen $price. De return geeft 40 terug, maar de aanroep slaat die waarde nergens op. De $price in main blijft 50.',
+    },
+    {
+        title: 'De teruggegeven waarde opslaan',
+        question: 'Wat toont het script nu?',
+        code: `function applyDiscount(int $price): int
+{
+    $price = $price - 10;
+    return $price;
+}
+
+$price = 50;
+$price = applyDiscount($price);
+echo $price;`,
+        options: ['40', '50', 'Een foutmelding'],
+        correct: 0,
+        why: 'Dezelfde functie, maar nu wordt de teruggegeven waarde opgeslagen in $price. De functie zelf verandert niets buiten zijn eigen frame: alleen de toewijzing doet dat.',
+    },
+    {
+        title: 'echo of return?',
+        question: 'Wat is de waarde van $result nadat showDouble(4) is aangeroepen?',
+        code: `function showDouble(int $number): void
+{
+    echo $number * 2;
+}
+
+$result = showDouble(4);
+var_dump($result);`,
+        options: ['8', 'null', 'Een foutmelding'],
+        correct: 1,
+        why: 'De functie toont 8 met echo, maar geeft niets terug. $result is dus null. var_dump toont NULL, naast de 8 die al door de functie werd getoond.',
+    },
+    {
+        title: 'Een parameter met &',
+        question: 'Wat toont het script?',
+        code: `function addBonus(int &$score): void
+{
+    $score = $score + 10;
+}
+
+$score = 50;
+addBonus($score);
+echo $score;`,
+        options: ['50', '60', 'Een foutmelding'],
+        correct: 1,
+        why: 'Door & voor de parameter krijgt de functie geen kopie maar de variabele zelf. Past de functie $score aan, dan verandert $score in main mee. Voor de meeste functies is return duidelijker.',
+    },
+    {
+        title: 'strict_types: een string als int',
+        question: 'Wat gebeurt er met deze code?',
+        code: `<?php
+
+declare(strict_types=1);
+
+function triple(int $number): int
+{
+    return $number * 3;
+}
+
+echo triple("5");`,
+        options: ['Het script toont 15', 'Het script toont 555', 'PHP geeft een TypeError'],
+        correct: 2,
+        why: 'Met declare(strict_types=1) accepteert PHP alleen exact het type dat bij de parameter staat. "5" is een string en geen int, dus er volgt een TypeError.',
+    },
+    {
+        title: 'Zonder strict_types',
+        question: 'Wat gebeurt er met dezelfde code zonder declare(strict_types=1)?',
+        code: `<?php
+
+function triple(int $number): int
+{
+    return $number * 3;
+}
+
+echo triple("5");`,
+        options: ['Het script toont 15', 'Het script toont 555', 'PHP geeft een TypeError'],
+        correct: 0,
+        why: 'Zonder strict_types probeert PHP de waarde om te zetten. De string "5" wordt de int 5, dus het resultaat is 15. Dat is handig, maar het kan ook fouten verbergen.',
+    },
+];
+
+const steps = document.getElementById('steps');
+const title = document.getElementById('title');
+const code = document.getElementById('code');
+const quizForm = document.getElementById('quiz');
+const previous = document.getElementById('previous');
+const next = document.getElementById('next');
+
+// het scenario staat in de URL (#3), zodat verversen en links delen werken
+function currentIndex() {
+    const number = parseInt(location.hash.replace('#', ''), 10);
+    return number >= 1 && number <= scenarios.length ? number - 1 : 0;
+}
+
+function show() {
+    const index = currentIndex();
+    const scenario = scenarios[index];
+
+    steps.replaceChildren();
+    scenarios.forEach((item, i) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + (i + 1);
+        a.textContent = String(i + 1);
+        a.setAttribute('aria-label', `Scenario ${i + 1}: ${item.title}`);
+        if (i === index) a.setAttribute('aria-current', 'step');
+        li.append(a);
+        steps.append(li);
+    });
+
+    title.textContent = `Scenario ${index + 1} van ${scenarios.length}: ${scenario.title}`;
+    code.textContent = scenario.code;
+
+    previous.hidden = index === 0;
+    previous.href = '#' + index;
+    next.hidden = index === scenarios.length - 1;
+    next.href = '#' + (index + 2);
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = scenario.question;
+    fieldset.append(legend);
+
+    scenario.options.forEach((text, i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const isCorrect = parseInt(chosen.value, 10) === scenario.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect
+                ? `Goed: ${scenario.options[scenario.correct]}.`
+                : `Niet helemaal. Het antwoord is: ${scenario.options[scenario.correct]}.`;
+            box.append(strong, scenario.why);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', show);
+show();
+</script>
+</body>
+</html>

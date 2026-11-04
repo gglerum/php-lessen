@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 3: Wat gebeurt er?</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main>
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 3: Wat gebeurt er?</h1>
+    <p class="muted">Hieronder staat de class BankAccount. Lees de code, kies wat je denkt dat er gebeurt en controleer je antwoord. Daarna lees je waarom.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+
+    <details class="classpanel" open>
+        <summary>De class BankAccount die in alle scenario's wordt gebruikt</summary>
+        <pre><code>class BankAccount
+{
+    public readonly string $owner;
+    private int $balance;
+
+    public function __construct(string $owner, int $balance = 0)
+    {
+        $this-&gt;owner = $owner;
+        $this-&gt;balance = $balance;
+    }
+
+    public function deposit(int $amount): void
+    {
+        if ($amount &lt;= 0) {
+            echo "Je kunt alleen een positief bedrag storten\n";
+            return;
+        }
+
+        $this-&gt;balance = $this-&gt;balance + $amount;
+    }
+
+    public function withdraw(int $amount): void
+    {
+        if ($amount &gt; $this-&gt;balance) {
+            echo "Onvoldoende saldo\n";
+            return;
+        }
+
+        $this-&gt;balance = $this-&gt;balance - $amount;
+    }
+
+    public function getBalance(): int
+    {
+        return $this-&gt;balance;
+    }
+}</code></pre>
+        <p class="muted">De scenario's staan in een script met <code>declare(strict_types=1);</code>.</p>
+    </details>
+
+    <h2 id="title"></h2>
+    <pre><code id="code"></code></pre>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="controls">
+        <a class="button secondary" id="previous" href="#">Vorige</a>
+        <a class="button" id="next" href="#">Volgend scenario</a>
+    </div>
+</main>
+
+<script>
+// De uitkomsten zijn vooraf bepaald. Controleer ze met: php verify_lab3.php
+const scenarios = [
+    {
+        title: 'Twee objecten',
+        question: 'Wat toont het script?',
+        code: `$first = new BankAccount("John", 100);
+$second = new BankAccount("Jane");
+
+$first->deposit(50);
+echo $second->getBalance();`,
+        options: ['150', '50', '0'],
+        correct: 2,
+        why: 'Elk object heeft zijn eigen saldo. $second kreeg geen beginsaldo mee, dus de standaardwaarde 0 uit de constructor. De storting op $first verandert $second niet.',
+    },
+    {
+        title: 'Te weinig saldo',
+        question: 'Wat toont het script?',
+        code: `$account = new BankAccount("John", 100);
+$account->withdraw(500);
+echo $account->getBalance();`,
+        options: ['-400', 'Onvoldoende saldo, en daarna 100', 'Alleen 100'],
+        correct: 1,
+        why: 'withdraw() controleert het saldo, toont de melding "Onvoldoende saldo" en stopt met return. Het saldo blijft 100, en dat toont het script daarna.',
+    },
+    {
+        title: 'Een negatief bedrag storten',
+        question: 'Wat toont het script?',
+        code: `$account = new BankAccount("John", 100);
+$account->deposit(-20);
+echo $account->getBalance();`,
+        options: ['80', 'Je kunt alleen een positief bedrag storten, en daarna 100', 'Alleen 100'],
+        correct: 1,
+        why: 'deposit() weigert een bedrag dat niet positief is, toont een melding en laat het saldo ongemoeid. Omdat het saldo private is, kan deze controle niet omzeild worden.',
+    },
+    {
+        title: 'Een private property lezen',
+        question: 'Wat gebeurt er met de laatste regel?',
+        code: `$account = new BankAccount("John", 100);
+echo $account->balance;`,
+        options: ['Het script toont 100', 'Het script toont niets', 'PHP geeft een Error'],
+        correct: 2,
+        why: 'balance is private, dus alleen code binnen de class kan erbij. Van buiten geeft PHP een Error: "Cannot access private property". Gebruik getBalance().',
+    },
+    {
+        title: 'Een readonly property aanpassen',
+        question: 'Wat gebeurt er met de tweede regel?',
+        code: `$account = new BankAccount("John", 100);
+$account->owner = "Jane";`,
+        options: ['De eigenaar wordt Jane', 'De eigenaar blijft John, zonder melding', 'PHP geeft een Error'],
+        correct: 2,
+        why: 'owner is public, dus je kunt erbij, maar ook readonly. Na de constructor mag de waarde niet meer veranderen: PHP geeft een Error.',
+    },
+    {
+        title: 'Een object zonder de verplichte argumenten',
+        question: 'Wat gebeurt er met deze regel?',
+        code: `$account = new BankAccount();`,
+        options: ['Er ontstaat een rekening zonder eigenaar', 'PHP geeft een ArgumentCountError', 'Er ontstaat een rekening met saldo 0 en een lege eigenaar'],
+        correct: 1,
+        why: '$owner heeft geen standaardwaarde, dus de constructor heeft minstens een argument nodig. Zonder argument kun je geen object maken. Zo is een object nooit half ingevuld.',
+    },
+];
+
+const steps = document.getElementById('steps');
+const title = document.getElementById('title');
+const code = document.getElementById('code');
+const quizForm = document.getElementById('quiz');
+const previous = document.getElementById('previous');
+const next = document.getElementById('next');
+
+// het scenario staat in de URL (#3), zodat verversen en links delen werken
+function currentIndex() {
+    const number = parseInt(location.hash.replace('#', ''), 10);
+    return number >= 1 && number <= scenarios.length ? number - 1 : 0;
+}
+
+function show() {
+    const index = currentIndex();
+    const scenario = scenarios[index];
+
+    steps.replaceChildren();
+    scenarios.forEach((item, i) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + (i + 1);
+        a.textContent = String(i + 1);
+        a.setAttribute('aria-label', `Scenario ${i + 1}: ${item.title}`);
+        if (i === index) a.setAttribute('aria-current', 'step');
+        li.append(a);
+        steps.append(li);
+    });
+
+    title.textContent = `Scenario ${index + 1} van ${scenarios.length}: ${scenario.title}`;
+    code.textContent = scenario.code;
+
+    previous.hidden = index === 0;
+    previous.href = '#' + index;
+    next.hidden = index === scenarios.length - 1;
+    next.href = '#' + (index + 2);
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = scenario.question;
+    fieldset.append(legend);
+
+    scenario.options.forEach((text, i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const isCorrect = parseInt(chosen.value, 10) === scenario.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect
+                ? `Goed: ${scenario.options[scenario.correct]}.`
+                : `Niet helemaal. Het antwoord is: ${scenario.options[scenario.correct]}.`;
+            box.append(strong, scenario.why);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', show);
+show();
+</script>
+</body>
+</html>

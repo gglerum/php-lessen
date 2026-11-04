@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 3: Zoek de fout</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 3: Zoek de fout</h1>
+    <p class="muted">Elk script doet iets anders dan bedoeld. Bekijk de code, beantwoord de vraag en volg daarna het programma stap voor stap om te zien waar het misgaat. Met de knop Gecorrigeerd zie je de oplossing.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="variants" id="variants" role="group" aria-label="Versie van het script" hidden>
+                <button type="button" class="secondary" data-variant="bug" aria-pressed="true">Met de fout</button>
+                <button type="button" class="secondary" data-variant="fixed" aria-pressed="false">Gecorrigeerd</button>
+            </div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het hele script draait in een frame met de naam main. Hier zie je de variabelen en hun waarde. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2 single" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @for") en wat die regel doet met de variabelen.
+function loopScenario(lessEqual) {
+    const { steps, display } = loopSteps('kiwi', ['i'], lessEqual);
+    return [
+        { at: 'w', say: '$word is "kiwi".', ops: [['set', 'word', 'kiwi']] },
+        { at: 'g', say: 'Alleen de "i" is geraden.', ops: [['set', 'guessedLetters', ['i']]] },
+        { at: 'd', say: '$display begint leeg.', ops: [['set', 'display', '']] },
+        ...steps,
+        { at: 'echo', say: lessEqual ? `Het script toont "${display}": een streepje te veel.` : `Het script toont "${display}".`, ops: [['echo', display]] },
+    ];
+}
+
+const loopCode = (operator) => `$word = "kiwi"; // @w
+$guessedLetters = ["i"]; // @g
+$display = ""; // @d
+for ($i = 0; $i ${operator} strlen($word); $i++) { // @for
+    if (in_array($word[$i], $guessedLetters)) { // @if
+        $display .= $word[$i]; // @show
+    } else {
+        $display .= "_"; // @hide
+    }
+}
+echo $display; // @echo`;
+
+const scenarios = [
+    {
+        title: 'Een streepje te veel',
+        intro: 'De loop moet voor elke letter van "kiwi" een teken toevoegen. Verwacht: "_i_i". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: loopCode('<='),
+        steps: loopScenario(true),
+        fixed: {
+            intro: 'Gecorrigeerd: < in plaats van <=. Verwacht: "_i_i".',
+            code: loopCode('<'),
+            steps: loopScenario(false),
+        },
+    },
+    {
+        title: 'Het aantal pogingen is ineens 0',
+        intro: 'Het script moet "Game over" tonen als er geen pogingen meer zijn. Er zijn nog 3 pogingen. Verwacht: "Nog 3 pogingen". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: `$attempts = 3; // @a
+if ($attempts = 0) { // @if
+    echo "Game over"; // @over
+}
+echo "Nog " . $attempts . " pogingen"; // @echo`,
+        steps: [
+            { at: 'a', say: '$attempts is 3.', ops: [['set', 'attempts', 3]] },
+            { at: 'if', say: 'Hier staat een enkele =. Dat is geen vergelijking maar een toewijzing: $attempts wordt 0. De uitkomst van een toewijzing is de waarde, en 0 telt als false. Het blok wordt dus overgeslagen, maar $attempts is al veranderd.', ops: [['set', 'attempts', 0]] },
+            { at: 'echo', say: 'Het script toont 0 pogingen.', ops: [['echo', 'Nog 0 pogingen']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: == vergelijkt, = wijst toe. Verwacht: "Nog 3 pogingen".',
+            code: `$attempts = 3; // @a
+if ($attempts == 0) { // @if
+    echo "Game over"; // @over
+}
+echo "Nog " . $attempts . " pogingen"; // @echo`,
+            steps: [
+                { at: 'a', say: '$attempts is 3.', ops: [['set', 'attempts', 3]] },
+                { at: 'if', say: 'Is 3 == 0? Nee, het blok wordt overgeslagen. $attempts blijft 3.', ops: [] },
+                { at: 'echo', say: 'Het script toont 3 pogingen.', ops: [['echo', 'Nog 3 pogingen']] },
+            ],
+        },
+    },
+    {
+        title: 'Er worden twee delen getoond',
+        intro: 'Bij 5 pogingen moet alleen het hoofd getoond worden. Verwacht: "hoofd ". Druk op Afspelen en kijk wat er echt gebeurt.',
+        code: `$attempts = 5; // @a
+switch ($attempts) { // @switch
+    case 5: // @c5
+        echo "hoofd "; // @e5
+    case 4: // @c4
+        echo "romp "; // @e4
+        break; // @b4
+    case 3:
+        echo "arm ";
+        break;
+}`,
+        steps: [
+            { at: 'a', say: '$attempts is 5.', ops: [['set', 'attempts', 5]] },
+            { at: 'switch', say: 'De switch vergelijkt 5 met de cases.', ops: [] },
+            { at: 'c5', say: 'Is 5 gelijk aan 5? Ja. De code onder dit case wordt uitgevoerd.', ops: [] },
+            { at: 'e5', say: 'echo toont "hoofd ". Er staat geen break onder dit case.', ops: [['echo', 'hoofd ']] },
+            { at: 'c4', say: 'Zonder break loopt de switch gewoon door naar het volgende case, ook al hoeft 4 niet te kloppen.', ops: [] },
+            { at: 'e4', say: 'Ook de code van dit case wordt uitgevoerd.', ops: [['echo', 'romp ']] },
+            { at: 'b4', say: 'Pas hier stopt de switch, door de break.', ops: [] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: een break na elk case. Verwacht: "hoofd ".',
+            code: `$attempts = 5; // @a
+switch ($attempts) { // @switch
+    case 5: // @c5
+        echo "hoofd "; // @e5
+        break; // @b5
+    case 4:
+        echo "romp ";
+        break;
+    case 3:
+        echo "arm ";
+        break;
+}`,
+            steps: [
+                { at: 'a', say: '$attempts is 5.', ops: [['set', 'attempts', 5]] },
+                { at: 'switch', say: 'De switch vergelijkt 5 met de cases.', ops: [] },
+                { at: 'c5', say: 'Is 5 gelijk aan 5? Ja.', ops: [] },
+                { at: 'e5', say: 'echo toont "hoofd ".', ops: [['echo', 'hoofd ']] },
+                { at: 'b5', say: 'break verlaat de switch. De andere cases worden niet bekeken.', ops: [] },
+            ],
+        },
+    },
+];
+
+const quizzes = [
+    {
+        question: 'Waarom komt er een streepje te veel?',
+        options: [
+            ['De loop draait een keer te veel: <= laat $i ook de waarde 4 aannemen, en het woord heeft geen vijfde letter.', 'Klopt. De posities in "kiwi" lopen van 0 tot en met 3. Met < stopt de loop op tijd, met <= niet.'],
+            ['in_array() werkt niet met strings.', 'Nee: in_array() werkt goed. Kijk naar de waarde van $i bij de laatste ronde.'],
+            ['$display .= voegt altijd twee tekens toe.', 'Nee: .= voegt een teken toe per ronde. Het gaat om het aantal rondes.'],
+        ],
+        correct: 0,
+    },
+    {
+        question: 'Waarom zijn er ineens 0 pogingen?',
+        options: [
+            ['echo toont het verkeerde getal.', 'Nee: echo toont wat er in de variabele staat. Kijk wanneer die verandert.'],
+            ['In de if staat een toewijzing (=) in plaats van een vergelijking (==).', 'Klopt. $attempts = 0 maakt de variabele 0. Een vergelijking is ==, een toewijzing is =.'],
+            ['Het if blok wordt altijd uitgevoerd.', 'Nee: het blok wordt juist overgeslagen, want 0 telt als false. Maar de toewijzing is dan al gebeurd.'],
+        ],
+        correct: 1,
+    },
+    {
+        question: 'Waarom wordt ook "romp " getoond?',
+        options: [
+            ['case 4 is waar als $attempts 5 is.', 'Nee: 5 is niet gelijk aan 4. Er is iets anders aan de hand.'],
+            ['Er staat geen break onder case 5, dus de switch loopt door naar het volgende case.', 'Klopt. Zonder break gaat een switch door tot hij een break tegenkomt of aan het einde is.'],
+            ['echo toont altijd twee woorden.', 'Nee: echo toont wat je meegeeft. Het zijn twee verschillende echo regels die worden uitgevoerd.'],
+        ],
+        correct: 1,
+    },
+];
+
+const quizForm = document.getElementById('quiz');
+
+function renderQuiz() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const index = n >= 1 && n <= quizzes.length ? n - 1 : 0;
+    const quiz = quizzes[index];
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = quiz.question;
+    fieldset.append(legend);
+
+    quiz.options.forEach(([text], i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const i = parseInt(chosen.value, 10);
+            const isCorrect = i === quiz.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect ? 'Goed.' : 'Niet helemaal.';
+            box.append(strong, quiz.options[i][1]);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', renderQuiz);
+
+renderQuiz();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

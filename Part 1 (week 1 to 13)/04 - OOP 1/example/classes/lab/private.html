@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 2: Public en private</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 2: Public en private</h1>
+    <p class="muted">Wat beschermt private? Volg drie scenario's regel voor regel: een public saldo dat je kunt omzeilen, een private saldo dat alleen via methods verandert en een poging van buiten de class.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @w1") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'public: de controle omzeilen',
+        intro: 'Het script begint in main. withdraw() controleert of er genoeg saldo is. Maar is dat genoeg? Druk op Afspelen of op Verder.',
+        members: 'public',
+        code: LISTING_PUBLIC + `
+$account = new BankAccount(100); // @new
+$account->withdraw(500); // @w
+$account->balance = -500; // @hack
+echo $account->balance; // @echo`,
+        steps: [
+            ...ctorSteps('new', 'account', 100, 'o1'),
+            ...withdrawRefusedSteps('w', 'o1', 500, 100),
+            { at: 'hack', say: 'Omdat balance public is, kan iedereen het saldo rechtstreeks aanpassen. De controle in withdraw() wordt overgeslagen en het saldo wordt negatief.', ops: [['prop', 'o1', 'balance', -500]] },
+            { at: 'echo', say: 'Het script toont -500. De controle beschermt niets zolang de data niet beschermd is.', ops: [['echo', '-500']] },
+        ],
+    },
+    {
+        title: 'private: alleen via methods',
+        intro: 'Het script begint in main. Nu is het saldo private. Druk op Afspelen of op Verder.',
+        members: 'private',
+        code: LISTING_PRIVATE + `
+$account = new BankAccount(100); // @new
+$account->withdraw(500); // @w1
+$account->withdraw(30); // @w2
+echo $account->getBalance(); // @echo`,
+        steps: [
+            ...ctorSteps('new', 'account', 100, 'o1'),
+            ...withdrawRefusedSteps('w1', 'o1', 500, 100),
+            { at: 'w2', say: 'withdraw(30) wordt aangeroepen.', ops: [['push', 'withdraw()', { this: ref('o1'), amount: 30 }]] },
+            { at: 'c-if', say: 'Is 30 > 100? Nee, dus de method gaat verder.', ops: [] },
+            { at: 'c-sub', say: 'balance wordt 100 - 30 = 70.', ops: [['prop', 'o1', 'balance', 70]] },
+            { at: 'w2', say: 'Het frame van withdraw() verdwijnt.', ops: [['pop']] },
+            { at: 'c-get', say: 'getBalance() leest de private property. Dat mag, want de method zit in de class. Hij geeft 70 terug.', ops: [['push', 'getBalance()', { this: ref('o1') }], ['ret', 70]] },
+            { at: 'echo', say: 'Het frame verdwijnt en het script toont 70. Het saldo kon alleen veranderen via de method met de controle.', ops: [['pop'], ['echo', '70']] },
+        ],
+    },
+    {
+        title: 'private van buiten aanpassen',
+        intro: 'Het script begint in main. Wat gebeurt er als we toch bij een private property willen? Druk op Afspelen of op Verder.',
+        members: 'private',
+        code: LISTING_PRIVATE + `
+$account = new BankAccount(100); // @new
+$account->balance = -500; // @hack
+echo "klaar"; // @echo`,
+        steps: [
+            ...ctorSteps('new', 'account', 100, 'o1'),
+            { at: 'hack', say: 'Deze regel zit buiten de class en probeert een private property aan te passen. PHP staat dat niet toe en geeft een Error. Het script stopt hier: "klaar" wordt nooit getoond en het saldo blijft 100.', ops: [['fatal', 'Cannot access private property BankAccount::$balance']] },
+        ],
+    },
+];
+
+const membersByKey = { public: MEMBERS_PUBLIC, private: MEMBERS_PRIVATE };
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members ? membersByKey[scenario.members] : null);
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

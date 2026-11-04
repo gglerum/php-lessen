@@ -49,3 +49,12 @@ fclose($stdin);
   operaties die voor elke iteratie hetzelfde blijven, horen niet in een loop te staan.
 - Declareer variabelen zo dicht mogelijk waar het gebruikt word.
 - De code bevat geen/tot zeer weinig code duplicatie. (DRY: Don't Repeat Yourself)
+
+## Labs
+Wil je zien wat PHP regel voor regel doet met variabelen, loops en voorwaarden? In de interactieve labs volg je stukjes uit Galgje stap voor stap. Open [index.html](./example/basics/lab/index.html) in je browser, je hoeft niets te installeren. Werkt de opmaak niet, start dan `php -S localhost:8090` in de map `example/basics/lab`.
+
+1. [loops_and_conditions.html](./example/basics/lab/loops_and_conditions.html) is Lab 1. Een step debugger voor variabelen en operators, de `for` loop, de `while` loop, `if` en `else` en de `switch`.
+2. [predict_output.html](./example/basics/lab/predict_output.html) is Lab 2. Zes scenario's waarbij je eerst voorspelt wat er wordt getoond.
+3. [bughunt.html](./example/basics/lab/bughunt.html) is Lab 3. Drie scripts die iets anders doen dan bedoeld: een loop die een keer te veel draait, `=` in plaats van `==` en een vergeten `break`.
+
+Met `php verify_lab1.php` tot en met `php verify_lab3.php` (in de map `example/basics`) controleer je dat de antwoorden in de labs kloppen met wat PHP echt doet.
