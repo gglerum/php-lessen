@@ -8,7 +8,7 @@ Het gaat niet om regels uit je hoofd leren. Het gaat erom dat je kunt zien waaro
 
 1. [General Design Principles](01%20-%20General%20Design%20Principles/): KISS, DRY, YAGNI en Separation of Concerns.
 2. [Clean Code](02%20-%20Clean%20Code%20Principles/): namen, functies en comments die duidelijk maken wat de code doet, plus Least Astonishment en premature optimization.
-3. **SOLID**: vijf principes voor het opzetten van classes en interfaces.
+3. [SOLID](03%20-%20SOLID/): vijf principes voor het opzetten van classes en interfaces, verdeeld over twee lessen.
 4. **GRASP**: bepalen in welke class een stuk code thuishoort.
 5. **Refactoring**: stap voor stap een rommelige controller omzetten naar schone code.
 6. **Design Patterns**: bekende oplossingen voor terugkerende problemen, en wanneer je ze juist niet gebruikt.
