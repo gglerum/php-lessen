@@ -2,13 +2,13 @@
 De komende 13 weken gaan we werken met Laravel. De documentatie kun je hier vinden: https://laravel.com/docs/11.x
 
 ## Wat je moet kunnen beheersen:
-De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te zien waar je moet starten. Hieronder vind je een opdeling van de documentatie in hapklare brokken.
+De Laravel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te zien waar je moet starten. Hieronder vind je een opdeling van de documentatie in hapklare brokken.
 
-**Letop: deze lijst dekt niet de volledige Larvel documentatie. Het is aan jou om stapgewijs bekend te raken met de volledige documentatie van Laravel.**
+**Let op: deze lijst dekt niet de volledige Laravel documentatie. Het is aan jou om stapgewijs bekend te raken met de volledige documentatie van Laravel.**
 
 -----
 
-*Basis begrip hoe laravel kan worden geconfigureerd, waar welke map voor is en hoe requests (webpagina bezoeken) precies worden afgehandelt:*
+*Basis begrip hoe Laravel kan worden geconfigureerd, waar welke map voor is en hoe requests (webpagina bezoeken) precies worden afgehandeld:*
 
 - **Getting Started**
     - Directory Structure
@@ -40,7 +40,7 @@ De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te
 - **The Basics**
     - Session
 - **Security**
-    - Authenticaion
+    - Authentication
     - Authorization
     - E-mail verification
 
@@ -76,7 +76,7 @@ De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te
 - **Database**
     - Query Builder
 
-*Verdieping over hoe Larvel onder de motor kap bepaalde dingen doet:*
+*Verdieping over hoe Laravel onder de motor kap bepaalde dingen doet:*
 - **Architecture Concepts**
     - Service Container
     - Service Providers
@@ -86,6 +86,6 @@ De Larvel documentatie is uitgebreid en erg grondig, het is dan ook lastig om te
 https://phptherightway.com/
 https://github.com/alexeymezenin/laravel-best-practices
 
-## Larvel Certificatie
+## Laravel Certificatie
 De volgende onderwerpen worden gevraagd voor het Laravel examen:
 https://www.certificationforlaravel.com/topics
