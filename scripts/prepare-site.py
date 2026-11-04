@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "_site_src"
 SKIP_DIRS = {".git", ".github", ".vscode", ".devcontainer", ".claude", "_archive",
              "_site_src", "_site", "scripts", "vendor", "node_modules", ".idea"}
-SKIP_FILES = {".env", "composer.lock", ".gitignore", "Gemfile.lock"}
+SKIP_FILES = {"CLAUDE.md", ".env", "composer.lock", ".gitignore", "Gemfile.lock"}
 
 
 def tracked_files() -> list:
@@ -114,6 +114,12 @@ def main() -> None:
             for k in ("parent", "grand_parent", "has_children"):
                 meta.pop(k, None)
             meta["nav_exclude"] = True
+        # README.md -> index.md: jekyll-readme-index maakte geen startpagina aan
+        body = re.sub(r"\]\(([^)]*?)README\.md([#)][^)]*|)\)",
+                      lambda m: "](" + m.group(1) + "index.md" + m.group(2) + ")", body)
+        if p.name == "README.md":
+            dest.unlink()
+            dest = dest.with_name("index.md")
         dest.write_text(fm(meta) + body, encoding="utf-8")
 
     print(f"{len(files)} bestanden, {len(mds)} markdown-pagina's -> {OUT}")
