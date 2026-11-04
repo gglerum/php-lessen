@@ -1,0 +1,41 @@
+title: PHP Development Course
+description: 39 weken PHP, van beginner tot architect
+url: https://gglerum.github.io
+baseurl: /php-lessen
+
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+  - jekyll-relative-links
+  - jekyll-readme-index
+  - jekyll-titles-from-headings
+
+relative_links:
+  enabled: true
+  collections: false
+
+titles_from_headings:
+  enabled: true
+  strip_title: false
+  collections: false
+
+search_enabled: true
+heading_anchors: true
+color_scheme: light
+nav_external_links:
+  - title: Bron op GitHub
+    url: https://github.com/gglerum/php-lessen
+
+# Lesmateriaal bevat PHP/Blade-voorbeelden met {{ }} en {% %}: niet door Liquid halen.
+defaults:
+  - scope:
+      path: ""
+    values:
+      render_with_liquid: false
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - scripts
+  - vendor
+  - node_modules

@@ -11,3 +11,9 @@ Vagrantfile
 .idea
 **/.vscode
 .php-cs-fixer.cache
+
+# Jekyll build
+_site_src/
+_site/
+.jekyll-cache/
+Gemfile.lock

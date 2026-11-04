@@ -1,14 +1,13 @@
-name: Labs publiceren
+name: Site publiceren
 
-# Publiceert alleen de map met de labs op GitHub Pages.
-# De labs zijn statische pagina's (HTML, CSS en JavaScript), er is geen PHP of build-stap nodig.
+# Publiceert het hele lespakket (alle Markdown-lessen, voorbeeldcode en de interactieve labs)
+# als Jekyll-site met het just-the-docs thema op GitHub Pages.
+# scripts/prepare-site.py zet front matter op de Markdown in een build-kopie (_site_src),
+# zodat de bronbestanden onaangeroerd blijven.
 
 on:
   push:
     branches: [main]
-    paths:
-      - "Part 1 (week 1 to 13)/04 - OOP 1/example/stack_and_heap/lab/**"
-      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -22,16 +21,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Front matter en navigatie genereren
+        run: python3 scripts/prepare-site.py
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./_site_src
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v3
+
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: "Part 1 (week 1 to 13)/04 - OOP 1/example/stack_and_heap/lab"
       - id: deployment
         uses: actions/deploy-pages@v4
