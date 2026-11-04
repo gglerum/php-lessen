@@ -82,6 +82,8 @@ def add_callouts(body: str) -> str:
     for line in body.split("\n"):
         if line.lstrip().startswith(("```", "~~~")):
             flush()
+            if not in_code:  # taalnaam in kleine letters: Rouge herkent 'PHP' niet altijd
+                line = re.sub(r"^(\s*(?:```|~~~))(\w+)", lambda m: m.group(1) + m.group(2).lower(), line)
             in_code = not in_code
             out.append(line)
         elif in_code:

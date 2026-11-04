@@ -127,6 +127,32 @@ figure.highlight code {
   font-variant-ligatures: none;
 }
 
+// Vangnet: codeblokken zonder Rouge-wrapper (<pre><code class="language-PHP">)
+.main-content pre:not(.highlight) {
+  margin: 1.5rem 0;
+  padding: 1.1rem 1.2rem;
+  background: $code-bg;
+  color: $code-fg;
+  border-radius: 8px;
+  border-left: 4px solid $accent;
+  box-shadow: 0 2px 10px rgba(20, 24, 40, 0.18);
+  overflow-x: auto;
+  font-family: $mono;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  font-variant-ligatures: none;
+
+  > code {
+    font-family: inherit;
+    font-size: inherit;
+    background: transparent;
+    color: inherit;
+    border: 0;
+    padding: 0;
+    white-space: pre;
+  }
+}
+
 // Syntax highlighting (Rouge) in een donker palet
 .highlight {
   .c, .cm, .c1, .cs, .cp, .cd { color: #7e879f; font-style: italic; }
