@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 1: Wat erft een object?</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 1: Wat erft een object?</h1>
+    <p class="muted">Volg een programma regel voor regel. Je ziet welke properties een object van een parent krijgt, hoe de constructors van parent en child samenwerken en wat een override doet. Bij elke property staat in welke class hij is gedeclareerd.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @dmg") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'Een Player erft van Combatant',
+        intro: 'Het script begint in main. Boven het script staan twee classes: Combatant en Player, die van Combatant erft. Druk op Afspelen of op Verder.',
+        members: MEMBERS_EXTENDS,
+        code: LISTING_COMBATANT + '\n' + LISTING_PLAYER + `
+$player = new Player("Aragorn", 100, 5); // @new
+$player->takeDamage(20); // @dmg
+$player->levelUp(); // @lvl
+echo $player->getHealth(); // @echo`,
+        steps: [
+            ...inheritedCtorSteps('new', 'Player', 'o1', 'player', 'Aragorn', 100, 5, { experiencePoints: 0 }, 'Player'),
+            { at: 'dmg', say: 'takeDamage(20) staat niet in Player. PHP zoekt in de parent en vindt de method in Combatant. $this is het Player object.', ops: [['push', 'Combatant::takeDamage()', { this: ref('o1'), damage: 20 }]] },
+            { at: 'c-dmg', say: '20 schade min 5 armor is 15. health wordt 100 - 15 = 85. De method werkt op de property uit Combatant, die in het Player object zit.', ops: [['prop', 'o1', 'health', 85]] },
+            { at: 'dmg', say: 'takeDamage() is klaar en zijn frame verdwijnt.', ops: [['pop']] },
+            { at: 'lvl', say: 'levelUp() staat wel in Player zelf.', ops: [['push', 'Player::levelUp()', { this: ref('o1') }]] },
+            { at: 'c-lvl', say: 'Alleen Player heeft experiencePoints, dus alleen daar kan deze method iets mee.', ops: [['prop', 'o1', 'experiencePoints', 100]] },
+            { at: 'lvl', say: 'levelUp() is klaar.', ops: [['pop']] },
+            ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 85, '85'),
+        ],
+    },
+    {
+        title: 'De constructor van de parent',
+        intro: 'Npc heeft een extra property en dus een eigen constructor. Let op wat er op de stack gebeurt bij parent::__construct(). Druk op Afspelen of op Verder.',
+        members: MEMBERS_PARENT_CTOR,
+        code: LISTING_COMBATANT_CTOR + '\n' + LISTING_NPC + `
+$npc = new Npc("Bob", 40, 0, "Welkom in de Rode Draak!"); // @new
+echo $npc->talk(); // @echo`,
+        steps: [
+            ...childCtorSteps({ at: 'new', cls: 'Npc', id: 'o1', varName: 'npc', name: 'Bob', health: 40, armorRating: 0, extraProp: 'dialogue', extraValue: 'Welkom in de Rode Draak!' }),
+            ...getterSteps('echo', 'c-talk', 'Npc::talk()', 'o1', 'Welkom in de Rode Draak!', 'Welkom in de Rode Draak!'),
+        ],
+    },
+    {
+        title: 'Een method overschrijven',
+        intro: 'Enemy overschrijft takeDamage() en gebruikt parent::takeDamage() voor het rekenwerk. Let op welke versie van de method wanneer draait. Druk op Afspelen of op Verder.',
+        members: MEMBERS_OVERRIDE,
+        code: LISTING_COMBATANT + '\n' + LISTING_ENEMY + `
+$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
+$enemy->takeDamage(12); // @dmg
+echo $enemy->getHealth(); // @echo`,
+        steps: [
+            ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+            { at: 'dmg', say: 'Enemy heeft zelf een takeDamage(). PHP gebruikt die en niet de versie van Combatant: de method is overschreven.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+            { at: 'c-eparent', say: 'parent::takeDamage() voert de versie van Combatant uit, met hetzelfde object als $this. Het rekenwerk hoeven we niet te kopiëren.', ops: [['push', 'Combatant::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+            { at: 'c-dmg', say: '12 schade min 2 armor is 10. health wordt 10 - 10 = 0.', ops: [['prop', 'o1', 'health', 0]] },
+            { at: 'c-eparent', say: 'De parent is klaar en zijn frame verdwijnt. We zijn terug in Enemy::takeDamage() en gaan verder met wat Enemy zelf toevoegt.', ops: [['pop']] },
+            { at: 'c-eif', say: 'Is health <= 0? 0 <= 0, dus ja.', ops: [] },
+            { at: 'c-eecho', say: 'Alleen een Enemy toont dit bericht en laat zijn loot vallen. Een Player of Npc doet dit niet.', ops: [['echo', 'Goblin is verslagen en laat een dolk vallen']] },
+            { at: 'dmg', say: 'Enemy::takeDamage() is klaar.', ops: [['pop']] },
+            ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 0, '0'),
+        ],
+    },
+    {
+        title: 'Een boom van parents',
+        intro: 'Dit is de keten uit het diagram: Player, Combatant, Participant en Entity. Let op hoe de stack groeit en weer kleiner wordt. Druk op Afspelen of op Verder.',
+        members: MEMBERS_TREE,
+        code: LISTING_TREE + `
+$player = new Player("Aragorn", 1, 20, 100, 5); // @new
+echo $player->getName(); // @echo`,
+        steps: [
+            {
+                at: 'new',
+                say: 'new Player maakt een object met de properties van alle vier de classes. Player heeft geen eigen constructor, dus PHP zoekt omhoog en start die van Combatant.',
+                ops: [
+                    ['new', 'o1', 'Player',
+                        { name: null, rank: null, dice: null, health: null, armorRating: null, experiencePoints: 0 },
+                        { name: 'Entity', rank: 'Entity', dice: 'Participant', health: 'Combatant', armorRating: 'Combatant', experiencePoints: 'Player' }],
+                    ['push', 'Combatant::__construct()', { this: ref('o1'), name: 'Aragorn', rank: 1, dice: 20, health: 100, armorRating: 5 }],
+                ],
+            },
+            { at: 'c-cparent', say: 'Combatant roept zijn parent aan met de argumenten die Participant nodig heeft.', ops: [['push', 'Participant::__construct()', { this: ref('o1'), name: 'Aragorn', rank: 1, dice: 20 }]] },
+            { at: 'c-pparent', say: 'Participant roept op zijn beurt Entity aan. Drie constructors staan nu op de stack.', ops: [['push', 'Entity::__construct()', { this: ref('o1'), name: 'Aragorn', rank: 1 }]] },
+            { at: 'c-name', say: 'Entity is de bovenste class en zet als eerste zijn properties.', ops: [['prop', 'o1', 'name', 'Aragorn']] },
+            { at: 'c-rank', say: 'De property rank.', ops: [['prop', 'o1', 'rank', 1]] },
+            { at: 'c-pparent', say: 'Entity is klaar en zijn frame verdwijnt. We zijn terug in Participant.', ops: [['pop']] },
+            { at: 'c-dice', say: 'Participant zet wat alleen hij heeft: dice.', ops: [['prop', 'o1', 'dice', 20]] },
+            { at: 'c-cparent', say: 'Participant is klaar. We zijn terug in Combatant.', ops: [['pop']] },
+            { at: 'c-health', say: 'Combatant zet zijn eigen properties.', ops: [['prop', 'o1', 'health', 100]] },
+            { at: 'c-armor', say: 'De property armorRating.', ops: [['prop', 'o1', 'armorRating', 5]] },
+            { at: 'new', say: 'Alle constructors zijn klaar. Het object heeft waarden voor alle properties uit de hele keten, en $player wijst ernaar.', ops: [['pop'], ['set', 'player', ref('o1')]] },
+            ...getterSteps('echo', 'c-get', 'Entity::getName()', 'o1', 'Aragorn', 'Aragorn'),
+        ],
+    },
+];
+
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members, 'De onderdelen');
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 3: Zoek de fout</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 3: Zoek de fout</h1>
+    <p class="muted">Elk script doet iets anders dan bedoeld. Bekijk de code, beantwoord de vraag en volg daarna het programma stap voor stap om te zien waar het misgaat. Met de knop Gecorrigeerd zie je de oplossing.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="variants" id="variants" role="group" aria-label="Versie van het script" hidden>
+                <button type="button" class="secondary" data-variant="bug" aria-pressed="true">Met de fout</button>
+                <button type="button" class="secondary" data-variant="fixed" aria-pressed="false">Gecorrigeerd</button>
+            </div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @dmg") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'De naam bestaat niet',
+        intro: 'Een Npc moet een naam hebben. Verwacht: "Bob". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: MEMBERS_NPC_BUG,
+        code: LISTING_COMBATANT_CTOR + '\n' + LISTING_NPC_BUG + `
+$npc = new Npc("Bob", 40, 0, "Welkom!"); // @new
+echo $npc->getName(); // @echo`,
+        steps: [
+            { at: 'new', say: 'new maakt een object. Npc heeft een eigen constructor, dus die start. De properties name, health en armorRating zijn nog leeg.', ops: [['new', 'o1', 'Npc', { name: null, health: null, armorRating: null, dialogue: null }, { name: 'Combatant', health: 'Combatant', armorRating: 'Combatant', dialogue: 'Npc' }], ['push', 'Npc::__construct()', { this: ref('o1'), name: 'Bob', health: 40, armorRating: 0, dialogue: 'Welkom!' }]] },
+            { at: 'c-extra', say: 'De constructor zet alleen dialogue. Er staat geen parent::__construct(), dus de constructor van Combatant wordt nooit gestart. name, health en armorRating blijven leeg.', ops: [['prop', 'o1', 'dialogue', 'Welkom!']] },
+            { at: 'new', say: 'De constructor is klaar. $npc wijst naar het object, dat maar voor een deel is ingevuld.', ops: [['pop'], ['set', 'npc', ref('o1')]] },
+            { at: 'echo', say: 'getName() staat in Combatant en wordt aangeroepen op het object.', ops: [['push', 'Combatant::getName()', { this: ref('o1') }]] },
+            { at: 'c-get', say: 'De method leest de property name, maar die heeft nooit een waarde gekregen. Omdat de property een type heeft, geeft PHP een Error en stopt het script.', ops: [['fatal', 'Typed property Combatant::$name must not be accessed before initialization']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: de constructor van Npc roept parent::__construct() aan. Verwacht: "Bob".',
+            code: LISTING_COMBATANT_CTOR + '\n' + LISTING_NPC + `
+$npc = new Npc("Bob", 40, 0, "Welkom!"); // @new
+echo $npc->getName(); // @echo`,
+            steps: [
+                ...childCtorSteps({ at: 'new', cls: 'Npc', id: 'o1', varName: 'npc', name: 'Bob', health: 40, armorRating: 0, extraProp: 'dialogue', extraValue: 'Welkom!' }),
+                ...getterSteps('echo', 'c-get', 'Combatant::getName()', 'o1', 'Bob', 'Bob'),
+            ],
+        },
+    },
+    {
+        title: 'De health is verdwenen',
+        intro: 'Player::describe() moet de health van de speler tonen. Verwacht: "Health: 100". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: MEMBERS_PRIVATE_BUG,
+        code: LISTING_PRIVATE_COMBATANT + `
+$player = new Player("Aragorn", 100, 5); // @new
+echo $player->describe(); // @echo`,
+        steps: [
+            ...inheritedCtorSteps('new', 'Player', 'o1', 'player', 'Aragorn', 100, 5),
+            { at: 'echo', say: 'describe() staat in Player zelf. $this is het Player object.', ops: [['push', 'Player::describe()', { this: ref('o1') }]] },
+            { at: 'c-describe', say: 'health is private in Combatant. Het zit wel in het object, maar voor code in Player bestaat het niet. PHP geeft een waarschuwing en gebruikt een lege waarde.', ops: [['warn', 'Undefined property: Player::$health'], ['ret', 'Health: ']] },
+            { at: 'echo', say: 'Het script toont "Health: " zonder getal.', ops: [['pop'], ['echo', 'Health: ']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: in Combatant staan de properties op protected. Verwacht: "Health: 100".',
+            code: LISTING_PROTECTED_COMBATANT + `
+$player = new Player("Aragorn", 100, 5); // @new
+echo $player->describe(); // @echo`,
+            steps: [
+                ...inheritedCtorSteps('new', 'Player', 'o1', 'player', 'Aragorn', 100, 5),
+                { at: 'echo', say: 'describe() staat in Player zelf. $this is het Player object.', ops: [['push', 'Player::describe()', { this: ref('o1') }]] },
+                { at: 'c-describe', say: 'health is protected: Player erft de property en mag er bij. De method geeft "Health: 100" terug.', ops: [['ret', 'Health: 100']] },
+                { at: 'echo', say: 'Het script toont "Health: 100".', ops: [['pop'], ['echo', 'Health: 100']] },
+            ],
+        },
+    },
+    {
+        title: 'De vijand gaat nooit dood',
+        intro: 'Een Goblin met 10 health krijgt een klap van 12. Verwacht: de melding dat hij verslagen is en "Health: 0". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: MEMBERS_ENEMY_BUG,
+        code: LISTING_COMBATANT + '\n' + LISTING_ENEMY_BUG + `
+$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
+$enemy->takeDamage(12); // @dmg
+echo "Health: " . $enemy->getHealth(); // @echo`,
+        steps: [
+            ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+            { at: 'dmg', say: 'Enemy overschrijft takeDamage(), dus PHP gebruikt de versie van Enemy.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+            { at: 'c-eif', say: 'Is health <= 0? health is nog 10, dus nee. Er staat geen parent::takeDamage(), dus de schade is niet berekend.', ops: [] },
+            { at: 'dmg', say: 'De method is klaar. Er is niets gebeurd: geen schade en geen melding.', ops: [['pop']] },
+            ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 10, 'Health: 10'),
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: Enemy::takeDamage() roept eerst parent::takeDamage() aan. Verwacht: de melding en "Health: 0".',
+            code: LISTING_COMBATANT + '\n' + LISTING_ENEMY + `
+$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
+$enemy->takeDamage(12); // @dmg
+echo "Health: " . $enemy->getHealth(); // @echo`,
+            steps: [
+                ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+                { at: 'dmg', say: 'Enemy overschrijft takeDamage(), dus PHP gebruikt de versie van Enemy.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+                { at: 'c-eparent', say: 'parent::takeDamage() voert de versie van Combatant uit.', ops: [['push', 'Combatant::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+                { at: 'c-dmg', say: '12 schade min 2 armor is 10. health wordt 10 - 10 = 0.', ops: [['prop', 'o1', 'health', 0]] },
+                { at: 'c-eparent', say: 'Terug in Enemy::takeDamage().', ops: [['pop']] },
+                { at: 'c-eif', say: 'Is health <= 0? 0 <= 0, dus ja.', ops: [] },
+                { at: 'c-eecho', say: 'De melding wordt getoond.', ops: [['echo', 'Goblin is verslagen en laat een dolk vallen']] },
+                { at: 'dmg', say: 'Enemy::takeDamage() is klaar.', ops: [['pop']] },
+                ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 0, 'Health: 0'),
+            ],
+        },
+    },
+];
+
+const quizzes = [
+    {
+        question: 'Waarom geeft PHP een Error bij getName()?',
+        options: [
+            ['getName() staat in Combatant, dus een Npc kan hem niet gebruiken.', 'Nee: een Npc erft alle public methods van Combatant. De method wordt gewoon gevonden.'],
+            ['De constructor van Npc vervangt die van Combatant en roept hem niet aan, dus name is nooit gezet.', 'Klopt. Een eigen constructor vervangt die van de parent. Met parent::__construct() zet je de properties van de parent alsnog.'],
+            ['De property name is private.', 'Nee: name is protected. Het probleem is dat de property nooit een waarde heeft gekregen.'],
+        ],
+        correct: 1,
+    },
+    {
+        question: 'Waarom is health in Player::describe() leeg?',
+        options: [
+            ['Player erft geen properties van Combatant.', 'Nee: de property zit wel in het object (je ziet hem in het geheugen), alleen kan Player er niet bij.'],
+            ['De property is private in Combatant. Een child kan een private property van de parent niet gebruiken.', 'Klopt. Met protected kan de child er wel bij en de buitenwereld niet.'],
+            ['De constructor is niet aangeroepen.', 'Nee: de constructor van Combatant draait gewoon en zet health op 100.'],
+        ],
+        correct: 1,
+    },
+    {
+        question: 'Waarom blijft de health van de Goblin 10?',
+        options: [
+            ['Enemy::takeDamage() vervangt de method van Combatant en roept parent::takeDamage() niet aan, dus de schade wordt nooit berekend.', 'Klopt. Een override vervangt de method van de parent. Wil je het gedrag van de parent houden, dan roep je hem zelf aan met parent::.'],
+            ['De armor van de Goblin is te hoog.', 'Nee: 12 schade min 2 armor is 10, dat zou genoeg zijn. Alleen wordt dit nooit berekend.'],
+            ['De Goblin heeft loot en is daarom onkwetsbaar.', 'Nee: de loot heeft hier niets mee te maken.'],
+        ],
+        correct: 0,
+    },
+];
+
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members, 'De onderdelen');
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+
+const quizForm = document.getElementById('quiz');
+
+function renderQuiz() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const index = n >= 1 && n <= quizzes.length ? n - 1 : 0;
+    const quiz = quizzes[index];
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = quiz.question;
+    fieldset.append(legend);
+
+    quiz.options.forEach(([text], i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const i = parseInt(chosen.value, 10);
+            const isCorrect = i === quiz.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect ? 'Goed.' : 'Niet helemaal.';
+            box.append(strong, quiz.options[i][1]);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', renderQuiz);
+
+renderQuiz();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

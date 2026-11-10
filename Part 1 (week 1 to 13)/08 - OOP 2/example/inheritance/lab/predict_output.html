@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 2: Wat gebeurt er?</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main>
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 2: Wat gebeurt er?</h1>
+    <p class="muted">Hieronder staan vier classes die van elkaar erven. Lees de code, kies wat je denkt dat er gebeurt en controleer je antwoord. Daarna lees je waarom.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+
+    <details class="classpanel" open>
+        <summary>De classes die in alle scenario's worden gebruikt</summary>
+        <pre><code>class Combatant
+{
+    protected string $name;
+    protected int $health;
+    protected int $armorRating;
+
+    public function __construct(string $name, int $health, int $armorRating)
+    {
+        $this-&gt;name = $name;
+        $this-&gt;health = $health;
+        $this-&gt;armorRating = $armorRating;
+    }
+
+    public function getHealth(): int
+    {
+        return $this-&gt;health;
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        $this-&gt;health = $this-&gt;health - max(0, $damage - $this-&gt;armorRating);
+    }
+
+    public function describe(): string
+    {
+        return $this-&gt;name . " (" . $this-&gt;health . " health)";
+    }
+}
+
+class Player extends Combatant
+{
+    private int $experiencePoints = 0;
+
+    public function levelUp(): void
+    {
+        $this-&gt;experiencePoints = $this-&gt;experiencePoints + 100;
+    }
+}
+
+class Npc extends Combatant
+{
+    private string $dialogue;
+
+    public function __construct(string $name, int $health, int $armorRating, string $dialogue)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this-&gt;dialogue = $dialogue;
+    }
+
+    public function describe(): string
+    {
+        return $this-&gt;name . " zegt: \"" . $this-&gt;dialogue . "\"";
+    }
+}
+
+class Enemy extends Combatant
+{
+    private string $loot;
+
+    public function __construct(string $name, int $health, int $armorRating, string $loot)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this-&gt;loot = $loot;
+    }
+
+    public function describe(): string
+    {
+        return parent::describe() . " en heeft " . $this-&gt;loot . " bij zich";
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        parent::takeDamage($damage);
+
+        if ($this-&gt;health &lt;= 0) {
+            echo $this-&gt;name . " is verslagen en laat " . $this-&gt;loot . " vallen
+";
+        }
+    }
+}</code></pre>
+        <p class="muted">De scenario's staan in een script met <code>declare(strict_types=1);</code>.</p>
+    </details>
+
+    <h2 id="title"></h2>
+    <pre><code id="code"></code></pre>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="controls">
+        <a class="button secondary" id="previous" href="#">Vorige</a>
+        <a class="button" id="next" href="#">Volgend scenario</a>
+    </div>
+</main>
+
+<script>
+// De uitkomsten zijn vooraf bepaald. Controleer ze met: php verify_lab2.php
+const scenarios = [
+    {
+        title: 'Een method van de parent gebruiken',
+        question: 'Wat toont het script?',
+        code: `$player = new Player("Aragorn", 100, 5);
+$player->takeDamage(20);
+echo $player->getHealth();`,
+        options: ['80', '85', 'PHP geeft een Error, want Player heeft geen takeDamage()'],
+        correct: 1,
+        why: 'Player heeft geen eigen takeDamage() en geen eigen constructor, dus PHP gebruikt die van Combatant. 20 schade min 5 armor is 15, dus health wordt 85.',
+    },
+    {
+        title: 'Een method die vervangen is',
+        question: 'Wat toont het script?',
+        code: `$npc = new Npc("Bob", 40, 0, "Hallo");
+echo $npc->describe();`,
+        options: ['Bob (40 health)', 'Bob zegt: "Hallo"', 'Bob (40 health) en daarna Bob zegt: "Hallo"'],
+        correct: 1,
+        why: 'Npc overschrijft describe() en gebruikt parent::describe() niet. De versie van Combatant wordt dus niet uitgevoerd. Het script toont alleen de tekst van Npc.',
+    },
+    {
+        title: 'Een method die wordt uitgebreid',
+        question: 'Wat toont het script?',
+        code: `$enemy = new Enemy("Goblin", 30, 2, "een dolk");
+echo $enemy->describe();`,
+        options: ['Goblin (30 health)', 'Goblin (30 health) en heeft een dolk bij zich', 'Goblin en heeft een dolk bij zich'],
+        correct: 1,
+        why: 'Enemy::describe() roept parent::describe() aan en voegt er tekst aan toe. Het resultaat van Combatant ("Goblin (30 health)") staat dus ook in de uitvoer, met de uitbreiding erachter.',
+    },
+    {
+        title: 'Een protected property lezen',
+        question: 'Wat gebeurt er met de tweede regel?',
+        code: `$player = new Player("Aragorn", 100, 5);
+echo $player->health;`,
+        options: ['Het script toont 100', 'Het script toont niets', 'PHP geeft een Error'],
+        correct: 2,
+        why: 'health is protected: alleen Combatant en de classes die van Combatant erven kunnen erbij. Het script staat daarbuiten, dus PHP geeft een Error: "Cannot access protected property Player::$health". Gebruik getHealth().',
+    },
+    {
+        title: 'Een override met parent::',
+        question: 'Wat toont het script? Elke echo eindigt met een nieuwe regel.',
+        code: `$enemy = new Enemy("Goblin", 30, 2, "een dolk");
+
+$enemy->takeDamage(10);
+echo $enemy->getHealth() . "\\n";
+
+$enemy->takeDamage(50);
+echo $enemy->getHealth() . "\\n";`,
+        options: ['22 en daarna -26', '22, daarna de melding "Goblin is verslagen en laat een dolk vallen" en daarna -26', '22 en daarna 0, want health gaat nooit onder 0'],
+        correct: 1,
+        why: 'De eerste aanroep: 10 schade min 2 armor is 8, dus health wordt 22. De tweede: 50 min 2 is 48, dus health wordt -26 (er is geen minimum). Omdat health nu <= 0 is, toont Enemy::takeDamage() de melding voordat het script de health toont.',
+    },
+    {
+        title: 'Een constructor die de parent vervangt',
+        question: 'Wat gebeurt er met deze regel?',
+        code: `$npc = new Npc("Bob", 40, 0);`,
+        options: ['Er ontstaat een Npc zonder dialoog', 'PHP geeft een ArgumentCountError', 'PHP gebruikt de constructor van Combatant, want daar zijn drie argumenten genoeg'],
+        correct: 1,
+        why: 'Npc heeft een eigen constructor met vier verplichte parameters. Die vervangt de constructor van Combatant, ook als je er maar drie meegeeft. Het vierde argument ontbreekt, dus PHP geeft een ArgumentCountError.',
+    },
+];
+
+const steps = document.getElementById('steps');
+const title = document.getElementById('title');
+const code = document.getElementById('code');
+const quizForm = document.getElementById('quiz');
+const previous = document.getElementById('previous');
+const next = document.getElementById('next');
+
+// het scenario staat in de URL (#3), zodat verversen en links delen werken
+function currentIndex() {
+    const number = parseInt(location.hash.replace('#', ''), 10);
+    return number >= 1 && number <= scenarios.length ? number - 1 : 0;
+}
+
+function show() {
+    const index = currentIndex();
+    const scenario = scenarios[index];
+
+    steps.replaceChildren();
+    scenarios.forEach((item, i) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + (i + 1);
+        a.textContent = String(i + 1);
+        a.setAttribute('aria-label', `Scenario ${i + 1}: ${item.title}`);
+        if (i === index) a.setAttribute('aria-current', 'step');
+        li.append(a);
+        steps.append(li);
+    });
+
+    title.textContent = `Scenario ${index + 1} van ${scenarios.length}: ${scenario.title}`;
+    code.textContent = scenario.code;
+
+    previous.hidden = index === 0;
+    previous.href = '#' + index;
+    next.hidden = index === scenarios.length - 1;
+    next.href = '#' + (index + 2);
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = scenario.question;
+    fieldset.append(legend);
+
+    scenario.options.forEach((text, i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const isCorrect = parseInt(chosen.value, 10) === scenario.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect
+                ? `Goed: ${scenario.options[scenario.correct]}.`
+                : `Niet helemaal. Het antwoord is: ${scenario.options[scenario.correct]}.`;
+            box.append(strong, scenario.why);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', show);
+show();
+</script>
+</body>
+</html>

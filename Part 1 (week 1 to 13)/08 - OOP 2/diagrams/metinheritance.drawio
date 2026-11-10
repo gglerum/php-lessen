@@ -1,0 +1,154 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="consistent_inheritance_tree" name="Exact Matched Inheritance Tree">
+    <mxGraphModel dx="1241" dy="635" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c_entity" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" value="Entity" vertex="1">
+          <mxGeometry height="70" width="180" x="680" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="c_entity_attr" parent="c_entity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- name&#xa;- rank" vertex="1">
+          <mxGeometry height="44" width="180" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_participant" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Participant" vertex="1">
+          <mxGeometry height="90" width="180" x="400" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c_participant_attr" parent="c_participant" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- dice" vertex="1">
+          <mxGeometry height="26" width="180" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_participant_sep" parent="c_participant" style="line;strokeWidth=1;fillColor=none;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry height="8" width="180" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c_participant_meth" parent="c_participant" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ roll_dice()" vertex="1">
+          <mxGeometry height="30" width="180" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c_location" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="Location" vertex="1">
+          <mxGeometry height="90" width="180" x="960" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c_location_attr" parent="c_location" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- size" vertex="1">
+          <mxGeometry height="26" width="180" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_location_sep" parent="c_location" style="line;strokeWidth=1;fillColor=none;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="8" width="180" y="52" as="geometry" />
+        </mxCell>
+        <mxCell id="c_location_meth" parent="c_location" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ enter()" vertex="1">
+          <mxGeometry height="30" width="180" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c_dm" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;" value="DungeonMaster" vertex="1">
+          <mxGeometry height="104" width="190" x="180" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="c_dm_attr" parent="c_dm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- books&#xa;- campaign notes" vertex="1">
+          <mxGeometry height="40" width="190" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_dm_sep" parent="c_dm" style="line;strokeWidth=1;fillColor=none;strokeColor=#d6b656;" value="" vertex="1">
+          <mxGeometry height="8" width="190" y="66" as="geometry" />
+        </mxCell>
+        <mxCell id="c_dm_meth" parent="c_dm" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ trigger_event()" vertex="1">
+          <mxGeometry height="30" width="190" y="74" as="geometry" />
+        </mxCell>
+        <mxCell id="c_combatant" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Combatant" vertex="1">
+          <mxGeometry height="104" width="190" x="500" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="c_combatant_attr" parent="c_combatant" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- health&#xa;- armor rating" vertex="1">
+          <mxGeometry height="40" width="190" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_combatant_sep" parent="c_combatant" style="line;strokeWidth=1;fillColor=none;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry height="8" width="190" y="66" as="geometry" />
+        </mxCell>
+        <mxCell id="c_combatant_meth" parent="c_combatant" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ take_damage()" vertex="1">
+          <mxGeometry height="30" width="190" y="74" as="geometry" />
+        </mxCell>
+        <mxCell id="c_dungeon" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Dungeon" vertex="1">
+          <mxGeometry height="104" width="180" x="870" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="c_dungeon_attr" parent="c_dungeon" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- enemies&#xa;- traps" vertex="1">
+          <mxGeometry height="40" width="180" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_dungeon_sep" parent="c_dungeon" style="line;strokeWidth=1;fillColor=none;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry height="8" width="180" y="66" as="geometry" />
+        </mxCell>
+        <mxCell id="c_dungeon_meth" parent="c_dungeon" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ trigger_trap()" vertex="1">
+          <mxGeometry height="30" width="180" y="74" as="geometry" />
+        </mxCell>
+        <mxCell id="c_town" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Town" vertex="1">
+          <mxGeometry height="104" width="180" x="1090" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="c_town_attr" parent="c_town" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- npcs&#xa;- shops" vertex="1">
+          <mxGeometry height="40" width="180" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_town_sep" parent="c_town" style="line;strokeWidth=1;fillColor=none;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry height="8" width="180" y="66" as="geometry" />
+        </mxCell>
+        <mxCell id="c_town_meth" parent="c_town" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ rest_party()" vertex="1">
+          <mxGeometry height="30" width="180" y="74" as="geometry" />
+        </mxCell>
+        <mxCell id="c_player" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Player&#xa;" vertex="1">
+          <mxGeometry height="124" width="190" x="270" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="c_player_attr" parent="c_player" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- inventory&#xa;- experience points" vertex="1">
+          <mxGeometry height="40" width="190" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_player_sep" parent="c_player" style="line;strokeWidth=1;fillColor=none;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="8" width="190" y="66" as="geometry" />
+        </mxCell>
+        <mxCell id="c_player_meth" parent="c_player" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ attack()&#xa;+ level_up()" vertex="1">
+          <mxGeometry height="50" width="190" y="74" as="geometry" />
+        </mxCell>
+        <mxCell id="c_npc" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="Npc" vertex="1">
+          <mxGeometry height="124" width="190" x="500" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="c_npc_attr" parent="c_npc" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- dialogue&#xa;- quest" vertex="1">
+          <mxGeometry height="40" width="190" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="c_npc_sep" parent="c_npc" style="line;strokeWidth=1;fillColor=none;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="8" width="190" y="66" as="geometry" />
+        </mxCell>
+        <mxCell id="c_npc_meth" parent="c_npc" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ talk()&#xa;+ offer_quest()" vertex="1">
+          <mxGeometry height="50" width="190" y="74" as="geometry" />
+        </mxCell>
+        <mxCell id="c_enemy" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;" value="Enemy" vertex="1">
+          <mxGeometry height="192" width="190" x="730" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="c_enemy_attr" parent="c_enemy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- dialogue&#xa;- loot&#xa;- threat level" vertex="1">
+          <mxGeometry height="54" width="190" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="QWDlEsw7gikhAT0TkWim-1" parent="c_enemy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="- dialogue&#xa;- loot&#xa;- threat level" vertex="1">
+          <mxGeometry height="54" width="190" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="c_enemy_sep" parent="c_enemy" style="line;strokeWidth=1;fillColor=none;strokeColor=#b85450;" value="" vertex="1">
+          <mxGeometry height="8" width="190" y="134" as="geometry" />
+        </mxCell>
+        <mxCell id="c_enemy_meth" parent="c_enemy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;" value="+ attack()&#xa;- talk()&#xa;+ drop_loot()" vertex="1">
+          <mxGeometry height="50" width="190" y="142" as="geometry" />
+        </mxCell>
+        <mxCell id="e_part_ent" edge="1" parent="1" source="c_participant" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_entity">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_loc_ent" edge="1" parent="1" source="c_location" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_entity">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_dm_part" edge="1" parent="1" source="c_dm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_participant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_comb_part" edge="1" parent="1" source="c_combatant" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_participant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_dung_loc" edge="1" parent="1" source="c_dungeon" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_location">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_town_loc" edge="1" parent="1" source="c_town" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_location">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_play_comb" edge="1" parent="1" source="c_player" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.2;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_combatant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_npc_comb" edge="1" parent="1" source="c_npc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_combatant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_enemy_comb" edge="1" parent="1" source="c_enemy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.8;entryY=1;entryDx=0;entryDy=0;endArrow=block;endFill=0;strokeWidth=1.5;" target="c_combatant">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
