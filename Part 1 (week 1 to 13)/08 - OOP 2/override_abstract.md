@@ -316,7 +316,7 @@ Waarom dit zo handig is, zie je in de volgende les bij polymorfisme.
 
 Een paar onderwerpen uit de PHP documentatie die hier aansluiten, maar bewust voor later zijn:
 - **Property hooks, asymmetrische zichtbaarheid (`private(set)`) en abstracte properties.** Dit zijn mogelijkheden van PHP 8.4 en nieuwer. Een property hook vervangt de getters en setters uit OOP 1 door code die direct bij de property staat, en een child kan zo'n hook overschrijven met `parent::$naam::get()`. Dat is een onderwerp op zich, dat pas zin heeft als de basis van getters en overerving er goed in zit. Dat komt in OOP 3 aan bod.
-- **Interfaces.** Een interface is net als een abstracte class een contract voor methods, maar dan zonder code. Dit komt in de volgende les, samen met polymorfisme.
+- **Interfaces.** Een interface is net als een abstracte class een contract voor methods, maar dan zonder code. Dit komt in OOP 3.
 - **Constanten in classes**, inclusief `final` constanten (PHP 8.1), horen bij OOP 3.
 - **Traits**, een andere manier om code te hergebruiken, horen ook bij OOP 3.
 

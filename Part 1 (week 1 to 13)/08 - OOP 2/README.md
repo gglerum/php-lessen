@@ -9,5 +9,7 @@ In [inheritance.md](./inheritance.md) bouwen we voort op de classes uit OOP 1. W
 
 In [override_abstract.md](./override_abstract.md) kijken we hoe een child een method van zijn parent overschrijft (met en zonder `parent::`) en wat een abstracte class en een abstracte method zijn. De bijbehorende opgaven staan in [override_abstract_opgaven_1.md](./override_abstract_opgaven_1.md). Ook hier horen labs bij ([index.html](./example/override_abstract/lab/index.html)).
 
+In [polymorphism.md](./polymorphism.md) gebruiken we de abstracte `Combatant` als type: één functie die elke soort aankan, wat PHP weigert, `instanceof` en `?Combatant`. De bijbehorende opgaven staan in [polymorphism_opgaven_1.md](./polymorphism_opgaven_1.md). Ook hier horen labs bij ([index.html](./example/polymorphism/lab/index.html)).
+
 ## Huiswerk
 [Bibliotheek Systeem Deel 5](librarysystem.md)

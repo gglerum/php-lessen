@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 1: Polymorphism</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 1: Polymorphism</h1>
+    <p class="muted">Volg een programma regel voor regel. Je ziet wat er gebeurt als een functie een parent als type vraagt en een child krijgt: welke versie van attack() draait er en wat doet instanceof?</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @dmg") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'Eén functie voor elke soort',
+        intro: 'announce() vraagt een Combatant. We geven hem eerst een Player en daarna een Enemy. Let op welke attack() draait. Druk op Afspelen of op Verder.',
+        members: MEMBERS_ANNOUNCE,
+        code: LISTING_ABSTRACT + '\n' + LISTING_ANNOUNCE + `
+$player = new Player("Aragorn", 100, 5); // @new1
+$enemy = new Enemy("Goblin", 30, 2, 3); // @new2
+announce($player); // @call1
+announce($enemy); // @call2`,
+        steps: [
+            ...inheritedCtorSteps('new1', 'Player', 'o1', 'player', 'Aragorn', 100, 5, { experiencePoints: 100 }, 'Player'),
+            ...childCtorSteps({ at: 'new2', cls: 'Enemy', id: 'o2', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'threatLevel', extraValue: 3 }),
+            ...announceSteps({ at: 'call1', id: 'o1', cls: 'Player', name: 'Aragorn', damage: 20, attackLabel: 'c-pattack' }),
+            ...announceSteps({ at: 'call2', id: 'o2', cls: 'Enemy', name: 'Goblin', damage: 12, attackLabel: 'c-eattack' }),
+        ],
+    },
+    {
+        title: 'Twee Combatants',
+        intro: 'fight() vraagt twee Combatants: een aanvaller en een doelwit. Een Enemy valt een Player aan. Druk op Afspelen of op Verder.',
+        members: MEMBERS_FIGHT,
+        code: LISTING_ABSTRACT + '\n' + LISTING_FIGHT + `
+$enemy = new Enemy("Goblin", 30, 2, 3); // @new1
+$player = new Player("Aragorn", 100, 5); // @new2
+fight($enemy, $player); // @call
+echo $player->getHealth(); // @echo`,
+        steps: [
+            ...childCtorSteps({ at: 'new1', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'threatLevel', extraValue: 3 }),
+            ...inheritedCtorSteps('new2', 'Player', 'o2', 'player', 'Aragorn', 100, 5, { experiencePoints: 100 }, 'Player'),
+            { at: 'call', say: 'fight() krijgt twee objecten. Beide parameters hebben het type Combatant: de Enemy past (hij erft van Combatant) en de Player ook.', ops: [['push', 'fight()', { attacker: ref('o1'), target: ref('o2') }]] },
+            { at: 'f-hit', say: 'Eerst wordt $attacker->attack() uitgerekend. Het object is een Enemy, dus Enemy::attack() draait.', ops: [['push', 'Enemy::attack()', { this: ref('o1') }]] },
+            { at: 'c-eattack', say: '3 * 4 = 12.', ops: [['ret', 12]] },
+            { at: 'f-hit', say: 'Daarna roept $target->takeDamage(12) de method aan van het doelwit. takeDamage() staat in Combatant, dus voor een Player draait die.', ops: [['pop'], ['push', 'Combatant::takeDamage()', { this: ref('o2'), damage: 12 }]] },
+            { at: 'c-dmg', say: '12 schade min 5 armor is 7. health wordt 100 - 7 = 93.', ops: [['prop', 'o2', 'health', 93]] },
+            { at: 'f-hit', say: 'takeDamage() is klaar.', ops: [['pop']] },
+            { at: 'call', say: 'fight() is klaar en zijn frame verdwijnt.', ops: [['pop']] },
+            ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o2', 93, '93'),
+        ],
+    },
+    {
+        title: 'instanceof',
+        intro: 'showLoot() krijgt een Combatant, maar getLoot() bestaat alleen in Enemy. We controleren eerst met instanceof. Druk op Afspelen of op Verder.',
+        members: MEMBERS_INSTANCEOF,
+        code: LISTING_SHOW_CLASSES + '\n' + LISTING_SHOWLOOT + `
+$enemy = new Enemy("Goblin", 30, 2, "een dolk"); // @new1
+$player = new Player("Aragorn", 100, 5); // @new2
+showLoot($enemy); // @call1
+showLoot($player); // @call2`,
+        steps: [
+            ...childCtorSteps({ at: 'new1', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+            ...inheritedCtorSteps('new2', 'Player', 'o2', 'player', 'Aragorn', 100, 5),
+            ...showLootSteps({ at: 'call1', id: 'o1', cls: 'Enemy', name: 'Goblin', loot: 'een dolk' }),
+            ...showLootSteps({ at: 'call2', id: 'o2', cls: 'Player', name: 'Aragorn' }),
+        ],
+    },
+];
+
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members, 'De onderdelen');
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

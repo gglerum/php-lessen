@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 3: Zoek de fout</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 3: Zoek de fout</h1>
+    <p class="muted">Elk script doet iets anders dan bedoeld. Bekijk de code, beantwoord de vraag en volg daarna het programma stap voor stap om te zien waar het misgaat. Met de knop Gecorrigeerd zie je de oplossing.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="variants" id="variants" role="group" aria-label="Versie van het script" hidden>
+                <button type="button" class="secondary" data-variant="bug" aria-pressed="true">Met de fout</button>
+                <button type="button" class="secondary" data-variant="fixed" aria-pressed="false">Gecorrigeerd</button>
+            </div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @dmg") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'Een Potion is geen Combatant',
+        intro: 'Twee aanvallen: een Enemy en een Potion. Verwacht: twee regels. Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: MEMBERS_TYPEERROR,
+        code: LISTING_ABSTRACT + '\n' + LISTING_POTION + '\n' + LISTING_ANNOUNCE + `
+$enemy = new Enemy("Goblin", 30, 2, 3); // @new1
+$potion = new Potion(); // @new2
+announce($enemy); // @call1
+announce($potion); // @call2`,
+        steps: [
+            ...childCtorSteps({ at: 'new1', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'threatLevel', extraValue: 3 }),
+            { at: 'new2', say: 'new Potion() maakt een object. Een Potion erft niet van Combatant.', ops: [['new', 'o2', 'Potion', {}, {}], ['set', 'potion', ref('o2')]] },
+            ...announceSteps({ at: 'call1', id: 'o1', cls: 'Enemy', name: 'Goblin', damage: 12, attackLabel: 'c-eattack' }),
+            { at: 'call2', say: 'announce() vraagt een Combatant, maar een Potion is er geen. PHP controleert het type zodra je de functie aanroept: een TypeError, en de body van announce() wordt niet uitgevoerd. Het script stopt.', ops: [['fatal', 'TypeError: announce(): Argument #1 ($combatant) must be of type Combatant, Potion given']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: we geven een Player mee, die wel van Combatant erft. Verwacht: twee regels.',
+            code: LISTING_ABSTRACT + '\n' + LISTING_ANNOUNCE + `
+$enemy = new Enemy("Goblin", 30, 2, 3); // @new1
+$player = new Player("Aragorn", 100, 5); // @new2
+announce($enemy); // @call1
+announce($player); // @call2`,
+            steps: [
+                ...childCtorSteps({ at: 'new1', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'threatLevel', extraValue: 3 }),
+                ...inheritedCtorSteps('new2', 'Player', 'o2', 'player', 'Aragorn', 100, 5, { experiencePoints: 100 }, 'Player'),
+                ...announceSteps({ at: 'call1', id: 'o1', cls: 'Enemy', name: 'Goblin', damage: 12, attackLabel: 'c-eattack' }),
+                ...announceSteps({ at: 'call2', id: 'o2', cls: 'Player', name: 'Aragorn', damage: 20, attackLabel: 'c-pattack' }),
+            ],
+        },
+    },
+    {
+        title: 'getLoot() bestaat niet voor iedereen',
+        intro: 'showLoot() moet bij elke Combatant tonen wat hij bij zich heeft. Verwacht: twee regels. Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: MEMBERS_NOLOOT,
+        code: LISTING_SHOW_CLASSES + '\n' + LISTING_SHOWLOOT_BUG + `
+$enemy = new Enemy("Goblin", 30, 2, "een dolk"); // @new1
+$player = new Player("Aragorn", 100, 5); // @new2
+showLoot($enemy); // @call1
+showLoot($player); // @call2`,
+        steps: [
+            ...childCtorSteps({ at: 'new1', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+            ...inheritedCtorSteps('new2', 'Player', 'o2', 'player', 'Aragorn', 100, 5),
+            { at: 'call1', say: 'showLoot() krijgt de Enemy mee. De parameter heeft het type Combatant en een Enemy past daarin.', ops: [['push', 'showLoot()', { combatant: ref('o1') }]] },
+            { at: 's-echo', say: 'getLoot() bestaat in Enemy, dus dit werkt.', ops: [['push', 'Enemy::getLoot()', { this: ref('o1') }]] },
+            { at: 'c-getloot', say: 'getLoot() geeft "een dolk" terug.', ops: [['ret', 'een dolk']] },
+            { at: 's-echo', say: 'Het frame verdwijnt en showLoot() toont de tekst.', ops: [['pop'], ['echo', 'Goblin heeft een dolk']] },
+            { at: 'call1', say: 'showLoot() is klaar.', ops: [['pop']] },
+            { at: 'call2', say: 'showLoot() krijgt de Player mee. Ook dat mag: een Player is een Combatant.', ops: [['push', 'showLoot()', { combatant: ref('o2') }]] },
+            { at: 's-echo', say: 'showLoot() roept getLoot() aan op een Player. Die method staat alleen in Enemy. PHP gaf geen waarschuwing vooraf, maar nu de regel wordt uitgevoerd is er een Error en het script stopt.', ops: [['fatal', 'Call to undefined method Player::getLoot()']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: showLoot() controleert met instanceof of het object een Enemy is. Verwacht: twee regels.',
+            code: LISTING_SHOW_CLASSES + '\n' + LISTING_SHOWLOOT + `
+$enemy = new Enemy("Goblin", 30, 2, "een dolk"); // @new1
+$player = new Player("Aragorn", 100, 5); // @new2
+showLoot($enemy); // @call1
+showLoot($player); // @call2`,
+            steps: [
+                ...childCtorSteps({ at: 'new1', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+                ...inheritedCtorSteps('new2', 'Player', 'o2', 'player', 'Aragorn', 100, 5),
+                ...showLootSteps({ at: 'call1', id: 'o1', cls: 'Enemy', name: 'Goblin', loot: 'een dolk' }),
+                ...showLootSteps({ at: 'call2', id: 'o2', cls: 'Player', name: 'Aragorn' }),
+            ],
+        },
+    },
+];
+
+const quizzes = [
+    {
+        question: 'Waarom geeft PHP een TypeError bij announce($potion)?',
+        options: [
+            ['Een Potion erft niet van Combatant, dus het is geen Combatant en past niet in de parameter.', 'Klopt. Een parameter met het type Combatant accepteert alleen objecten van Combatant of van een class die ervan erft.'],
+            ['announce() mag maar één keer worden aangeroepen.', 'Nee: een functie mag je zo vaak aanroepen als je wilt. De eerste aanroep ging ook goed.'],
+            ['Een Potion heeft geen constructor.', 'Nee: een class zonder constructor is gewoon toegestaan. Het probleem is het type van het object.'],
+        ],
+        correct: 0,
+    },
+    {
+        question: 'Waarom geeft showLoot($player) een Error?',
+        options: [
+            ['Een Player is geen Combatant.', 'Nee: een Player erft wel van Combatant. De functie accepteerde hem dan ook zonder klachten.'],
+            ['getLoot() staat alleen in Enemy. De functie weet alleen dat het een Combatant is en roept de method toch aan.', 'Klopt. Controleer eerst met instanceof of je een Enemy hebt, voordat je een method gebruikt die alleen Enemy heeft.'],
+            ['Een Combatant mag geen loot hebben.', 'Nee: er is geen regel die dat verbiedt. De method staat gewoon niet in Player.'],
+        ],
+        correct: 1,
+    },
+];
+
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members, 'De onderdelen');
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+
+const quizForm = document.getElementById('quiz');
+
+function renderQuiz() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const index = n >= 1 && n <= quizzes.length ? n - 1 : 0;
+    const quiz = quizzes[index];
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = quiz.question;
+    fieldset.append(legend);
+
+    quiz.options.forEach(([text], i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const i = parseInt(chosen.value, 10);
+            const isCorrect = i === quiz.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect ? 'Goed.' : 'Niet helemaal.';
+            box.append(strong, quiz.options[i][1]);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', renderQuiz);
+
+renderQuiz();
+createStepper({ scenarios });
+</script>
+</body>
+</html>
