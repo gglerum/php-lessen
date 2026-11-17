@@ -662,6 +662,224 @@ class Merchant extends Combatant
 CODE,
         ['Fatal error: Class Merchant contains 1 abstract method and must therefore be declared abstract or implement the remaining method (Combatant::attack)'],
     ],
+    [
+        '7 Een extra verplichte parameter',
+        <<<'CODE'
+abstract class Combatant
+{
+    protected string $name;
+    protected int $health;
+    protected int $armorRating;
+
+    public function __construct(string $name, int $health, int $armorRating)
+    {
+        $this->name = $name;
+        $this->health = $health;
+        $this->armorRating = $armorRating;
+    }
+
+    public function getHealth(): int
+    {
+        return $this->health;
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        $this->health = $this->health - max(0, $damage - $this->armorRating);
+    }
+
+    public function describe(): string
+    {
+        return $this->name . " (" . $this->health . " health)";
+    }
+
+    abstract public function attack(): int;
+}
+
+class Player extends Combatant
+{
+    private int $experiencePoints = 100;
+
+    public function attack(): int
+    {
+        return 10 + intdiv($this->experiencePoints, 10);
+    }
+}
+
+class Npc extends Combatant
+{
+    private string $dialogue;
+
+    public function __construct(string $name, int $health, int $armorRating, string $dialogue)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this->dialogue = $dialogue;
+    }
+
+    public function describe(): string
+    {
+        return $this->name . " zegt: \"" . $this->dialogue . "\"";
+    }
+
+    public function attack(): int
+    {
+        return 1;
+    }
+}
+
+class Enemy extends Combatant
+{
+    private string $loot;
+    private int $threatLevel;
+
+    public function __construct(string $name, int $health, int $armorRating, string $loot, int $threatLevel)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this->loot = $loot;
+        $this->threatLevel = $threatLevel;
+    }
+
+    public function describe(): string
+    {
+        return parent::describe() . " en heeft " . $this->loot . " bij zich";
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        parent::takeDamage($damage);
+
+        if ($this->health <= 0) {
+            echo $this->name . " is verslagen en laat " . $this->loot . " vallen\n";
+        }
+    }
+
+    public function attack(): int
+    {
+        return $this->threatLevel * 4;
+    }
+}
+
+class Boss extends Enemy
+{
+    public function attack(int $bonus): int
+    {
+        return parent::attack() + $bonus;
+    }
+}
+CODE,
+        ['Fatal error: Declaration of Boss::attack(int $bonus): int must be compatible with Enemy::attack(): int'],
+    ],
+    [
+        '8 Een extra optionele parameter',
+        <<<'CODE'
+abstract class Combatant
+{
+    protected string $name;
+    protected int $health;
+    protected int $armorRating;
+
+    public function __construct(string $name, int $health, int $armorRating)
+    {
+        $this->name = $name;
+        $this->health = $health;
+        $this->armorRating = $armorRating;
+    }
+
+    public function getHealth(): int
+    {
+        return $this->health;
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        $this->health = $this->health - max(0, $damage - $this->armorRating);
+    }
+
+    public function describe(): string
+    {
+        return $this->name . " (" . $this->health . " health)";
+    }
+
+    abstract public function attack(): int;
+}
+
+class Player extends Combatant
+{
+    private int $experiencePoints = 100;
+
+    public function attack(): int
+    {
+        return 10 + intdiv($this->experiencePoints, 10);
+    }
+}
+
+class Npc extends Combatant
+{
+    private string $dialogue;
+
+    public function __construct(string $name, int $health, int $armorRating, string $dialogue)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this->dialogue = $dialogue;
+    }
+
+    public function describe(): string
+    {
+        return $this->name . " zegt: \"" . $this->dialogue . "\"";
+    }
+
+    public function attack(): int
+    {
+        return 1;
+    }
+}
+
+class Enemy extends Combatant
+{
+    private string $loot;
+    private int $threatLevel;
+
+    public function __construct(string $name, int $health, int $armorRating, string $loot, int $threatLevel)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this->loot = $loot;
+        $this->threatLevel = $threatLevel;
+    }
+
+    public function describe(): string
+    {
+        return parent::describe() . " en heeft " . $this->loot . " bij zich";
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        parent::takeDamage($damage);
+
+        if ($this->health <= 0) {
+            echo $this->name . " is verslagen en laat " . $this->loot . " vallen\n";
+        }
+    }
+
+    public function attack(): int
+    {
+        return $this->threatLevel * 4;
+    }
+}
+
+class Boss extends Enemy
+{
+    public function attack(bool $critical = false): int
+    {
+        return parent::attack() * ($critical ? 2 : 1);
+    }
+}
+
+$boss = new Boss("Smaug", 500, 20, "goud", 5);
+echo $boss->attack() . "\n";
+echo $boss->attack(true) . "\n";
+CODE,
+        ['20', '40'],
+    ],
 ];
 
 foreach ($scenarios as [$name, $code, $expected]) {

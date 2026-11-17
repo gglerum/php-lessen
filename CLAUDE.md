@@ -15,7 +15,7 @@ Examples evolve across lessons, e.g. the Hangman game goes `hangman_v3` (OOP 1) 
 
 ## Running examples
 
-There is no root build, lint, or test setup. Each example is run on its own with PHP (devcontainer uses PHP 8.2, with xdebug, PDO/mysqli and a MariaDB client):
+There is no root build, lint, or test setup. Each example is run on its own with PHP. The latest PHP version (8.5) is leading for lesson content, not the devcontainer (which still uses PHP 8.2, with xdebug, PDO/mysqli and a MariaDB client, and needs updating). Check new language features against php.net. Things that were left out of a lesson on purpose are collected in `09 - OOP 3/lesplan.md`:
 
 - Console scripts: `php console.php` from inside the example directory (they use `readline()` and need a real terminal).
 - Web examples: `php -S localhost:8090` from the example directory (the devcontainer forwards 8080, 8090, 9000, 3306).

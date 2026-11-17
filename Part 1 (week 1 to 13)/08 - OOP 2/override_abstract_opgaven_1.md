@@ -65,3 +65,43 @@ ThinkPad met 16 GB geheugen: 968.00
 Bedenk daarna een derde soort product en voeg dat toe, zonder iets aan `Product`, `Book` of `Laptop` te veranderen. Wat moet je in ieder geval schrijven?
 
 **Hint:** Je overschrijft `getPrice()` in `Laptop` en roept `parent::getPrice()` aan voor de basisprijs. De functie `number_format($getal, 2)` zet een getal om naar tekst met twee decimalen.
+
+### Opgave 5: Mag dit?
+
+Gegeven deze parent:
+
+```PHP
+class Weapon
+{
+    public function hit(int $force): int
+    {
+        return $force;
+    }
+}
+```
+
+Hieronder staan zeven manieren om `hit()` in een child `Sword extends Weapon` te schrijven:
+
+1. `public function hit(int $force, int $bonus): int`
+2. `public function hit(int $force, int $bonus = 0): int`
+3. `public function hit(int|float $force): int`
+4. `public function hit(int $force): string`
+5. `protected function hit(int $force): int`
+6. `public function hit($force): int`
+7. `public function hit(int $force): ?int`
+
+Bepaal eerst bij elke versie of PHP hem toestaat en schrijf in een comment waarom wel of niet. Maak daarna voor elke versie een apart bestand met `Weapon` en `Sword` en kijk of je gelijk had. Bij de versies die niet mogen, schrijf je de melding van PHP in de comment.
+
+**Hint:** Vraag jezelf bij elke versie af: kan code die met een `Weapon` werkt ook met deze `Sword` werken? Denk aan wat je aan `hit()` meegeeft en wat je terugkrijgt.
+
+### Opgave 6: Final en abstract samen
+
+Maak een abstracte class `Account` met een `protected` property `balance` (int, begint bij 0) en een `final public` method `deposit(int $amount): void` die het bedrag bij het saldo optelt. Maak daarnaast een abstracte method `protected function getFee(): int`, de kosten die bij een opname horen, en een gewone method `withdraw(int $amount): void` die `$amount` plus `getFee()` van het saldo afhaalt.
+
+Maak twee child classes:
+- `CheckingAccount` heeft kosten van 1.
+- `SavingsAccount` heeft kosten van 0, maar maakt `getFee()` `public` (dat mag).
+
+Toon het saldo van beide rekeningen na een storting van 100 en een opname van 30. Je krijgt `69` en `70`. Probeer daarna in `SavingsAccount` ook `deposit()` te overschrijven en schrijf de melding van PHP in een comment. Leg in een comment uit waarom `deposit()` hier `final` is en `getFee()` abstract.
+
+**Hint:** Een rekening heeft nog geen method om het saldo te tonen. Schrijf een `getBalance(): int` in `Account` (zonder `final`). Voor de storting en opname maak je de objecten zelf aan: `Account` is abstract.

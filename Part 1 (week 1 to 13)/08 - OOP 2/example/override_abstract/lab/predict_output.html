@@ -189,6 +189,38 @@ echo $player->attack() + $enemy->attack();`,
         correct: 1,
         why: 'attack() is abstract: Combatant heeft geen body en elke child moet hem zelf schrijven. Merchant doet dat niet, dus PHP geeft meteen een Fatal error, nog voor er iets draait.',
     },
+    {
+        title: 'Een extra verplichte parameter',
+        question: 'Wat gebeurt er met dit script?',
+        code: `class Boss extends Enemy
+{
+    public function attack(int $bonus): int
+    {
+        return parent::attack() + $bonus;
+    }
+}`,
+        options: ['Het werkt: Boss heeft nu een attack() met een bonus', 'PHP geeft een Fatal error, want Boss vraagt meer dan Enemy', 'Het werkt zolang je attack() nooit zonder argument aanroept'],
+        correct: 1,
+        why: 'Code die met een Enemy werkt roept attack() zonder argument aan. Een Boss met een verplichte parameter zou daar niet tegen kunnen. PHP controleert dit al bij het inlezen van de class en geeft een Fatal error: "Declaration of Boss::attack(int $bonus): int must be compatible with Enemy::attack(): int".',
+    },
+    {
+        title: 'Een extra optionele parameter',
+        question: 'Wat toont het script? Elke echo eindigt met een nieuwe regel.',
+        code: `class Boss extends Enemy
+{
+    public function attack(bool $critical = false): int
+    {
+        return parent::attack() * ($critical ? 2 : 1);
+    }
+}
+
+$boss = new Boss("Smaug", 500, 20, "goud", 5);
+echo $boss->attack() . "\\n";
+echo $boss->attack(true) . "\\n";`,
+        options: ['20 en 20', '20 en 40', 'PHP geeft een Fatal error, want de parameters verschillen'],
+        correct: 1,
+        why: 'De extra parameter heeft een standaardwaarde, dus attack() zonder argument werkt nog precies als bij Enemy: 5 * 4 = 20. Met true verdubbelt Boss de aanval naar 40. Een extra optionele parameter is toegestaan, een verplichte niet.',
+    },
 ];
 
 const steps = document.getElementById('steps');

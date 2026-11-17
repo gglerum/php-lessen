@@ -17,3 +17,6 @@ _site_src/
 _site/
 .jekyll-cache/
 Gemfile.lock
+
+# Lesplannen van de docent (lokale notities, niet publiceren)
+lesplan.md

@@ -187,6 +187,8 @@ De uitvoer is `Aragorn heeft nog 85 health`: 20 schade min 5 armor is 15. We heb
 
 In Python kun je bij `class A(B, C)` van meerdere classes tegelijk erven. In PHP kan dat niet: een class heeft maximaal één parent. Wel kan die parent zelf weer een parent hebben, daar komen we zo op terug.
 
+Let op dat PHP de parent moet kennen voordat de child wordt ingelezen. Zet de parent dus boven de child, of laad hem eerder met `require_once`. Hoe je dat automatisch doet zie je bij autoloading in OOP 3.
+
 ### protected
 
 Waarom is `name` hier `protected` en niet `private`? Dat komt door de access modifiers uit de vorige les. Er is er nu eentje bij:
