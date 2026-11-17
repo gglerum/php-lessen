@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 2: Wat gebeurt er?</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main>
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 2: Wat gebeurt er?</h1>
+    <p class="muted">Hieronder staan vier classes, waarvan Combatant abstract is. Lees de code, kies wat je denkt dat er gebeurt en controleer je antwoord. Daarna lees je waarom.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+
+    <details class="classpanel" open>
+        <summary>De classes die in alle scenario's worden gebruikt</summary>
+        <pre><code>abstract class Combatant
+{
+    protected string $name;
+    protected int $health;
+    protected int $armorRating;
+
+    public function __construct(string $name, int $health, int $armorRating)
+    {
+        $this-&gt;name = $name;
+        $this-&gt;health = $health;
+        $this-&gt;armorRating = $armorRating;
+    }
+
+    public function getHealth(): int
+    {
+        return $this-&gt;health;
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        $this-&gt;health = $this-&gt;health - max(0, $damage - $this-&gt;armorRating);
+    }
+
+    public function describe(): string
+    {
+        return $this-&gt;name . " (" . $this-&gt;health . " health)";
+    }
+
+    abstract public function attack(): int;
+}
+
+class Player extends Combatant
+{
+    private int $experiencePoints = 100;
+
+    public function attack(): int
+    {
+        return 10 + intdiv($this-&gt;experiencePoints, 10);
+    }
+}
+
+class Npc extends Combatant
+{
+    private string $dialogue;
+
+    public function __construct(string $name, int $health, int $armorRating, string $dialogue)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this-&gt;dialogue = $dialogue;
+    }
+
+    public function describe(): string
+    {
+        return $this-&gt;name . " zegt: \"" . $this-&gt;dialogue . "\"";
+    }
+
+    public function attack(): int
+    {
+        return 1;
+    }
+}
+
+class Enemy extends Combatant
+{
+    private string $loot;
+    private int $threatLevel;
+
+    public function __construct(string $name, int $health, int $armorRating, string $loot, int $threatLevel)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this-&gt;loot = $loot;
+        $this-&gt;threatLevel = $threatLevel;
+    }
+
+    public function describe(): string
+    {
+        return parent::describe() . " en heeft " . $this-&gt;loot . " bij zich";
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        parent::takeDamage($damage);
+
+        if ($this-&gt;health &lt;= 0) {
+            echo $this-&gt;name . " is verslagen en laat " . $this-&gt;loot . " vallen\n";
+        }
+    }
+
+    public function attack(): int
+    {
+        return $this-&gt;threatLevel * 4;
+    }
+}</code></pre>
+        <p class="muted">De scenario's staan in een script met <code>declare(strict_types=1);</code>.</p>
+    </details>
+
+    <h2 id="title"></h2>
+    <pre><code id="code"></code></pre>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="controls">
+        <a class="button secondary" id="previous" href="#">Vorige</a>
+        <a class="button" id="next" href="#">Volgend scenario</a>
+    </div>
+</main>
+
+<script>
+// De uitkomsten zijn vooraf bepaald. Controleer ze met: php verify_lab2.php
+const scenarios = [
+    {
+        title: 'Een method die vervangen is',
+        question: 'Wat toont het script?',
+        code: `$npc = new Npc("Bob", 40, 0, "Hallo");
+echo $npc->describe();`,
+        options: ['Bob (40 health)', 'Bob zegt: "Hallo"', 'Bob (40 health) en daarna Bob zegt: "Hallo"'],
+        correct: 1,
+        why: 'Npc overschrijft describe() en gebruikt parent::describe() niet. De versie van Combatant wordt dus niet uitgevoerd. Het script toont alleen de tekst van Npc.',
+    },
+    {
+        title: 'Een method die wordt uitgebreid',
+        question: 'Wat toont het script?',
+        code: `$enemy = new Enemy("Goblin", 30, 2, "een dolk", 3);
+echo $enemy->describe();`,
+        options: ['Goblin (30 health)', 'Goblin (30 health) en heeft een dolk bij zich', 'Goblin en heeft een dolk bij zich'],
+        correct: 1,
+        why: 'Enemy::describe() roept parent::describe() aan en voegt er tekst aan toe. Het resultaat van Combatant ("Goblin (30 health)") staat dus ook in de uitvoer, met de uitbreiding erachter.',
+    },
+    {
+        title: 'Een override met parent::',
+        question: 'Wat toont het script? Elke echo eindigt met een nieuwe regel.',
+        code: `$enemy = new Enemy("Goblin", 30, 2, "een dolk", 3);
+
+$enemy->takeDamage(10);
+echo $enemy->getHealth() . "\\n";
+
+$enemy->takeDamage(50);
+echo $enemy->getHealth() . "\\n";`,
+        options: ['22 en daarna -26', '22, daarna de melding "Goblin is verslagen en laat een dolk vallen" en daarna -26', '22 en daarna 0, want health gaat nooit onder 0'],
+        correct: 1,
+        why: 'De eerste aanroep: 10 schade min 2 armor is 8, dus health wordt 22. De tweede: 50 min 2 is 48, dus health wordt -26 (er is geen minimum). Omdat health nu <= 0 is, toont Enemy::takeDamage() de melding voordat het script de health toont.',
+    },
+    {
+        title: 'Elke child zijn eigen attack()',
+        question: 'Wat toont het script?',
+        code: `$player = new Player("Aragorn", 100, 5);
+$enemy = new Enemy("Goblin", 30, 2, "een dolk", 3);
+
+echo $player->attack() + $enemy->attack();`,
+        options: ['32', '15', '22'],
+        correct: 0,
+        why: 'Player::attack() geeft 10 + 100 / 10 = 20 terug en Enemy::attack() geeft 3 * 4 = 12. Samen is dat 32. Beide classes hebben dezelfde method, maar elk met zijn eigen berekening.',
+    },
+    {
+        title: 'Een object van een abstracte class',
+        question: 'Wat gebeurt er met deze regel?',
+        code: `$combatant = new Combatant("Onbekend", 10, 0);`,
+        options: ['Er ontstaat een Combatant zonder aanval', 'PHP geeft een Error', 'Er ontstaat een Combatant, maar attack() geeft een Error'],
+        correct: 1,
+        why: 'Van een abstracte class kun je geen object maken. PHP geeft meteen een Error: "Cannot instantiate abstract class Combatant".',
+    },
+    {
+        title: 'Een abstracte method vergeten',
+        question: 'Wat gebeurt er met dit script?',
+        code: `class Merchant extends Combatant
+{
+}`,
+        options: ['Het werkt: Merchant heeft gewoon geen aanval', 'PHP geeft een Fatal error, omdat Merchant attack() niet schrijft', 'Merchant krijgt de attack() van Combatant'],
+        correct: 1,
+        why: 'attack() is abstract: Combatant heeft geen body en elke child moet hem zelf schrijven. Merchant doet dat niet, dus PHP geeft meteen een Fatal error, nog voor er iets draait.',
+    },
+];
+
+const steps = document.getElementById('steps');
+const title = document.getElementById('title');
+const code = document.getElementById('code');
+const quizForm = document.getElementById('quiz');
+const previous = document.getElementById('previous');
+const next = document.getElementById('next');
+
+// het scenario staat in de URL (#3), zodat verversen en links delen werken
+function currentIndex() {
+    const number = parseInt(location.hash.replace('#', ''), 10);
+    return number >= 1 && number <= scenarios.length ? number - 1 : 0;
+}
+
+function show() {
+    const index = currentIndex();
+    const scenario = scenarios[index];
+
+    steps.replaceChildren();
+    scenarios.forEach((item, i) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + (i + 1);
+        a.textContent = String(i + 1);
+        a.setAttribute('aria-label', `Scenario ${i + 1}: ${item.title}`);
+        if (i === index) a.setAttribute('aria-current', 'step');
+        li.append(a);
+        steps.append(li);
+    });
+
+    title.textContent = `Scenario ${index + 1} van ${scenarios.length}: ${scenario.title}`;
+    code.textContent = scenario.code;
+
+    previous.hidden = index === 0;
+    previous.href = '#' + index;
+    next.hidden = index === scenarios.length - 1;
+    next.href = '#' + (index + 2);
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = scenario.question;
+    fieldset.append(legend);
+
+    scenario.options.forEach((text, i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const isCorrect = parseInt(chosen.value, 10) === scenario.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect
+                ? `Goed: ${scenario.options[scenario.correct]}.`
+                : `Niet helemaal. Het antwoord is: ${scenario.options[scenario.correct]}.`;
+            box.append(strong, scenario.why);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', show);
+show();
+</script>
+</body>
+</html>

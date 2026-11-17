@@ -10,7 +10,7 @@
 <main class="wide">
     <p class="muted"><a href="index.html">Alle labs</a></p>
     <h1>Lab 1: Wat erft een object?</h1>
-    <p class="muted">Volg een programma regel voor regel. Je ziet welke properties een object van een parent krijgt, hoe de constructors van parent en child samenwerken en wat een override doet. Bij elke property staat in welke class hij is gedeclareerd.</p>
+    <p class="muted">Volg een programma regel voor regel. Je ziet welke properties een object van een parent krijgt, en hoe de constructors van parent en child samenwerken. Bij elke property staat in welke class hij is gedeclareerd.</p>
 
     <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
 
@@ -105,26 +105,6 @@ echo $npc->talk(); // @echo`,
         steps: [
             ...childCtorSteps({ at: 'new', cls: 'Npc', id: 'o1', varName: 'npc', name: 'Bob', health: 40, armorRating: 0, extraProp: 'dialogue', extraValue: 'Welkom in de Rode Draak!' }),
             ...getterSteps('echo', 'c-talk', 'Npc::talk()', 'o1', 'Welkom in de Rode Draak!', 'Welkom in de Rode Draak!'),
-        ],
-    },
-    {
-        title: 'Een method overschrijven',
-        intro: 'Enemy overschrijft takeDamage() en gebruikt parent::takeDamage() voor het rekenwerk. Let op welke versie van de method wanneer draait. Druk op Afspelen of op Verder.',
-        members: MEMBERS_OVERRIDE,
-        code: LISTING_COMBATANT + '\n' + LISTING_ENEMY + `
-$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
-$enemy->takeDamage(12); // @dmg
-echo $enemy->getHealth(); // @echo`,
-        steps: [
-            ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
-            { at: 'dmg', say: 'Enemy heeft zelf een takeDamage(). PHP gebruikt die en niet de versie van Combatant: de method is overschreven.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
-            { at: 'c-eparent', say: 'parent::takeDamage() voert de versie van Combatant uit, met hetzelfde object als $this. Het rekenwerk hoeven we niet te kopiëren.', ops: [['push', 'Combatant::takeDamage()', { this: ref('o1'), damage: 12 }]] },
-            { at: 'c-dmg', say: '12 schade min 2 armor is 10. health wordt 10 - 10 = 0.', ops: [['prop', 'o1', 'health', 0]] },
-            { at: 'c-eparent', say: 'De parent is klaar en zijn frame verdwijnt. We zijn terug in Enemy::takeDamage() en gaan verder met wat Enemy zelf toevoegt.', ops: [['pop']] },
-            { at: 'c-eif', say: 'Is health <= 0? 0 <= 0, dus ja.', ops: [] },
-            { at: 'c-eecho', say: 'Alleen een Enemy toont dit bericht en laat zijn loot vallen. Een Player of Npc doet dit niet.', ops: [['echo', 'Goblin is verslagen en laat een dolk vallen']] },
-            { at: 'dmg', say: 'Enemy::takeDamage() is klaar.', ops: [['pop']] },
-            ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 0, '0'),
         ],
     },
     {

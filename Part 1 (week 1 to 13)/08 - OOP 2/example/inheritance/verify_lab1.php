@@ -131,60 +131,7 @@ CODE,
         ['Welkom in de Rode Draak!'],
     ],
     [
-        '3 Een method overschrijven',
-        <<<'CODE'
-class Combatant
-{
-    protected string $name;
-    protected int $health;
-    protected int $armorRating;
-
-    public function __construct(string $name, int $health, int $armorRating)
-    {
-        $this->name = $name;
-        $this->health = $health;
-        $this->armorRating = $armorRating;
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        $this->health = $this->health - max(0, $damage - $this->armorRating);
-    }
-
-    public function getHealth(): int
-    {
-        return $this->health;
-    }
-}
-
-class Enemy extends Combatant
-{
-    private string $loot;
-
-    public function __construct(string $name, int $health, int $armorRating, string $loot)
-    {
-        parent::__construct($name, $health, $armorRating);
-        $this->loot = $loot;
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen\n";
-        }
-    }
-}
-
-$enemy = new Enemy("Goblin", 10, 2, "een dolk");
-$enemy->takeDamage(12);
-echo $enemy->getHealth();
-CODE,
-        ['Goblin is verslagen en laat een dolk vallen', '0'],
-    ],
-    [
-        '4 Een boom van parents',
+        '3 Een boom van parents',
         <<<'CODE'
 class Entity
 {

@@ -133,36 +133,29 @@ echo $player->describe(); // @echo`,
         },
     },
     {
-        title: 'De vijand gaat nooit dood',
-        intro: 'Een Goblin met 10 health krijgt een klap van 12. Verwacht: de melding dat hij verslagen is en "Health: 0". Druk op Afspelen en kijk wat er echt gebeurt.',
-        members: MEMBERS_ENEMY_BUG,
-        code: LISTING_COMBATANT + '\n' + LISTING_ENEMY_BUG + `
-$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
-$enemy->takeDamage(12); // @dmg
-echo "Health: " . $enemy->getHealth(); // @echo`,
+        title: 'De method bestaat niet',
+        intro: 'Een Player moet schade kunnen nemen. Verwacht: "85". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: MEMBERS_EXTENDS_BUG,
+        code: LISTING_COMBATANT + '\n' + LISTING_PLAYER_NOEXTENDS + `
+$player = new Player("Aragorn", 100, 5); // @new
+$player->takeDamage(20); // @dmg
+echo $player->getHealth(); // @echo`,
         steps: [
-            ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
-            { at: 'dmg', say: 'Enemy overschrijft takeDamage(), dus PHP gebruikt de versie van Enemy.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
-            { at: 'c-eif', say: 'Is health <= 0? health is nog 10, dus nee. Er staat geen parent::takeDamage(), dus de schade is niet berekend.', ops: [] },
-            { at: 'dmg', say: 'De method is klaar. Er is niets gebeurd: geen schade en geen melding.', ops: [['pop']] },
-            ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 10, 'Health: 10'),
+            { at: 'new', say: 'Player erft van niemand en heeft geen eigen constructor. De argumenten worden genegeerd. Het object heeft alleen wat in Player zelf staat: experiencePoints. Geen name, health of armorRating.', ops: [['new', 'o1', 'Player', { experiencePoints: 0 }, { experiencePoints: 'Player' }], ['set', 'player', ref('o1')]] },
+            { at: 'dmg', say: 'PHP zoekt takeDamage() in Player en kan geen parent vinden om verder te zoeken. De method bestaat niet: een Error en het script stopt.', ops: [['fatal', 'Call to undefined method Player::takeDamage()']] },
         ],
         fixed: {
-            intro: 'Gecorrigeerd: Enemy::takeDamage() roept eerst parent::takeDamage() aan. Verwacht: de melding en "Health: 0".',
-            code: LISTING_COMBATANT + '\n' + LISTING_ENEMY + `
-$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
-$enemy->takeDamage(12); // @dmg
-echo "Health: " . $enemy->getHealth(); // @echo`,
+            intro: 'Gecorrigeerd: Player erft met extends van Combatant. Verwacht: "85".',
+            code: LISTING_COMBATANT + '\n' + LISTING_PLAYER + `
+$player = new Player("Aragorn", 100, 5); // @new
+$player->takeDamage(20); // @dmg
+echo $player->getHealth(); // @echo`,
             steps: [
-                ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
-                { at: 'dmg', say: 'Enemy overschrijft takeDamage(), dus PHP gebruikt de versie van Enemy.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
-                { at: 'c-eparent', say: 'parent::takeDamage() voert de versie van Combatant uit.', ops: [['push', 'Combatant::takeDamage()', { this: ref('o1'), damage: 12 }]] },
-                { at: 'c-dmg', say: '12 schade min 2 armor is 10. health wordt 10 - 10 = 0.', ops: [['prop', 'o1', 'health', 0]] },
-                { at: 'c-eparent', say: 'Terug in Enemy::takeDamage().', ops: [['pop']] },
-                { at: 'c-eif', say: 'Is health <= 0? 0 <= 0, dus ja.', ops: [] },
-                { at: 'c-eecho', say: 'De melding wordt getoond.', ops: [['echo', 'Goblin is verslagen en laat een dolk vallen']] },
-                { at: 'dmg', say: 'Enemy::takeDamage() is klaar.', ops: [['pop']] },
-                ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 0, 'Health: 0'),
+                ...inheritedCtorSteps('new', 'Player', 'o1', 'player', 'Aragorn', 100, 5, { experiencePoints: 0 }, 'Player'),
+                { at: 'dmg', say: 'takeDamage() staat niet in Player, maar PHP vindt hem in de parent: Combatant.', ops: [['push', 'Combatant::takeDamage()', { this: ref('o1'), damage: 20 }]] },
+                { at: 'c-dmg', say: '20 schade min 5 armor is 15. health wordt 100 - 15 = 85.', ops: [['prop', 'o1', 'health', 85]] },
+                { at: 'dmg', say: 'takeDamage() is klaar.', ops: [['pop']] },
+                ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 85, '85'),
             ],
         },
     },
@@ -188,13 +181,13 @@ const quizzes = [
         correct: 1,
     },
     {
-        question: 'Waarom blijft de health van de Goblin 10?',
+        question: 'Waarom geeft PHP een Error bij takeDamage()?',
         options: [
-            ['Enemy::takeDamage() vervangt de method van Combatant en roept parent::takeDamage() niet aan, dus de schade wordt nooit berekend.', 'Klopt. Een override vervangt de method van de parent. Wil je het gedrag van de parent houden, dan roep je hem zelf aan met parent::.'],
-            ['De armor van de Goblin is te hoog.', 'Nee: 12 schade min 2 armor is 10, dat zou genoeg zijn. Alleen wordt dit nooit berekend.'],
-            ['De Goblin heeft loot en is daarom onkwetsbaar.', 'Nee: de loot heeft hier niets mee te maken.'],
+            ['takeDamage() is protected, dus je mag hem niet aanroepen.', 'Nee: takeDamage() is public. Het probleem is dat Player de method niet heeft.'],
+            ['Player erft niet van Combatant, dus de method bestaat niet voor Player.', 'Klopt. Zonder extends is Player een losse class met alleen zijn eigen onderdelen.'],
+            ['De constructor van Player ontbreekt.', 'Nee: ook zonder constructor kun je een object maken. Het gaat om de method die niet gevonden wordt.'],
         ],
-        correct: 0,
+        correct: 1,
     },
 ];
 

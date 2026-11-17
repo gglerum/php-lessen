@@ -226,59 +226,6 @@ class Npc extends Combatant
 
 Vergeet je `parent::__construct()`, dan worden `name`, `health` en `armorRating` nooit gezet. Een `getName()` geeft dan `Typed property Combatant::$name must not be accessed before initialization`. Zie `parent_constructor.php`.
 
-### Een method overschrijven
-
-Een child kan een method van de parent **overschrijven** (override). Je schrijft dan in de child een method met dezelfde naam en dezelfde parameters. Voor een object van de child wordt dan jouw versie gebruikt.
-
-```PHP
-class Combatant
-{
-    // ...
-
-    public function describe(): string
-    {
-        return $this->name . " (" . $this->health . " health)";
-    }
-}
-
-class Npc extends Combatant
-{
-    // ...
-
-    public function describe(): string
-    {
-        return $this->name . " zegt: \"" . $this->dialogue . "\"";
-    }
-}
-```
-
-Een `Combatant` beschrijft zichzelf met naam en health. Een `Npc` heeft een eigen verhaal en vervangt de method helemaal.
-
-Soms wil je de method van de parent niet vervangen maar uitbreiden. Dan gebruik je opnieuw `parent::`:
-
-```PHP
-class Enemy extends Combatant
-{
-    // ...
-
-    public function describe(): string
-    {
-        return parent::describe() . " en heeft " . $this->loot . " bij zich";
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen\n";
-        }
-    }
-}
-```
-
-Bij `describe()` geven we het resultaat van de parent terug met iets erachter. Bij `takeDamage()` laten we het rekenwerk aan de parent en voegen we er een controle aan toe. We kopiëren dus niets, en verandert de berekening in `Combatant`, dan verandert hij ook voor `Enemy`. Zie `override.php`.
-
 ### Een hele boom
 
 Een parent kan zelf ook weer een parent hebben. Zo krijg je een boom van classes. Dit is het diagram van ons rollenspel:
@@ -358,59 +305,6 @@ Vergelijk de twee:
 
 Twijfel je? Kies dan compositie. Inheritance gebruik je als de relatie echt "is een" is en je het gedrag van de parent ook echt wilt overnemen. Zie `composition.php`.
 
-## Abstracte classes
-
-Kijk nog eens naar `Combatant`. Heeft het zin om een los `new Combatant(...)` te maken? Eigenlijk niet: in ons spel is iedereen een `Player`, `Npc` of `Enemy`. `Combatant` bestaat alleen om de gemeenschappelijke code te bewaren.
-
-Met `abstract` leggen we dat vast. Een **abstracte class** kun je niet zelf aanmaken, je kunt er alleen van erven:
-
-```PHP
-abstract class Combatant
-{
-    // ... properties, constructor, takeDamage() en getters zoals eerst
-
-    abstract public function attack(): int;
-}
-```
-
-Er is nog iets nieuws: een **abstracte method**. Dit is een method zonder body, alleen de naam, de parameters en het return type, afgesloten met een `;`. Hiermee zeg je: "elke Combatant kan aanvallen, maar hoe dat gaat bepaalt de child zelf". Elke child moet de method dan schrijven:
-
-```PHP
-class Player extends Combatant
-{
-    private int $experiencePoints = 100;
-
-    public function attack(): int
-    {
-        return 10 + intdiv($this->experiencePoints, 10);
-    }
-}
-
-class Enemy extends Combatant
-{
-    private int $threatLevel;
-
-    // ...
-
-    public function attack(): int
-    {
-        return $this->threatLevel * 4;
-    }
-}
-```
-
-Een speler wordt sterker met ervaring, een vijand met zijn dreigingsniveau. Dit is ook wat de diagrammen laten zien: `Player` en `Enemy` hebben allebei een `attack()`, maar ze doen iets anders.
-
-PHP controleert dit voor je:
-- `new Combatant(...)` geeft `Cannot instantiate abstract class Combatant`.
-- Een class die van `Combatant` erft maar `attack()` niet schrijft, geeft een Fatal error.
-
-Het verschil met een gewone parent: bij een gewone method die je overschrijft mag de child kiezen. Bij een abstracte method **moet** de child hem schrijven. Zo weet je zeker dat elke `Combatant` die je tegenkomt een `attack()` heeft.
-
-Een abstracte class mag ook gewone methods hebben. `takeDamage()` heeft gewoon een body en werkt voor iedereen hetzelfde. Zie `abstract_classes.php`.
-
-Waarom dit zo handig is, zie je in de volgende les bij polymorfisme.
-
 ## Samengevat
 
 | Begrip | Vraag die je stelt | Let op |
@@ -418,9 +312,9 @@ Waarom dit zo handig is, zie je in de volgende les bij polymorfisme.
 | `extends` | Is dit een specifiekere soort van de parent? | Maximaal één parent per class |
 | `protected` | Moet de child er bij kunnen, maar de buitenwereld niet? | Begin met `private` |
 | `parent::__construct()` | Heeft de child een eigen constructor? | Vergeet je hem, dan blijven properties leeg |
-| Override | Moet de child iets anders doen dan de parent? | Gebruik `parent::method()` om uit te breiden |
 | Compositie | Heeft dit object een ander object, in plaats van dat het er een is? | Twijfel je, kies dan compositie |
-| `abstract` | Moet elke child dit zelf invullen? | Een abstracte class kan niet met `new` aangemaakt worden |
+
+In de volgende les kijken we naar het overschrijven van methods en naar abstracte classes: [override_abstract.md](./override_abstract.md).
 
 ## Voorbeeldbestanden
 
@@ -430,10 +324,8 @@ De voorbeelden bouwen stap voor stap op en gebruiken het rollenspel uit de diagr
 2. [without_inheritance.php](./example/inheritance/without_inheritance.php) laat `Player`, `Npc` en `Enemy` zien met alles drie keer.
 3. [extends_basics.php](./example/inheritance/extends_basics.php) verplaatst de gedeelde code naar `Combatant` met `extends` en `protected`.
 4. [parent_constructor.php](./example/inheritance/parent_constructor.php) geeft `Npc` en `Enemy` een eigen constructor met `parent::__construct()`.
-5. [override.php](./example/inheritance/override.php) overschrijft `describe()` en `takeDamage()`, met en zonder `parent::`.
-6. [hierarchy.php](./example/inheritance/hierarchy.php) bouwt de hele boom uit het diagram: `Entity`, `Participant`, `Combatant`, `Location` en alles eronder.
-7. [composition.php](./example/inheritance/composition.php) geeft een `Player` een `Inventory` en een `Dungeon` een lijst van `Enemy` objecten.
-8. [abstract_classes.php](./example/inheritance/abstract_classes.php) maakt `Combatant` abstract met een abstracte `attack()`.
+5. [hierarchy.php](./example/inheritance/hierarchy.php) bouwt de hele boom uit het diagram: `Entity`, `Participant`, `Combatant`, `Location` en alles eronder.
+6. [composition.php](./example/inheritance/composition.php) geeft een `Player` een `Inventory` en een `Dungeon` een lijst van `Enemy` objecten.
 
 De diagrammen staan als draw.io bestanden in de map `diagrams`: [zonderinheritance.drawio](./diagrams/zonderinheritance.drawio) en [metinheritance.drawio](./diagrams/metinheritance.drawio).
 
@@ -441,9 +333,9 @@ De diagrammen staan als draw.io bestanden in de map `diagrams`: [zonderinheritan
 
 Wil je zien wat er in het geheugen gebeurt met een object dat van een parent erft? In de interactieve labs volg je een programma regel voor regel. Open [index.html](./example/inheritance/lab/index.html) in je browser, je hoeft niets te installeren. Werkt de opmaak niet, start dan `php -S localhost:8090` in de map `example/inheritance/lab`.
 
-1. [objects.html](./example/inheritance/lab/objects.html) is Lab 1. Een step debugger met vier scenario's: een `Player` die van `Combatant` erft, de constructor van de parent met `parent::__construct()`, een method die wordt overschreven en een boom van vier classes. Bij elke property in het object staat uit welke class hij komt.
-2. [predict_output.html](./example/inheritance/lab/predict_output.html) is Lab 2. Zes scenario's waarbij je eerst voorspelt wat er gebeurt, zoals een method die vervangen of uitgebreid is, een `protected` property van buiten lezen en een constructor die die van de parent vervangt.
-3. [bughunt.html](./example/inheritance/lab/bughunt.html) is Lab 3. Drie scripts die iets anders doen dan bedoeld: een vergeten `parent::__construct()`, een `private` property in de parent en een override zonder `parent::takeDamage()`.
+1. [objects.html](./example/inheritance/lab/objects.html) is Lab 1. Een step debugger met drie scenario's: een `Player` die van `Combatant` erft, de constructor van de parent met `parent::__construct()` en een boom van vier classes. Bij elke property in het object staat uit welke class hij komt.
+2. [predict_output.html](./example/inheritance/lab/predict_output.html) is Lab 2. Vijf scenario's waarbij je eerst voorspelt wat er gebeurt, zoals een method van de parent gebruiken, een `protected` property van buiten lezen en een constructor die die van de parent vervangt.
+3. [bughunt.html](./example/inheritance/lab/bughunt.html) is Lab 3. Drie scripts die iets anders doen dan bedoeld: een vergeten `parent::__construct()`, een `private` property in de parent en een vergeten `extends`.
 
 Met `php verify_lab1.php` tot en met `php verify_lab3.php` (in de map `example/inheritance`) controleer je dat de antwoorden in de labs kloppen met wat PHP echt doet.
 

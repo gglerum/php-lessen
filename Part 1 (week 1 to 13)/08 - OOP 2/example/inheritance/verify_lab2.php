@@ -68,11 +68,6 @@ class Combatant
     {
         $this->health = $this->health - max(0, $damage - $this->armorRating);
     }
-
-    public function describe(): string
-    {
-        return $this->name . " (" . $this->health . " health)";
-    }
 }
 
 class Player extends Combatant
@@ -94,11 +89,6 @@ class Npc extends Combatant
         parent::__construct($name, $health, $armorRating);
         $this->dialogue = $dialogue;
     }
-
-    public function describe(): string
-    {
-        return $this->name . " zegt: \"" . $this->dialogue . "\"";
-    }
 }
 
 class Enemy extends Combatant
@@ -109,21 +99,6 @@ class Enemy extends Combatant
     {
         parent::__construct($name, $health, $armorRating);
         $this->loot = $loot;
-    }
-
-    public function describe(): string
-    {
-        return parent::describe() . " en heeft " . $this->loot . " bij zich";
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen
-";
-        }
     }
 }
 
@@ -134,7 +109,7 @@ CODE,
         ['85'],
     ],
     [
-        '2 Een method die vervangen is',
+        '2 Twee soorten, eigen data',
         <<<'CODE'
 class Combatant
 {
@@ -158,10 +133,72 @@ class Combatant
     {
         $this->health = $this->health - max(0, $damage - $this->armorRating);
     }
+}
 
-    public function describe(): string
+class Player extends Combatant
+{
+    private int $experiencePoints = 0;
+
+    public function levelUp(): void
     {
-        return $this->name . " (" . $this->health . " health)";
+        $this->experiencePoints = $this->experiencePoints + 100;
+    }
+}
+
+class Npc extends Combatant
+{
+    private string $dialogue;
+
+    public function __construct(string $name, int $health, int $armorRating, string $dialogue)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this->dialogue = $dialogue;
+    }
+}
+
+class Enemy extends Combatant
+{
+    private string $loot;
+
+    public function __construct(string $name, int $health, int $armorRating, string $loot)
+    {
+        parent::__construct($name, $health, $armorRating);
+        $this->loot = $loot;
+    }
+}
+
+$player = new Player("Aragorn", 100, 0);
+$enemy = new Enemy("Goblin", 30, 0, "een dolk");
+
+$player->takeDamage(10);
+echo $enemy->getHealth();
+CODE,
+        ['30'],
+    ],
+    [
+        '3 Een method van een andere child',
+        <<<'CODE'
+class Combatant
+{
+    protected string $name;
+    protected int $health;
+    protected int $armorRating;
+
+    public function __construct(string $name, int $health, int $armorRating)
+    {
+        $this->name = $name;
+        $this->health = $health;
+        $this->armorRating = $armorRating;
+    }
+
+    public function getHealth(): int
+    {
+        return $this->health;
+    }
+
+    public function takeDamage(int $damage): void
+    {
+        $this->health = $this->health - max(0, $damage - $this->armorRating);
     }
 }
 
@@ -184,11 +221,6 @@ class Npc extends Combatant
         parent::__construct($name, $health, $armorRating);
         $this->dialogue = $dialogue;
     }
-
-    public function describe(): string
-    {
-        return $this->name . " zegt: \"" . $this->dialogue . "\"";
-    }
 }
 
 class Enemy extends Combatant
@@ -199,117 +231,13 @@ class Enemy extends Combatant
     {
         parent::__construct($name, $health, $armorRating);
         $this->loot = $loot;
-    }
-
-    public function describe(): string
-    {
-        return parent::describe() . " en heeft " . $this->loot . " bij zich";
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen
-";
-        }
     }
 }
 
 $npc = new Npc("Bob", 40, 0, "Hallo");
-echo $npc->describe();
+$npc->levelUp();
 CODE,
-        ['Bob zegt: "Hallo"'],
-    ],
-    [
-        '3 Een method die wordt uitgebreid',
-        <<<'CODE'
-class Combatant
-{
-    protected string $name;
-    protected int $health;
-    protected int $armorRating;
-
-    public function __construct(string $name, int $health, int $armorRating)
-    {
-        $this->name = $name;
-        $this->health = $health;
-        $this->armorRating = $armorRating;
-    }
-
-    public function getHealth(): int
-    {
-        return $this->health;
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        $this->health = $this->health - max(0, $damage - $this->armorRating);
-    }
-
-    public function describe(): string
-    {
-        return $this->name . " (" . $this->health . " health)";
-    }
-}
-
-class Player extends Combatant
-{
-    private int $experiencePoints = 0;
-
-    public function levelUp(): void
-    {
-        $this->experiencePoints = $this->experiencePoints + 100;
-    }
-}
-
-class Npc extends Combatant
-{
-    private string $dialogue;
-
-    public function __construct(string $name, int $health, int $armorRating, string $dialogue)
-    {
-        parent::__construct($name, $health, $armorRating);
-        $this->dialogue = $dialogue;
-    }
-
-    public function describe(): string
-    {
-        return $this->name . " zegt: \"" . $this->dialogue . "\"";
-    }
-}
-
-class Enemy extends Combatant
-{
-    private string $loot;
-
-    public function __construct(string $name, int $health, int $armorRating, string $loot)
-    {
-        parent::__construct($name, $health, $armorRating);
-        $this->loot = $loot;
-    }
-
-    public function describe(): string
-    {
-        return parent::describe() . " en heeft " . $this->loot . " bij zich";
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen
-";
-        }
-    }
-}
-
-$enemy = new Enemy("Goblin", 30, 2, "een dolk");
-echo $enemy->describe();
-CODE,
-        ['Goblin (30 health) en heeft een dolk bij zich'],
+        ['Fatal error: Uncaught Error: Call to undefined method Npc::levelUp()'],
     ],
     [
         '4 Een protected property lezen',
@@ -336,11 +264,6 @@ class Combatant
     {
         $this->health = $this->health - max(0, $damage - $this->armorRating);
     }
-
-    public function describe(): string
-    {
-        return $this->name . " (" . $this->health . " health)";
-    }
 }
 
 class Player extends Combatant
@@ -362,11 +285,6 @@ class Npc extends Combatant
         parent::__construct($name, $health, $armorRating);
         $this->dialogue = $dialogue;
     }
-
-    public function describe(): string
-    {
-        return $this->name . " zegt: \"" . $this->dialogue . "\"";
-    }
 }
 
 class Enemy extends Combatant
@@ -377,21 +295,6 @@ class Enemy extends Combatant
     {
         parent::__construct($name, $health, $armorRating);
         $this->loot = $loot;
-    }
-
-    public function describe(): string
-    {
-        return parent::describe() . " en heeft " . $this->loot . " bij zich";
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen
-";
-        }
     }
 }
 
@@ -401,7 +304,7 @@ CODE,
         ['Fatal error: Uncaught Error: Cannot access protected property Player::$health'],
     ],
     [
-        '5 Een override met parent::',
+        '5 Een constructor die de parent vervangt',
         <<<'CODE'
 class Combatant
 {
@@ -425,11 +328,6 @@ class Combatant
     {
         $this->health = $this->health - max(0, $damage - $this->armorRating);
     }
-
-    public function describe(): string
-    {
-        return $this->name . " (" . $this->health . " health)";
-    }
 }
 
 class Player extends Combatant
@@ -451,11 +349,6 @@ class Npc extends Combatant
         parent::__construct($name, $health, $armorRating);
         $this->dialogue = $dialogue;
     }
-
-    public function describe(): string
-    {
-        return $this->name . " zegt: \"" . $this->dialogue . "\"";
-    }
 }
 
 class Enemy extends Combatant
@@ -466,115 +359,6 @@ class Enemy extends Combatant
     {
         parent::__construct($name, $health, $armorRating);
         $this->loot = $loot;
-    }
-
-    public function describe(): string
-    {
-        return parent::describe() . " en heeft " . $this->loot . " bij zich";
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen
-";
-        }
-    }
-}
-
-$enemy = new Enemy("Goblin", 30, 2, "een dolk");
-
-$enemy->takeDamage(10);
-echo $enemy->getHealth() . "\n";
-
-$enemy->takeDamage(50);
-echo $enemy->getHealth() . "\n";
-CODE,
-        ['22', 'Goblin is verslagen en laat een dolk vallen', '-26'],
-    ],
-    [
-        '6 Een constructor die de parent vervangt',
-        <<<'CODE'
-class Combatant
-{
-    protected string $name;
-    protected int $health;
-    protected int $armorRating;
-
-    public function __construct(string $name, int $health, int $armorRating)
-    {
-        $this->name = $name;
-        $this->health = $health;
-        $this->armorRating = $armorRating;
-    }
-
-    public function getHealth(): int
-    {
-        return $this->health;
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        $this->health = $this->health - max(0, $damage - $this->armorRating);
-    }
-
-    public function describe(): string
-    {
-        return $this->name . " (" . $this->health . " health)";
-    }
-}
-
-class Player extends Combatant
-{
-    private int $experiencePoints = 0;
-
-    public function levelUp(): void
-    {
-        $this->experiencePoints = $this->experiencePoints + 100;
-    }
-}
-
-class Npc extends Combatant
-{
-    private string $dialogue;
-
-    public function __construct(string $name, int $health, int $armorRating, string $dialogue)
-    {
-        parent::__construct($name, $health, $armorRating);
-        $this->dialogue = $dialogue;
-    }
-
-    public function describe(): string
-    {
-        return $this->name . " zegt: \"" . $this->dialogue . "\"";
-    }
-}
-
-class Enemy extends Combatant
-{
-    private string $loot;
-
-    public function __construct(string $name, int $health, int $armorRating, string $loot)
-    {
-        parent::__construct($name, $health, $armorRating);
-        $this->loot = $loot;
-    }
-
-    public function describe(): string
-    {
-        return parent::describe() . " en heeft " . $this->loot . " bij zich";
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen
-";
-        }
     }
 }
 

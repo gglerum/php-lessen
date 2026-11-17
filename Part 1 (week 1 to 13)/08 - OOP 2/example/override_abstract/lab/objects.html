@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 1: Overschrijven en abstract</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 1: Overschrijven en abstract</h1>
+    <p class="muted">Volg een programma regel voor regel. Je ziet welke versie van een method er draait als een child hem overschrijft, wat parent:: doet en hoe een abstracte class afdwingt dat elke child een method schrijft.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @dmg") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'Een method overschrijven met parent::',
+        intro: 'Enemy overschrijft takeDamage() en gebruikt parent::takeDamage() voor het rekenwerk. Let op welke versie van de method wanneer draait. Druk op Afspelen of op Verder.',
+        members: MEMBERS_OVERRIDE,
+        code: LISTING_COMBATANT + '\n' + LISTING_ENEMY + `
+$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
+$enemy->takeDamage(12); // @dmg
+echo $enemy->getHealth(); // @echo`,
+        steps: [
+            ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+            { at: 'dmg', say: 'Enemy heeft zelf een takeDamage(). PHP gebruikt die en niet de versie van Combatant: de method is overschreven.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+            { at: 'c-eparent', say: 'parent::takeDamage() voert de versie van Combatant uit, met hetzelfde object als $this. Het rekenwerk hoeven we niet te kopiëren.', ops: [['push', 'Combatant::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+            { at: 'c-dmg', say: '12 schade min 2 armor is 10. health wordt 10 - 10 = 0.', ops: [['prop', 'o1', 'health', 0]] },
+            { at: 'c-eparent', say: 'De parent is klaar en zijn frame verdwijnt. We zijn terug in Enemy::takeDamage() en gaan verder met wat Enemy zelf toevoegt.', ops: [['pop']] },
+            { at: 'c-eif', say: 'Is health <= 0? 0 <= 0, dus ja.', ops: [] },
+            { at: 'c-eecho', say: 'Alleen een Enemy toont dit bericht en laat zijn loot vallen. Een Player of Npc doet dit niet.', ops: [['echo', 'Goblin is verslagen en laat een dolk vallen']] },
+            { at: 'dmg', say: 'Enemy::takeDamage() is klaar.', ops: [['pop']] },
+            ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 0, '0'),
+        ],
+    },
+    {
+        title: 'Vervangen of uitbreiden',
+        intro: 'Combatant, Npc en Enemy hebben alle drie een describe(). Npc vervangt de method van de parent, Enemy breidt hem uit. Druk op Afspelen of op Verder.',
+        members: MEMBERS_DESCRIBE,
+        code: LISTING_DESCRIBE + `
+$npc = new Npc("Bob", 40, 0, "Hallo"); // @new1
+$enemy = new Enemy("Goblin", 30, 2, "een dolk"); // @new2
+echo $npc->describe() . "\\n"; // @echo1
+echo $enemy->describe(); // @echo2`,
+        steps: [
+            ...childCtorSteps({ at: 'new1', cls: 'Npc', id: 'o1', varName: 'npc', name: 'Bob', health: 40, armorRating: 0, extraProp: 'dialogue', extraValue: 'Hallo', parentLabel: 'c-nparent', extraLabel: 'c-nextra' }),
+            ...childCtorSteps({ at: 'new2', cls: 'Enemy', id: 'o2', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+            { at: 'echo1', say: 'Npc heeft zelf een describe(), dus PHP gebruikt die en niet die van Combatant.', ops: [['push', 'Npc::describe()', { this: ref('o1') }]] },
+            { at: 'c-ndescribe', say: 'Npc maakt zijn eigen tekst en roept parent::describe() niet aan. De versie van Combatant wordt overgeslagen.', ops: [['ret', 'Bob zegt: "Hallo"']] },
+            { at: 'echo1', say: 'Het frame verdwijnt en het script toont de tekst.', ops: [['pop'], ['echo', 'Bob zegt: "Hallo"']] },
+            { at: 'echo2', say: 'Enemy heeft ook een describe().', ops: [['push', 'Enemy::describe()', { this: ref('o2') }]] },
+            { at: 'c-edescribe', say: 'Enemy roept eerst parent::describe() aan. Daardoor start de versie van Combatant.', ops: [['push', 'Combatant::describe()', { this: ref('o2') }]] },
+            { at: 'c-describe', say: 'Combatant geeft naam en health terug.', ops: [['ret', 'Goblin (30 health)']] },
+            { at: 'c-edescribe', say: 'De parent is klaar. Enemy plakt zijn eigen tekst erachter en geeft het geheel terug.', ops: [['pop'], ['ret', 'Goblin (30 health) en heeft een dolk bij zich']] },
+            { at: 'echo2', say: 'Het frame verdwijnt en het script toont de tekst. Een Enemy toont dus ook wat een Combatant toont, een Npc niet.', ops: [['pop'], ['echo', 'Goblin (30 health) en heeft een dolk bij zich']] },
+        ],
+    },
+    {
+        title: 'Een abstracte class',
+        intro: 'Combatant is abstract en heeft een abstracte attack(). Player en Enemy schrijven die elk op hun eigen manier. Druk op Afspelen of op Verder.',
+        members: MEMBERS_ABSTRACT,
+        code: LISTING_ABSTRACT_COMBATANT + '\n' + LISTING_ABSTRACT_PLAYER + '\n' + LISTING_ABSTRACT_ENEMY + `
+$player = new Player("Aragorn", 100, 5); // @new1
+$enemy = new Enemy("Goblin", 30, 2, 3); // @new2
+echo $player->attack() . "\\n"; // @echo1
+echo $enemy->attack(); // @echo2`,
+        steps: [
+            ...inheritedCtorSteps('new1', 'Player', 'o1', 'player', 'Aragorn', 100, 5, { experiencePoints: 100 }, 'Player'),
+            ...childCtorSteps({ at: 'new2', cls: 'Enemy', id: 'o2', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'threatLevel', extraValue: 3 }),
+            { at: 'echo1', say: 'In Combatant heeft attack() geen body: hij is abstract. Daarom heeft Player zelf een attack() geschreven en gebruikt PHP die.', ops: [['push', 'Player::attack()', { this: ref('o1') }]] },
+            { at: 'c-pattack', say: 'Een speler wordt sterker met ervaring: 10 + 100 / 10 = 20.', ops: [['ret', 20]] },
+            { at: 'echo1', say: 'Het frame verdwijnt en het script toont 20.', ops: [['pop'], ['echo', '20']] },
+            { at: 'echo2', say: 'Dezelfde naam en hetzelfde return type, maar Enemy heeft zijn eigen versie van attack().', ops: [['push', 'Enemy::attack()', { this: ref('o2') }]] },
+            { at: 'c-eattack', say: 'Een vijand wordt gevaarlijker met zijn dreigingsniveau: 3 * 4 = 12.', ops: [['ret', 12]] },
+            { at: 'echo2', say: 'Het script toont 12. Je kunt op elke Combatant attack() aanroepen: de parent dwingt af dat elke child hem heeft.', ops: [['pop'], ['echo', '12']] },
+        ],
+    },
+];
+
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members, 'De onderdelen');
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

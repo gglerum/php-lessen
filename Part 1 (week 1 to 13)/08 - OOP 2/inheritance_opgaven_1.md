@@ -6,35 +6,35 @@ Maak voor iedere opgave een apart bestand en gebruik `declare(strict_types=1);` 
 
 ### Opgave 1: Voertuigen
 
-Maak een class `Vehicle` met een `protected` property `brand` (string) en een `protected` property `speed` (int, begint bij 0). De constructor krijgt alleen het merk. Maak de methods `accelerate(int $amount)`, `getSpeed(): int` en `describe(): string`. De laatste geeft bijvoorbeeld `Volvo rijdt 50 km/u` terug.
+Maak een class `Vehicle` met een `protected` property `brand` (string) en een `protected` property `speed` (int, begint bij 0). De constructor krijgt alleen het merk. Maak de methods `accelerate(int $amount)`, `getBrand(): string` en `getSpeed(): int`.
 
 Maak daarna twee child classes:
-- `Car` heeft er ook een aantal deuren (int) bij. De `describe()` van een `Car` geeft de tekst van `Vehicle` terug, met erachter ` en heeft 5 deuren`.
-- `Bicycle` kan per keer maar 5 km/u optrekken, hoe groot het bedrag ook is dat aan `accelerate()` meegegeven wordt.
+- `Car` heeft er ook een aantal deuren (int) bij en een method `getDoors(): int`.
+- `Bicycle` heeft niets extra's en is dus een lege class die alleen van `Vehicle` erft.
 
-Maak een `Car("Volvo", 5)` en een `Bicycle("Gazelle")`, laat ze allebei 50 optrekken en toon van beide de `describe()`. De uitvoer is:
+Maak een `Car("Volvo", 5)` en een `Bicycle("Gazelle")`, laat de auto 50 en de fiets 20 optrekken en toon van beide de gegevens. De uitvoer is:
 
 ```
-Volvo rijdt 50 km/u en heeft 5 deuren
-Gazelle rijdt 5 km/u
+Volvo: 50 km/u, 5 deuren
+Gazelle: 20 km/u
 ```
 
-**Hint:** `Car` heeft een eigen constructor nodig en roept daarin `parent::__construct()` aan. Voor `Bicycle` schrijf je `accelerate()` opnieuw en laat je de parent het eigenlijke werk doen met `parent::accelerate()`. De functie `min()` geeft het kleinste van twee getallen.
+**Hint:** `Car` heeft een eigen constructor nodig en roept daarin `parent::__construct()` aan. `Bicycle` heeft geen constructor nodig: die van `Vehicle` wordt geërfd.
 
 ### Opgave 2: Medewerkers
 
-Maak een class `Employee` met de `protected` properties `name` (string) en `monthlySalary` (int), en de methods `getName(): string` en `getYearlySalary(): int` (twaalf maanden salaris). Maak een class `Manager` die van `Employee` erft en daarnaast een `bonus` (int) heeft. Het jaarsalaris van een `Manager` is dat van een `Employee` plus de bonus.
+Maak een class `Employee` met de `protected` properties `name` (string) en `monthlySalary` (int), en de methods `getName(): string` en `getYearlySalary(): int` (twaalf maanden salaris). Maak een class `Manager` die van `Employee` erft en daarnaast een `bonus` (int) heeft, met een method `getBonus(): int`.
 
-Maak een `Employee("Sanne", 3000)` en een `Manager("Joris", 4000, 5000)` en toon van beide de naam en het jaarsalaris:
+Maak een `Employee("Sanne", 3000)` en een `Manager("Joris", 4000, 5000)`:
 
 ```
-Sanne: 36000
-Joris: 53000
+Sanne verdient 36000 per jaar
+Joris verdient 48000 per jaar en heeft een bonus van 5000
 ```
 
-Schrijf het jaarsalaris van `Manager` zonder `monthlySalary * 12` nogmaals te schrijven. Waarom is dat beter? Zet het antwoord in een comment.
+Let op dat het jaarsalaris van de manager hier nog zonder de bonus wordt berekend. Dat veranderen we in de volgende opgaven.
 
-**Hint:** Je overschrijft `getYearlySalary()` en gebruikt `parent::getYearlySalary()` binnen de method.
+**Hint:** De constructor van `Manager` heeft drie parameters en geeft er twee door aan `parent::__construct()`.
 
 ### Opgave 3: Is een of heeft een?
 
@@ -51,36 +51,18 @@ Werk daarna het tweede paar uit. Maak een class `Engine` met een `private` prope
 
 **Hint:** `Car` heeft zelf geen `isRunning()` nodig. Hij vraagt het aan zijn `Engine` en stuurt `start()` ook door naar de motor.
 
-### Opgave 4: Vormen
+### Opgave 4: Een boom van drie lagen
 
-Maak een abstracte class `Shape` met een `protected` property `name` (string) en een abstracte method `getArea(): float`. Geef `Shape` ook een gewone method `describe(): string` die de naam en de oppervlakte op twee decimalen teruggeeft. Maak twee child classes:
-- `Rectangle` met breedte en hoogte.
-- `Circle` met een straal. De oppervlakte is `M_PI * straal²`.
+Maak een class `Person` met een `protected` property `name` en een method `getName()`. Maak een class `Student` die van `Person` erft en een `school` heeft, met `getSchool()`. Maak een class `Intern` die van `Student` erft en een `company` heeft, met `getCompany()`. Elke class heeft een eigen constructor met de parameters van zijn parent erbij.
 
-Toon van `new Rectangle(4, 5)` en `new Circle(3)` de `describe()`:
+Maak een `Intern("Lisa", "HAN", "Philips")` en toon:
 
 ```
-Rechthoek met oppervlakte 20
-Cirkel met oppervlakte 28.27
+Lisa studeert aan HAN en loopt stage bij Philips
 ```
 
-Probeer ook `new Shape("Vorm")` en kijk welke foutmelding je krijgt. Schrijf daarna een tijdelijke class `Triangle extends Shape` zonder `getArea()` en kijk wat PHP zegt. Haal die class daarna weer weg.
+Zet in een comment in welke class `getName()` staat en waarom een `Intern` hem toch kan gebruiken. Teken daarna het diagram van deze drie classes zoals in `metinheritance.svg`.
 
-**Hint:** In `describe()` roep je `$this->getArea()` aan. Dat werkt in de abstracte class, ook al staat de body van `getArea()` pas in de child. `round($getal, 2)` rondt af op twee decimalen.
+**Hint:** De constructor van `Intern` heeft drie parameters, geeft er twee door aan de constructor van `Student`, en die geeft er weer een door aan `Person`.
 
-### Opgave 5: Producten
-
-Maak een abstracte class `Product` met `name` en `price` (float) en een abstracte method `getDescription(): string`. Maak twee child classes:
-- `Book` heeft ook een auteur. De beschrijving is `Dune van Frank Herbert`.
-- `Laptop` heeft ook een hoeveelheid geheugen in GB. De beschrijving is `ThinkPad met 16 GB geheugen`. De prijs van een laptop is inclusief 21% btw, dus `getPrice()` van `Laptop` geeft de prijs maal 1.21 terug.
-
-Maak een `Book("Dune", 12.50, "Frank Herbert")` en een `Laptop("ThinkPad", 800.0, 16)` en toon van beide de beschrijving en de prijs op twee decimalen:
-
-```
-Dune van Frank Herbert: 12.50
-ThinkPad met 16 GB geheugen: 968.00
-```
-
-Bedenk daarna een derde soort product en voeg dat toe, zonder iets aan `Product`, `Book` of `Laptop` te veranderen. Wat moet je in ieder geval schrijven?
-
-**Hint:** Je overschrijft `getPrice()` in `Laptop` en roept `parent::getPrice()` aan voor de basisprijs. De functie `number_format($getal, 2)` zet een getal om naar tekst met twee decimalen.
+Het overschrijven van methods en abstracte classes komen terug in [override_abstract_opgaven_1.md](./override_abstract_opgaven_1.md).

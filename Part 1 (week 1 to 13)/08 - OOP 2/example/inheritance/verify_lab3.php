@@ -184,7 +184,7 @@ CODE,
         ['Health: 100'],
     ],
     [
-        '3 De vijand gaat nooit dood',
+        '3 De method bestaat niet',
         <<<'CODE'
 class Combatant
 {
@@ -210,32 +210,24 @@ class Combatant
     }
 }
 
-class Enemy extends Combatant
+class Player
 {
-    private string $loot;
+    private int $experiencePoints = 0;
 
-    public function __construct(string $name, int $health, int $armorRating, string $loot)
+    public function levelUp(): void
     {
-        parent::__construct($name, $health, $armorRating);
-        $this->loot = $loot;
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen\n";
-        }
+        $this->experiencePoints = $this->experiencePoints + 100;
     }
 }
 
-$enemy = new Enemy("Goblin", 10, 2, "een dolk");
-$enemy->takeDamage(12);
-echo "Health: " . $enemy->getHealth();
+$player = new Player("Aragorn", 100, 5);
+$player->takeDamage(20);
+echo $player->getHealth();
 CODE,
-        ['Health: 10'],
+        ['Fatal error: Uncaught Error: Call to undefined method Player::takeDamage()'],
     ],
     [
-        '3 (gecorrigeerd) De vijand gaat nooit dood',
+        '3 (gecorrigeerd) De method bestaat niet',
         <<<'CODE'
 class Combatant
 {
@@ -261,31 +253,21 @@ class Combatant
     }
 }
 
-class Enemy extends Combatant
+class Player extends Combatant
 {
-    private string $loot;
+    private int $experiencePoints = 0;
 
-    public function __construct(string $name, int $health, int $armorRating, string $loot)
+    public function levelUp(): void
     {
-        parent::__construct($name, $health, $armorRating);
-        $this->loot = $loot;
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this->health <= 0) {
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen\n";
-        }
+        $this->experiencePoints = $this->experiencePoints + 100;
     }
 }
 
-$enemy = new Enemy("Goblin", 10, 2, "een dolk");
-$enemy->takeDamage(12);
-echo "Health: " . $enemy->getHealth();
+$player = new Player("Aragorn", 100, 5);
+$player->takeDamage(20);
+echo $player->getHealth();
 CODE,
-        ['Goblin is verslagen en laat een dolk vallen', 'Health: 0'],
+        ['85'],
     ],
 ];
 

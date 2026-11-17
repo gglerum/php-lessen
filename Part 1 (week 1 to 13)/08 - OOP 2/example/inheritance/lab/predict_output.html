@@ -40,11 +40,6 @@
     {
         $this-&gt;health = $this-&gt;health - max(0, $damage - $this-&gt;armorRating);
     }
-
-    public function describe(): string
-    {
-        return $this-&gt;name . " (" . $this-&gt;health . " health)";
-    }
 }
 
 class Player extends Combatant
@@ -66,11 +61,6 @@ class Npc extends Combatant
         parent::__construct($name, $health, $armorRating);
         $this-&gt;dialogue = $dialogue;
     }
-
-    public function describe(): string
-    {
-        return $this-&gt;name . " zegt: \"" . $this-&gt;dialogue . "\"";
-    }
 }
 
 class Enemy extends Combatant
@@ -81,21 +71,6 @@ class Enemy extends Combatant
     {
         parent::__construct($name, $health, $armorRating);
         $this-&gt;loot = $loot;
-    }
-
-    public function describe(): string
-    {
-        return parent::describe() . " en heeft " . $this-&gt;loot . " bij zich";
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage);
-
-        if ($this-&gt;health &lt;= 0) {
-            echo $this-&gt;name . " is verslagen en laat " . $this-&gt;loot . " vallen
-";
-        }
     }
 }</code></pre>
         <p class="muted">De scenario's staan in een script met <code>declare(strict_types=1);</code>.</p>
@@ -126,22 +101,25 @@ echo $player->getHealth();`,
         why: 'Player heeft geen eigen takeDamage() en geen eigen constructor, dus PHP gebruikt die van Combatant. 20 schade min 5 armor is 15, dus health wordt 85.',
     },
     {
-        title: 'Een method die vervangen is',
+        title: 'Twee soorten, eigen data',
         question: 'Wat toont het script?',
-        code: `$npc = new Npc("Bob", 40, 0, "Hallo");
-echo $npc->describe();`,
-        options: ['Bob (40 health)', 'Bob zegt: "Hallo"', 'Bob (40 health) en daarna Bob zegt: "Hallo"'],
+        code: `$player = new Player("Aragorn", 100, 0);
+$enemy = new Enemy("Goblin", 30, 0, "een dolk");
+
+$player->takeDamage(10);
+echo $enemy->getHealth();`,
+        options: ['20', '30', '90'],
         correct: 1,
-        why: 'Npc overschrijft describe() en gebruikt parent::describe() niet. De versie van Combatant wordt dus niet uitgevoerd. Het script toont alleen de tekst van Npc.',
+        why: 'De method staat maar één keer, in Combatant, maar elk object heeft zijn eigen health. De klap raakt $player. De health van $enemy blijft 30.',
     },
     {
-        title: 'Een method die wordt uitgebreid',
-        question: 'Wat toont het script?',
-        code: `$enemy = new Enemy("Goblin", 30, 2, "een dolk");
-echo $enemy->describe();`,
-        options: ['Goblin (30 health)', 'Goblin (30 health) en heeft een dolk bij zich', 'Goblin en heeft een dolk bij zich'],
-        correct: 1,
-        why: 'Enemy::describe() roept parent::describe() aan en voegt er tekst aan toe. Het resultaat van Combatant ("Goblin (30 health)") staat dus ook in de uitvoer, met de uitbreiding erachter.',
+        title: 'Een method van een andere child',
+        question: 'Wat gebeurt er met de tweede regel?',
+        code: `$npc = new Npc("Bob", 40, 0, "Hallo");
+$npc->levelUp();`,
+        options: ['Bob krijgt 100 ervaringspunten', 'Er gebeurt niets', 'PHP geeft een Error'],
+        correct: 2,
+        why: 'levelUp() staat in Player, niet in Combatant. Npc en Player erven allebei van Combatant, maar ze zijn geen parent en child van elkaar. Een Npc heeft de method dus niet: "Call to undefined method Npc::levelUp()".',
     },
     {
         title: 'Een protected property lezen',
@@ -151,20 +129,6 @@ echo $player->health;`,
         options: ['Het script toont 100', 'Het script toont niets', 'PHP geeft een Error'],
         correct: 2,
         why: 'health is protected: alleen Combatant en de classes die van Combatant erven kunnen erbij. Het script staat daarbuiten, dus PHP geeft een Error: "Cannot access protected property Player::$health". Gebruik getHealth().',
-    },
-    {
-        title: 'Een override met parent::',
-        question: 'Wat toont het script? Elke echo eindigt met een nieuwe regel.',
-        code: `$enemy = new Enemy("Goblin", 30, 2, "een dolk");
-
-$enemy->takeDamage(10);
-echo $enemy->getHealth() . "\\n";
-
-$enemy->takeDamage(50);
-echo $enemy->getHealth() . "\\n";`,
-        options: ['22 en daarna -26', '22, daarna de melding "Goblin is verslagen en laat een dolk vallen" en daarna -26', '22 en daarna 0, want health gaat nooit onder 0'],
-        correct: 1,
-        why: 'De eerste aanroep: 10 schade min 2 armor is 8, dus health wordt 22. De tweede: 50 min 2 is 48, dus health wordt -26 (er is geen minimum). Omdat health nu <= 0 is, toont Enemy::takeDamage() de melding voordat het script de health toont.',
     },
     {
         title: 'Een constructor die de parent vervangt',

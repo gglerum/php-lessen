@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lab 3: Zoek de fout</title>
+    <link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<main class="wide">
+    <p class="muted"><a href="index.html">Alle labs</a></p>
+    <h1>Lab 3: Zoek de fout</h1>
+    <p class="muted">Elk script doet iets anders dan bedoeld. Bekijk de code, beantwoord de vraag en volg daarna het programma stap voor stap om te zien waar het misgaat. Met de knop Gecorrigeerd zie je de oplossing.</p>
+
+    <noscript><p class="noscript">Dit lab heeft JavaScript nodig.</p></noscript>
+
+    <nav aria-label="Scenario's"><ol id="steps"></ol></nav>
+    <h2 id="title"></h2>
+
+    <form class="quiz" id="quiz"></form>
+
+    <div class="debugger">
+        <div class="left">
+            <div class="listing" id="listing" role="region" aria-label="Code" tabindex="0"></div>
+
+            <div class="variants" id="variants" role="group" aria-label="Versie van het script" hidden>
+                <button type="button" class="secondary" data-variant="bug" aria-pressed="true">Met de fout</button>
+                <button type="button" class="secondary" data-variant="fixed" aria-pressed="false">Gecorrigeerd</button>
+            </div>
+
+            <div class="feedback say-box" id="say-wrap" aria-live="polite">
+                <strong class="counter" id="counter"></strong>
+                <p id="say"></p>
+            </div>
+
+            <div class="toolbar" role="group" aria-label="Besturing">
+                <button type="button" class="secondary" id="first" aria-label="Terug naar het begin">&#9198; Begin</button>
+                <button type="button" class="secondary" id="back" aria-label="Een stap terug">&#9664; Terug</button>
+                <button type="button" class="primary" id="play">&#9654; Afspelen</button>
+                <button type="button" class="secondary" id="forward" aria-label="Een stap verder">Verder &#9654;</button>
+                <label>Snelheid
+                    <select id="speed">
+                        <option value="2600">Langzaam</option>
+                        <option value="1700" selected>Normaal</option>
+                        <option value="800">Snel</option>
+                    </select>
+                </label>
+            </div>
+            <div class="scrub">
+                <label for="scrubber" class="muted">Sleep om naar een stap te springen</label>
+                <input type="range" id="scrubber" min="0" max="1" value="0" step="1">
+            </div>
+            <p class="muted keys">Toetsenbord: pijltje links en rechts om te stappen, spatie om af te spelen of te pauzeren.</p>
+        </div>
+
+        <div class="right">
+            <p class="muted">Het nieuwste frame staat bovenaan de stack. Een pijl loopt van een variabele naar het object waar die naar wijst. Wat in de laatste stap veranderd is, heeft een rand.</p>
+            <div class="memory2" id="memory">
+                <svg id="arrows" aria-hidden="true"></svg>
+                <section class="col stack" aria-label="Stack">
+                    <h3>Stack: frames en variabelen</h3>
+                    <div id="stack-body"></div>
+                </section>
+                <section class="col heap" aria-label="Objecten">
+                    <h3>Objecten</h3>
+                    <div id="heap-body"></div>
+                </section>
+            </div>
+            <section class="panel" id="output" aria-label="Uitvoer van het script">
+                <h3>Uitvoer van het script</h3>
+                <div class="body" id="output-body"></div>
+            </section>
+        </div>
+    </div>
+
+    <details class="classpanel" id="classpanel" open></details>
+</main>
+
+<script src="common.js"></script>
+<script src="stepper.js"></script>
+<script>
+// Elke stap noemt een regel (label achter de code, zoals "// @dmg") en wat die regel doet met de stack en de objecten.
+const scenarios = [
+    {
+        title: 'De vijand gaat nooit dood',
+        intro: 'Een Goblin met 10 health krijgt een klap van 12. Verwacht: de melding dat hij verslagen is en "Health: 0". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: MEMBERS_ENEMY_BUG,
+        code: LISTING_COMBATANT + '\n' + LISTING_ENEMY_BUG + `
+$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
+$enemy->takeDamage(12); // @dmg
+echo "Health: " . $enemy->getHealth(); // @echo`,
+        steps: [
+            ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+            { at: 'dmg', say: 'Enemy overschrijft takeDamage(), dus PHP gebruikt de versie van Enemy.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+            { at: 'c-eif', say: 'Is health <= 0? health is nog 10, dus nee. Er staat geen parent::takeDamage(), dus de schade is niet berekend.', ops: [] },
+            { at: 'dmg', say: 'De method is klaar. Er is niets gebeurd: geen schade en geen melding.', ops: [['pop']] },
+            ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 10, 'Health: 10'),
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: Enemy::takeDamage() roept eerst parent::takeDamage() aan. Verwacht: de melding en "Health: 0".',
+            code: LISTING_COMBATANT + '\n' + LISTING_ENEMY + `
+$enemy = new Enemy("Goblin", 10, 2, "een dolk"); // @new
+$enemy->takeDamage(12); // @dmg
+echo "Health: " . $enemy->getHealth(); // @echo`,
+            steps: [
+                ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 10, armorRating: 2, extraProp: 'loot', extraValue: 'een dolk' }),
+                { at: 'dmg', say: 'Enemy overschrijft takeDamage(), dus PHP gebruikt de versie van Enemy.', ops: [['push', 'Enemy::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+                { at: 'c-eparent', say: 'parent::takeDamage() voert de versie van Combatant uit.', ops: [['push', 'Combatant::takeDamage()', { this: ref('o1'), damage: 12 }]] },
+                { at: 'c-dmg', say: '12 schade min 2 armor is 10. health wordt 10 - 10 = 0.', ops: [['prop', 'o1', 'health', 0]] },
+                { at: 'c-eparent', say: 'Terug in Enemy::takeDamage().', ops: [['pop']] },
+                { at: 'c-eif', say: 'Is health <= 0? 0 <= 0, dus ja.', ops: [] },
+                { at: 'c-eecho', say: 'De melding wordt getoond.', ops: [['echo', 'Goblin is verslagen en laat een dolk vallen']] },
+                { at: 'dmg', say: 'Enemy::takeDamage() is klaar.', ops: [['pop']] },
+                ...getterSteps('echo', 'c-get', 'Combatant::getHealth()', 'o1', 0, 'Health: 0'),
+            ],
+        },
+    },
+    {
+        title: 'Een object van een abstracte class',
+        intro: 'Je wilt de aanvalskracht van een vijand tonen. Verwacht: "12". Druk op Afspelen en kijk wat er echt gebeurt.',
+        members: MEMBERS_ABSTRACT_BUG,
+        code: LISTING_ABSTRACT_COMBATANT + '\n' + LISTING_ABSTRACT_ENEMY + `
+$enemy = new Combatant("Goblin", 30, 2); // @new
+echo $enemy->attack(); // @echo`,
+        steps: [
+            { at: 'new', say: 'new probeert een object van Combatant te maken. Combatant is abstract: een abstracte class is alleen bedoeld om van te erven. PHP geeft een Error en het script stopt.', ops: [['fatal', 'Cannot instantiate abstract class Combatant']] },
+        ],
+        fixed: {
+            intro: 'Gecorrigeerd: we maken een object van Enemy, een class die attack() zelf schrijft. Verwacht: "12".',
+            code: LISTING_ABSTRACT_COMBATANT + '\n' + LISTING_ABSTRACT_ENEMY + `
+$enemy = new Enemy("Goblin", 30, 2, 3); // @new
+echo $enemy->attack(); // @echo`,
+            steps: [
+                ...childCtorSteps({ at: 'new', cls: 'Enemy', id: 'o1', varName: 'enemy', name: 'Goblin', health: 30, armorRating: 2, extraProp: 'threatLevel', extraValue: 3 }),
+                { at: 'echo', say: 'attack() staat in Enemy zelf.', ops: [['push', 'Enemy::attack()', { this: ref('o1') }]] },
+                { at: 'c-eattack', say: '3 * 4 = 12.', ops: [['ret', 12]] },
+                { at: 'echo', say: 'Het script toont 12.', ops: [['pop'], ['echo', '12']] },
+            ],
+        },
+    },
+];
+
+const quizzes = [
+    {
+        question: 'Waarom blijft de health van de Goblin 10?',
+        options: [
+            ['Enemy::takeDamage() vervangt de method van Combatant en roept parent::takeDamage() niet aan, dus de schade wordt nooit berekend.', 'Klopt. Een override vervangt de method van de parent. Wil je het gedrag van de parent houden, dan roep je hem zelf aan met parent::.'],
+            ['De armor van de Goblin is te hoog.', 'Nee: 12 schade min 2 armor is 10, dat zou genoeg zijn. Alleen wordt dit nooit berekend.'],
+            ['De Goblin heeft loot en is daarom onkwetsbaar.', 'Nee: de loot heeft hier niets mee te maken.'],
+        ],
+        correct: 0,
+    },
+    {
+        question: 'Waarom geeft PHP een Error bij de regel met new?',
+        options: [
+            ['Combatant heeft geen constructor.', 'Nee: Combatant heeft gewoon een constructor. Het probleem is dat je van een abstracte class geen object kunt maken.'],
+            ['Combatant is abstract, dus je kunt er geen object van maken. Je maakt een object van een child die attack() schrijft.', 'Klopt. Een abstracte class is een blauwdruk voor andere classes.'],
+            ['attack() mag niet zonder body bestaan.', 'Nee: in een abstracte class mag een method juist zonder body. Elke child moet hem dan wel schrijven.'],
+        ],
+        correct: 1,
+    },
+];
+
+const panel = document.getElementById('classpanel');
+
+function showMembers() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const scenario = scenarios[n >= 1 && n <= scenarios.length ? n - 1 : 0];
+    renderMembers(panel, scenario.members, 'De onderdelen');
+}
+
+window.addEventListener('hashchange', showMembers);
+showMembers();
+
+const quizForm = document.getElementById('quiz');
+
+function renderQuiz() {
+    const n = parseInt(location.hash.replace('#', ''), 10);
+    const index = n >= 1 && n <= quizzes.length ? n - 1 : 0;
+    const quiz = quizzes[index];
+
+    quizForm.replaceChildren();
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = quiz.question;
+    fieldset.append(legend);
+
+    quiz.options.forEach(([text], i) => {
+        const label = document.createElement('label');
+        label.className = 'option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'answer';
+        input.value = String(i);
+        label.append(input, text);
+        fieldset.append(label);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Controleer';
+    actions.append(button);
+
+    const result = document.createElement('div');
+    result.setAttribute('aria-live', 'polite');
+
+    quizForm.append(fieldset, actions, result);
+
+    quizForm.onsubmit = (event) => {
+        event.preventDefault();
+        const chosen = quizForm.querySelector('input[name="answer"]:checked');
+        result.replaceChildren();
+        const box = document.createElement('div');
+        if (!chosen) {
+            box.className = 'feedback warn';
+            box.textContent = 'Kies eerst een antwoord.';
+        } else {
+            const i = parseInt(chosen.value, 10);
+            const isCorrect = i === quiz.correct;
+            box.className = 'feedback ' + (isCorrect ? 'ok' : 'warn');
+            const strong = document.createElement('strong');
+            strong.textContent = isCorrect ? 'Goed.' : 'Niet helemaal.';
+            box.append(strong, quiz.options[i][1]);
+        }
+        result.append(box);
+    };
+}
+
+window.addEventListener('hashchange', renderQuiz);
+
+renderQuiz();
+createStepper({ scenarios });
+</script>
+</body>
+</html>

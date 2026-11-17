@@ -91,44 +91,14 @@ const LISTING_NPC_BUG = `class Npc extends Combatant
 }
 `;
 
-// override.php: Enemy breidt takeDamage() uit met parent::
-const LISTING_ENEMY = `class Enemy extends Combatant
+// de versie van Player zonder extends voor het lab "Zoek de fout"
+const LISTING_PLAYER_NOEXTENDS = `class Player
 {
-    private string $loot;
+    private int $experiencePoints = 0;
 
-    public function __construct(string $name, int $health, int $armorRating, string $loot)
+    public function levelUp(): void
     {
-        parent::__construct($name, $health, $armorRating); // @c-parent
-        $this->loot = $loot; // @c-extra
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        parent::takeDamage($damage); // @c-eparent
-
-        if ($this->health <= 0) { // @c-eif
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen\\n"; // @c-eecho
-        }
-    }
-}
-`;
-
-// de versie van Enemy zonder parent::takeDamage() voor het lab "Zoek de fout"
-const LISTING_ENEMY_BUG = `class Enemy extends Combatant
-{
-    private string $loot;
-
-    public function __construct(string $name, int $health, int $armorRating, string $loot)
-    {
-        parent::__construct($name, $health, $armorRating); // @c-parent
-        $this->loot = $loot; // @c-extra
-    }
-
-    public function takeDamage(int $damage): void
-    {
-        if ($this->health <= 0) { // @c-eif
-            echo $this->name . " is verslagen en laat " . $this->loot . " vallen\\n"; // @c-eecho
-        }
+        $this->experiencePoints = $this->experiencePoints + 100; // @c-lvl
     }
 }
 `;
@@ -271,24 +241,6 @@ const MEMBERS_PARENT_CTOR = {
     },
 };
 
-const MEMBERS_OVERRIDE = {
-    override: {
-        title: 'Enemy overschrijft takeDamage()',
-        code: 'public function takeDamage(int $damage): void',
-        text: 'Dezelfde naam en dezelfde parameters als in Combatant. Voor een Enemy wordt nu deze versie gebruikt.',
-    },
-    parent: {
-        title: 'parent::takeDamage()',
-        code: 'parent::takeDamage($damage);',
-        text: 'Voert takeDamage() van Combatant uit, dus het rekenwerk met de armor hoeft niet gekopieerd te worden. Daarna voegt Enemy er zijn eigen controle aan toe.',
-    },
-    extra: {
-        title: 'De uitbreiding',
-        code: 'if ($this->health <= 0) {\n    echo $this->name . " is verslagen en laat " . $this->loot . " vallen";\n}',
-        text: 'Alleen een Enemy laat loot vallen. Dit is wat Enemy toevoegt aan het gedrag van Combatant.',
-    },
-};
-
 const MEMBERS_TREE = {
     chain: {
         title: 'Elke class roept zijn parent aan',
@@ -318,11 +270,11 @@ const MEMBERS_PRIVATE_BUG = {
     },
 };
 
-const MEMBERS_ENEMY_BUG = {
-    override: {
-        title: 'Enemy overschrijft takeDamage()',
-        code: 'public function takeDamage(int $damage): void\n{\n    if ($this->health <= 0) { ... }\n}',
-        text: 'Een override vervangt de method van de parent. Wat Combatant::takeDamage() deed gebeurt hier alleen als je het zelf aanroept.',
+const MEMBERS_EXTENDS_BUG = {
+    extends: {
+        title: 'Player zonder extends',
+        code: 'class Player\n{\n    private int $experiencePoints = 0;\n    ...\n}',
+        text: 'Zonder extends is Player een losse class. Hij heeft alleen wat er in zijn eigen class staat: experiencePoints en levelUp(). De properties en methods van Combatant bestaan niet voor Player.',
     },
 };
 
